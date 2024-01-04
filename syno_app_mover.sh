@@ -2,17 +2,17 @@
 #-----------------------------------------------------------------------------------
 # Easily move Synology packages from 1 volume to another volume.
 #
-# Github: https://github.com/007revad/Synology_move_apps
+# Github: https://github.com/007revad/Synology_app_mover
 # Script verified at https://www.shellcheck.net/
 #
 # To run in a shell (replace /volume1/scripts/ with path to script):
-# sudo -i /volume1/scripts/syno_move_apps.sh
+# sudo -i /volume1/scripts/syno_app_mover.sh
 #-----------------------------------------------------------------------------------
 
-scriptver="v1.0.1"
-script=Synology_move_apps
-repo="007revad/Synology_move_apps"
-scriptname=syno_move_apps
+scriptver="v1.0.2"
+script=Synology_app_mover
+repo="007revad/Synology_app_mover"
+scriptname=syno_app_mover
 
 
 # Shell Colors
