@@ -9,7 +9,7 @@
 # sudo -i /volume1/scripts/syno_app_mover.sh
 #-----------------------------------------------------------------------------------
 
-scriptver="v1.0.2"
+scriptver="v1.0.3"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -61,7 +61,7 @@ echo -e "$model DSM $productversion-$buildnumber$smallfix $buildphase\n"
 # Get list of available volumes
 for volume in /volume*; do  # Get list of available volumes
     # Ignore /volumeUSB# and /volume0
-    if [[ $volume =~ /volume[0-9]{1,2}$ ]] && [[ $volume != /volume0 ]]; then
+    if [[ $volume =~ /volume[1-9][0-9]?$ ]]; then
         # Ignore unmounted volumes
         if df -h | grep "$volume" >/dev/null ; then
             volumes+=("$volume")
@@ -136,6 +136,10 @@ move_pkg(){
     # $1 is package name
     # $2 is destination volume
     while read -r link source; do
+
+        #echo "link: $link"      # debug
+        #echo "source: $source"  # debug
+
         appdir=$(echo "$source" | cut -d "/" -f3)
         echo -e "Moving $source to ${Cyan}$2${Off}"
 
@@ -177,11 +181,11 @@ move_pkg(){
                 ln -s "${2}/@appdata/$1" "/var/packages/${1}/var"
                 ;;
             *)
-                echo -e "${Red}Oops!${Off}"
+                echo -e "${Red}Oops!${Off} $appdir"
                 return
                 ;;
         esac
-    done < <(find . -type l -ls | grep "$1" | awk '{print $(NF-2), $NF}')
+    done < <(find . -maxdepth 2 -type l -ls | grep "$1" | awk '{print $(NF-2), $NF}')
 }
 
 
@@ -229,7 +233,7 @@ fi
 volumes=( )
 for volume in /volume*; do
     # Ignore /volumeUSB# and /volume0
-    if [[ $volume =~ /volume[0-9]{1,2}$ ]] && [[ $volume != /volume0 ]]; then
+    if [[ $volume =~ /volume[1-9][0-9]?$ ]]; then
         # Skip volume package is currently installed on
         if [[ $volume != "$linktargetvol" ]]; then
             # Ignore unmounted volumes
