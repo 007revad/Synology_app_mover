@@ -1,2 +1,5 @@
+v1.0.2
+- Renamed to syno_app_mover.
+
 v1.0.1
 - Initial release.
