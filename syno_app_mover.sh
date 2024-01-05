@@ -9,7 +9,7 @@
 # sudo -i /volume1/scripts/syno_app_mover.sh
 #-----------------------------------------------------------------------------------
 
-scriptver="v1.0.3"
+scriptver="v1.0.4"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -244,10 +244,8 @@ for volume in /volume*; do
     fi
 done
 
-
-
 # Select destination volume
-if [[ ${#volumes[@]} -gt 1 ]]; then
+if [[ ${#volumes[@]} -ge 1 ]]; then
     # Let user select target volume
     PS3="Select the destination volume: "
     select targetvol in "${volumes[@]}"; do
