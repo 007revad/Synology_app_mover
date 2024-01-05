@@ -36,7 +36,7 @@ If the script won't run check the following:
    sudo -i "/volume1/my scripts/syno_app_mover.sh"
    ```
 2. Make sure you unpacked the zip or rar file that you downloaded and are trying to run the syno_app_mover.sh file.
-3. Set the syno_create_m2_volume.sh file as executable:
+3. Set the script file as executable:
    ```YAML
    sudo chmod +x "/volume1/scripts/syno_app_mover.sh"
    ```
