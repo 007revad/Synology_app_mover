@@ -247,7 +247,7 @@ done
 
 
 # Select destination volume
-if [[ ${#volumes[@]} -gt 1 ]]; then
+if [[ ${#volumes[@]} -ge 1 ]]; then
     # Let user select target volume
     PS3="Select the destination volume: "
     select targetvol in "${volumes[@]}"; do
