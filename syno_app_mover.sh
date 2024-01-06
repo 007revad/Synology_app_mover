@@ -473,6 +473,13 @@ fi
 #------------------------------------------------------------------------------
 # Finished
 
+echo -e "Do you want to start $pkg now? [y/n]"
+read -r answer
+echo ""
+if [[ ${answer,,} != "y" ]]; then
+    exit  # Skip starting package
+fi
+
 # Start package
 package_start "$pkg"
 
