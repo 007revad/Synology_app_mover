@@ -9,17 +9,17 @@
 # sudo -i /volume1/scripts/syno_app_mover.sh
 #-----------------------------------------------------------------------------------
 
-scriptver="v1.0.4"
+scriptver="v1.1.5"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
-scriptname=syno_app_mover
+#scriptname=syno_app_mover
 
 
 # Shell Colors
 #Black='\e[0;30m'   # ${Black}
 Red='\e[0;31m'      # ${Red}
 #Green='\e[0;32m'   # ${Green}
-#Yellow='\e[0;33m'  # ${Yellow}
+Yellow='\e[0;33m'   # ${Yellow}
 #Blue='\e[0;34m'    # ${Blue}
 #Purple='\e[0;35m'  # ${Purple}
 Cyan='\e[0;36m'     # ${Cyan}
@@ -87,7 +87,7 @@ release=$(curl --silent -m 10 --connect-timeout 5 \
 
 # Release version
 tag=$(echo "$release" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-shorttag="${tag:1}"
+#shorttag="${tag:1}"
 
 # Release published date
 published=$(echo "$release" | grep '"published_at":' | sed -E 's/.*"([^"]+)".*/\1/')
@@ -104,8 +104,32 @@ fi
 #------------------------------------------------------------------------------
 # Functions
 
+progbar(){ 
+    # $1 is pid of process
+    # $2 is string to echo
+    local PROC
+    local delay
+    local dots
+    local progress
+    PROC="$1"
+    delay="0.3"
+    dots=""
+    while [[ -d /proc/$PROC ]]; do
+        dots="${dots}."
+        progress="$dots"
+        if [[ ${#dots} -gt "10" ]]; then
+            dots=""
+            progress="           "
+        fi
+        echo -ne "$2 $progress\r"; sleep "$delay"
+    done
+    echo -e "$2           "
+    return 0
+}
+
 package_status(){ 
     # $1 is package name
+    local code
     synopkg status "${1}" >/dev/null
     code="$?"  # 0 = started, 17 = stopped, 255 = not_installed
     if [[ $code == "0" ]]; then
@@ -121,40 +145,63 @@ package_stop(){
     # $1 is package name
     echo -e "Stopping ${Cyan}${1}${Off}..."
     synopkg stop "$1" >/dev/null
-    package_status "$1"
 }
 
 package_start(){ 
     # $1 is package name
     echo -e "Starting ${Cyan}${1}${Off}..."
     synopkg start "$1" >/dev/null
-    # Wait for package to start
-    package_status "$1"
+}
+
+backup_pkg(){
+    # $1 is folder to backup (@docker etc) 
+    # $2 is volume (/volume1 etc)
+    local perms
+
+    # Make backup folder on $2
+    if [[ ! -d "/${2}/${1}_backup" ]]; then
+        # Set same permissions as original folder
+        perms=$(stat -c %a "/${2}/${1}")
+        mkdir -m "$perms" "/${2}/${1}_backup"
+    fi
+
+    # Backup $1
+    if [[ -d "/${2}/${1}_backup" ]]; then
+        echo -e "There appears to already be backup of ${pkg}"
+        echo -e "Do you still want to backup ${pkg}? [y/n]"
+        read -r answer
+        echo ""
+        if [[ ${answer,,} != "y" ]]; then
+            return
+        fi
+    fi
+
+    cp -rf "/${2}/${1}/." "/${2}/${1}_backup" &
+    progbar $! "Backing up ${2}/$1 to ${Cyan}${2}/${1}_backup${Off}"
+    echo ""
 }
 
 move_pkg(){ 
     # $1 is package name
     # $2 is destination volume
+    local appdir
+    local perms
     while read -r link source; do
-
-        #echo "link: $link"      # debug
-        #echo "source: $source"  # debug
-
         appdir=$(echo "$source" | cut -d "/" -f3)
-        echo -e "Moving $source to ${Cyan}$2${Off}"
+        sourcevol=$(echo "$source" | cut -d "/" -f2)  # var is used later in script
 
-        sourcevol=$(echo "$source" | cut -d "/" -f2)
-        destination="${2}/${source#/"${sourcevol}"/}"
-
-        if [[ ! -d "${targetvol}/$appdir" ]]; then
-            mkdir "${targetvol}/$appdir"
+        # Make target folder
+        if [[ ! -d "${2}/$appdir" ]]; then
+            # Set same permissions as original folder
+            perms=$(stat -c %a "/${sourcevol}/$appdir")
+            mkdir -m "$perms" "${2}/$appdir"
         fi
 
-        chmod 755 "${targetvol}/$appdir"
+        # Move package
+        mv "$source" "${2}/$appdir" &
+        progbar $! "Moving $source to ${Cyan}$2${Off}"
 
-        mv "$source" "${targetvol}/$appdir"
-
-        # Edit symlinks
+        # Edit /var/packages symlinks
         case "$appdir" in
             @appconf)  # etc --> @appconf
                 rm "/var/packages/${1}/etc"
@@ -188,6 +235,86 @@ move_pkg(){
     done < <(find . -maxdepth 2 -type l -ls | grep "$1" | awk '{print $(NF-2), $NF}')
 }
 
+move_docker(){ 
+    # $1 is source volume
+    # $2 is destination volume
+    local source
+    local perms
+
+    # Backup @docker
+    echo -e "Do you want to backup ${pkg}? [y/n]"
+    read -r answer
+    echo ""
+    if [[ ${answer,,} == "y" ]]; then
+        # $1 is folder to backup (@docker etc) 
+        # $2 is package volume (volume1 etc)
+        backup_pkg "@docker" "${1}"
+    fi
+
+    source="${1}/@docker"
+    echo -e "Moving $source to ${Cyan}$2${Off}"
+    sourcevol=$(echo "$source" | cut -d "/" -f2)  # var is used later in script
+
+    # Create target folder
+    if [[ ! -d "${2}/@docker" ]]; then
+        # Set same permissions as original folder
+        perms=$(stat -c %a "/${sourcevol}/@docker")
+        mkdir -m "$perms" "${2}/@docker"
+    fi
+
+    # Move @docker
+    for i in "$source"/*; do
+        if [[ -d "${i}" ]]; then
+            mv "${i}" "${2}/@docker" &
+            progbar $! "Moving $i to ${Cyan}$2${Off}"
+        else
+            echo -e "${Yellow}Warning${Off} $source is empty"
+        fi
+    done
+
+    # Fix symlink if DSM 7
+    if [[ -L "${2}/@docker/@docker" ]]; then
+        rm "${2}/@docker/@docker"
+        ln -s "${2}/@docker" "${2}/@docker"
+    fi
+}
+
+folder_size(){
+    # $1 is folder to check size of
+    needed=""  # var is used later in script
+    if [[ -d "$1" ]]; then
+        # Get size of $1 folder
+        needed=$(du -s "$1" | awk '{ print $1 }')
+        # Add 50GB
+        needed=$((needed +50000000))
+    fi
+}
+
+vol_free_space(){
+    # $1 is volume to check free space
+    free=""  # var is used later in script
+    if [[ -d "$1" ]]; then
+        # Get amount of free space on $1 volume
+        free=$(df --output=avail "$1" | grep -A1 Avail | grep -v Avail)
+    fi
+}
+
+show_move_share(){ 
+    # $1 is share name
+    echo -e "\nIf you want to move your $1 shared folder to $targetvol"
+    echo "  1. Go to 'Control Panel > Shared Folders'."
+    echo "  2. Select your $pkg shared folder and click Edit."
+    echo "  3. Change Location to $targetvol and click Save."
+    echo -e "  4. After step 3 has finished start $pkg from Package Center.\n"
+    # Allow starting package now
+    echo -e "Or do you want to start $pkg now? [y/n]"
+    read -r answer
+    echo ""
+    if [[ ${answer,,} != "y" ]]; then
+        exit  # Skip starting package
+    fi
+}
+
 
 #------------------------------------------------------------------------------
 # Select package
@@ -198,6 +325,7 @@ if ! cd /var/packages; then
     exit 1
 fi
 
+# Add non-system packages to array
 packages=( )
 while read -r link target; do
     package="$(printf %s "$link" | cut -d'/' -f2 )"
@@ -211,15 +339,18 @@ IFS=$'\n'
 packagessorted=($(sort <<<"${packages[*]}"))
 unset IFS
 
-
 # Select package to move
 if [[ ${#packagessorted[@]} -gt 0 ]]; then
     PS3="Select the package to move: "
     select pkg in "${packagessorted[@]}"; do
-        echo -e "You selected ${Cyan}${pkg}${Off}\n"
-        target=$(readlink "/var/packages/${pkg}/target")
-        linktargetvol="/$(printf %s "$target" | cut -d'/' -f2 )"
-        break
+        if [[ $pkg ]]; then
+            echo -e "You selected ${Cyan}${pkg}${Off}\n"
+            target=$(readlink "/var/packages/${pkg}/target")
+            linktargetvol="/$(printf %s "$target" | cut -d'/' -f2 )"
+            break
+        else
+            echo "Invalid choice!"
+        fi
     done
 else
     echo "No movable packages found!" && exit 1
@@ -246,16 +377,19 @@ done
 
 # Select destination volume
 if [[ ${#volumes[@]} -ge 1 ]]; then
-    # Let user select target volume
     PS3="Select the destination volume: "
     select targetvol in "${volumes[@]}"; do
-        if [[ -d $targetvol ]]; then
-            echo -e "You selected ${Cyan}${targetvol}${Off}\n"
-            break
+        if [[ $targetvol ]]; then
+            if [[ -d $targetvol ]]; then
+                echo -e "You selected ${Cyan}${targetvol}${Off}\n"
+                break
+            else
+                ding
+                echo -e "${Error}ERROR${Off} $targetvol not found!"
+                exit 1
+            fi
         else
-            ding
-            echo -e "${Error}ERROR${Off} $targetvol not found!"
-            exit 1
+            echo "Invalid choice!"
         fi
     done
 else
@@ -272,9 +406,8 @@ echo "Ready to move $pkg to ${targetvol}? [y/n]"
 read -r answer
 echo ""
 if [[ ${answer,,} != y ]]; then
-    exit 1
+    exit
 fi
-
 
 # Stop package if running
 if package_status "$pkg"; then
@@ -290,11 +423,55 @@ else
     exit 1
 fi
 
-
 # Move package and edit symlinks
 move_pkg "$pkg" "$targetvol"
 echo ""
 
+
+#------------------------------------------------------------------------------
+# Move @docker if package is ContainerManager or Docker
+
+if [[ "$pkg" == "ContainerManager" ]] || [[ "$pkg" == "Docker" ]]; then
+    # Check if @docker is on same volume as Docker package
+    if [[ -d "/${sourcevol}/@docker" ]]; then
+        # Get size of @docker folder
+        folder_size "/${sourcevol}/@docker"
+
+        # Get amount of free space on target volume
+        vol_free_space "${targetvol}"
+
+        # Check we have enough space
+        if [[ ! $free -gt $needed ]]; then
+            echo -e "Not enough space to move /${sourcevol}/@docker to $targetvol"
+        else
+            move_docker "/$sourcevol" "$targetvol"
+            # Show how to move docker share
+            show_move_share docker
+        fi
+    fi
+fi
+
+
+#------------------------------------------------------------------------------
+# Suggest moving PlexMediaServer share if package is Plex
+
+if [[ "$pkg" =~ Plex.*Media.*Server ]]; then
+    # Show how to move Plex share
+    show_move_share "$pkg"
+fi
+
+
+#------------------------------------------------------------------------------
+# Suggest moving PlexMediaServer share if package is Plex
+
+if [[ "$pkg" =~ Plex.*Media.*Server ]]; then
+    # Show how to move Plex share
+    show_move_share "$pkg"
+fi
+
+
+#------------------------------------------------------------------------------
+# Finished
 
 # Start package
 package_start "$pkg"
