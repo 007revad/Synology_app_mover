@@ -1,3 +1,14 @@
+v1.1.5
+- If package is ContainerManager or Docker:
+  - Offers to backup @docker.
+  - Moves @docker if there's enough space.
+  - Instructs how to move your docker shared folder.
+- If package is Plex Media Server.
+  - Instructs how to move the PlexMediaServer shared folder.
+- Added progress bar so you know the script is still working on long running processes.
+- Fixed bug which allowed typing an invalid package selection.
+- Fixed bug which allowed typing an invalid volume selection.
+
 v1.0.4
 - Fix bug for handling only two volumes in NAS.
 
