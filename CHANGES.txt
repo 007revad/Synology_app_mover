@@ -7,6 +7,7 @@ v1.1.5
   - Instructs how to move the PlexMediaServer shared folder.
 - Added progress bar so you know the script is still working on long running processes.
 - Now gets the permissions of the original folder to set on the new target folder.
+- Now asks if you want to start the package.
 - Fixed bug which allowed typing an invalid package selection.
 - Fixed bug which allowed typing an invalid volume selection.
 
