@@ -41,7 +41,9 @@ If the script won't run check the following:
    sudo chmod +x "/volume1/scripts/syno_app_mover.sh"
    ```
 
-### DSM 7 screen shot
+### DSM 7 screen shots
 
 <p align="center"><img src="/images/app.png"></p>
+
+<p align="center"><img src="/images/docker.png"></p>
 
