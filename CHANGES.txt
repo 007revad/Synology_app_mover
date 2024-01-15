@@ -1,5 +1,5 @@
 v2.0.6
-- Now stops and starts dependant packages when moving a package with dependancies.
+- Now stops (and later starts) dependant packages when moving a package with dependancies.
 
 v1.1.5
 - If package is ContainerManager or Docker:
