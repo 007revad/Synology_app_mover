@@ -17,7 +17,9 @@ Handy for moving packages to an SSD volume.
 
 ### Download the script
 
-See <a href=images/how_to_download_generic.png/>How to download the script</a> for the easiest way to download the script.
+1. Download the latest version _Source code (zip)_ from https://github.com/007revad/Synology_app_mover/releases
+2. Save the download zip file to a folder on the Synology.
+3. Unzip the zip file.
 
 ### To run the script
 
