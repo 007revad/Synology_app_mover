@@ -14,6 +14,7 @@ Just test files here...
 | AntiVirus | OK |
 | AudioStation |  |	
 | C2IdentityLDAPAgent |  |
+| Calendar | OK |
 | Chat |  |
 | CloudSync | OK |
 | CMS | OK |
