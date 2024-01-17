@@ -15,7 +15,7 @@ Just test files here...
 | AudioStation |  |	
 | C2IdentityLDAPAgent |  |
 | Chat |  |
-| CMS |  |
+| CMS | OK |
 | CodecPack | OK |
 | Contacts | OK |
 | DirectoryServer |  |
