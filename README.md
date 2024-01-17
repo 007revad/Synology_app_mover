@@ -45,7 +45,7 @@ Just test files here...
 | SynologyApplicationService | OK |
 | SynologyDrive |  |
 | SynologyPhotos | OK |
-| SynoSmisProvider |  |
+| SynoSmisProvider | OK |
 | Tailscale | OK |
 | TextEditor | OK |
 | UniversalViewer | OK |
