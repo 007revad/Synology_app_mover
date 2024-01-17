@@ -39,7 +39,7 @@ Just test files here...
 | ProxyServer | OK |
 | RadiusServer | OK |
 | SnapshotReplication | OK |
-| SSOServer |  |
+| SSOServer | OK |
 | StorageAnalyzer | OK |
 | SurveillanceStation |  |
 | SynologyApplicationService | OK |
