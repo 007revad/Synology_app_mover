@@ -20,7 +20,7 @@ Just test files here...
 | Contacts | OK |
 | DirectoryServer |  |
 | DirectoryServerForWindowsDomain |  |
-| DNSServer |  |
+| DNSServer | OK |
 | exFAT-Free | OK |
 | git | OK |
 | Git | OK |
