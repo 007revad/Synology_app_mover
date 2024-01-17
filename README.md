@@ -28,7 +28,7 @@ Just test files here...
 | LogAnalysis | OK |
 | LogCenter | OK |
 | MediaServer |  |
-| Node.js_v18 | Works but show Error. Can Repair from Package Center |
+| Node.js_v18 | Works but shows Error. Can Repair from Package Center |
 | PDFViewer | OK |
 | Perl | OK |
 | PHP8.2 | OK |
