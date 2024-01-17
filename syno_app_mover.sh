@@ -333,7 +333,7 @@ while read -r link target; do
     if [[ ! ${package_infos[*]} =~ "${package_volume}|${package}" ]]; then
         package_infos+=("${package_volume}|${package}")
     fi
-done < <(find . -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
+done < <(find . -maxdepth 2 -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
 
 # Sort array
 IFS=$'\n' package_infos_sorted=($(sort <<<"${package_infos[*]}")); unset IFS
