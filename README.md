@@ -42,6 +42,7 @@ Just test files here...
 | PrestoServer | Resets to default settings!?!? |
 | ProxyServer | OK |
 | RadiusServer | OK |
+| Python3.9 | OK |
 | SnapshotReplication | OK |
 | SpreadSheet (part of Office) |  |
 | SSOServer | OK |
