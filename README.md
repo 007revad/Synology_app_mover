@@ -18,8 +18,8 @@ Just test files here...
 | CMS | OK |
 | CodecPack | OK |
 | Contacts | OK |
-| DirectoryServer |  |
-| DirectoryServerForWindowsDomain |  |
+| DirectoryServer | OK |
+| DirectoryServerForWindowsDomain | OK |
 | DNSServer | OK |
 | exFAT-Free | OK |
 | git | OK |
