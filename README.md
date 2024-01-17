@@ -15,7 +15,7 @@ Just test files here...
 | AudioStation |  |	
 | C2IdentityLDAPAgent |  |
 | Chat |  |
-| CloudSync |  |
+| CloudSync | OK |
 | CMS | OK |
 | CodecPack | OK |
 | Contacts | OK |
