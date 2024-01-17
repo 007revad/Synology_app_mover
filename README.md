@@ -30,7 +30,7 @@ Just test files here...
 | HyperBackupVault |  |
 | LogAnalysis | OK |
 | LogCenter | OK |
-| MediaServer |  |
+| MediaServer | OK |
 | Node.js_v18 | Works but shows Error. Can Repair from Package Center |
 | PDFViewer | OK |
 | Perl | OK |
