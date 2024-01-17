@@ -1,10 +1,8 @@
 # Synology app mover 
 
-Just test files here...
-
 <br>
 
-### Confirmed working for
+### Packages confirmed working (or being tested)
 
 | Package | Result |
 |---------|--------|
@@ -12,6 +10,7 @@ Just test files here...
 | ActiveBackup-GSuite |  |
 | ActiveBackup-Office365 |  |
 | AntiVirus | OK |
+| Apache |  |
 | AudioStation | OK |	
 | C2IdentityLDAPAgent |  |
 | Calendar | OK |
@@ -30,15 +29,20 @@ Just test files here...
 | Git | OK |
 | HyperBackup |  |
 | HyperBackupVault |  |
+| Joomla |  |
 | LogAnalysis | OK |
 | LogCenter | OK |
 | MailPlus-Server |  |
+| MariaDB |  |
 | MediaServer | OK |
+| MediaWiki |  |
 | Node.js_v18 | Works but shows Error. Can Repair from Package Center |
 | NoteStation | OK |
+| PACS |  |
 | PDFViewer | OK |
 | Perl | OK |
 | PHP8.2 | OK |
+| phpMyAdmin |  |
 | PlexMediaServer | OK |
 | PrestoServer | Resets to default settings!?!? |
 | ProxyServer | OK |
@@ -60,12 +64,14 @@ Just test files here...
 | VideoStation | OK |
 | Virtualization |  |
 | VPNCenter | OK |
+| vtigerDRM |  |
 | WebDAVServer | OK |
 | WebStation | OK |
+| Wordpress |  |
 
 <br>
 
-### Not tested
+### Packages not tested
 
 | Package | Result |
 |---------|--------|
@@ -85,7 +91,6 @@ Just test files here...
 | Plex Media Server |  |
 | Ragic Cloud DB |  |
 | Resilo Sync |  |
-| Tailscale |  |
 | TeamViewer |  |
 | VirtualHere |  |
 
