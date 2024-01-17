@@ -20,9 +20,11 @@ Just test files here...
 | CMS | OK |
 | CodecPack | OK |
 | Contacts | OK |
+| ContainerManager |  |
 | DirectoryServer | OK |
 | DirectoryServerForWindowsDomain | OK |
 | DNSServer | OK |
+| DownloadStation |  |
 | exFAT-Free | OK |
 | git | OK |
 | Git | OK |
@@ -30,8 +32,10 @@ Just test files here...
 | HyperBackupVault |  |
 | LogAnalysis | OK |
 | LogCenter | OK |
+| MailPlus-Server |  |
 | MediaServer | OK |
 | Node.js_v18 | Works but shows Error. Can Repair from Package Center |
+| NoteStation | OK |
 | PDFViewer | OK |
 | Perl | OK |
 | PHP8.2 | OK |
@@ -39,9 +43,11 @@ Just test files here...
 | ProxyServer | OK |
 | RadiusServer | OK |
 | SnapshotReplication | OK |
+| SpreadSheet (part of Office) |  |
 | SSOServer | OK |
 | StorageAnalyzer | OK |
 | SurveillanceStation |  |
+| SynoCli Tools | OK |
 | SynologyApplicationService | OK |
 | SynologyDrive |  |
 | SynologyPhotos | OK |
