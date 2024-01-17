@@ -326,36 +326,38 @@ if ! cd /var/packages; then
 fi
 
 # Add non-system packages to array
-packages=( )
+package_infos=( )
 while read -r link target; do
     package="$(printf %s "$link" | cut -d'/' -f2 )"
-    if [[ ! ${packages[*]} =~ ${package}$ ]]; then
-        packages+=("$package")
+    package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
+    if [[ ! ${package_infos[*]} =~ "${package_volume}|${package}" ]]; then
+        package_infos+=("${package_volume}|${package}")
     fi
 done < <(find . -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
 
 # Sort array
-IFS=$'\n'
-packagessorted=($(sort <<<"${packages[*]}"))
-unset IFS
+IFS=$'\n' package_infos_sorted=($(sort <<<"${package_infos[*]}")); unset IFS
 
 # Select package to move
-if [[ ${#packagessorted[@]} -gt 0 ]]; then
-    PS3="Select the package to move: "
-    select pkg in "${packagessorted[@]}"; do
-        if [[ $pkg ]]; then
-            echo -e "You selected ${Cyan}${pkg}${Off}\n"
-            target=$(readlink "/var/packages/${pkg}/target")
-            linktargetvol="/$(printf %s "$target" | cut -d'/' -f2 )"
-            break
-        else
-            echo "Invalid choice!"
-        fi
-    done
-else
+echo "[Installed package list]"
+for ((i=1; i<=${#package_infos_sorted[@]}; i++)); do
+    info="${package_infos_sorted[i-1]}"
+    before_pipe="${info%%|*}"
+    after_pipe="${info#*|}"
+    printf "%-5s %-15s %s\n" "$i)" "$before_pipe" "$after_pipe"
+done
+
+if [[ ${#package_infos_sorted[@]} -eq 0 ]]; then
     echo "No movable packages found!" && exit 1
 fi
 
+# Parse selected element of array
+read -rp "Select the package to move: " choice
+IFS="|" read -r package_volume pkg <<< "${package_infos_sorted[choice-1]}"
+
+echo -e "You selected ${Cyan}${pkg}${Off} in ${Cyan}${package_volume}${Off}\n"
+target=$(readlink "/var/packages/${pkg}/target")
+linktargetvol="/$(printf %s "$target" | cut -d'/' -f2 )"
 
 #------------------------------------------------------------------------------
 # Select volume
@@ -402,7 +404,7 @@ fi
 #------------------------------------------------------------------------------
 # Move the package
 
-echo "Ready to move $pkg to ${targetvol}? [y/n]"
+echo -e "Ready to move ${Cyan}${pkg}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
 read -r answer
 echo ""
 if [[ ${answer,,} != y ]]; then
