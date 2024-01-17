@@ -51,7 +51,7 @@ Just test files here...
 | UniversalViewer | OK |
 | VideoStation | OK |
 | Virtualization |  |
-| VPNCenter |  |
+| VPNCenter | OK |
 | WebDAVServer | OK |
 | WebStation |  |
 
