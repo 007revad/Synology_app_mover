@@ -33,7 +33,7 @@ Just test files here...
 | Perl | OK |
 | PHP8.2 | OK |
 | PrestoServer | Resets to default settings!?!? |
-| ProxyServer |  |
+| ProxyServer | OK |
 | RadiusServer |  |
 | SnapshotReplication | OK |
 | SSOServer |  |
