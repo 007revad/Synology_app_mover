@@ -39,10 +39,11 @@ Just test files here...
 | PDFViewer | OK |
 | Perl | OK |
 | PHP8.2 | OK |
+| PlexMediaServer | OK |
 | PrestoServer | Resets to default settings!?!? |
 | ProxyServer | OK |
-| RadiusServer | OK |
 | Python3.9 | OK |
+| RadiusServer | OK |
 | SnapshotReplication | OK |
 | SpreadSheet (part of Office) |  |
 | SSOServer | OK |
