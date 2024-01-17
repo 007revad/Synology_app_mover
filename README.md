@@ -25,6 +25,7 @@ Just test files here...
 | exFAT-Free | OK |
 | git | OK |
 | Git | OK |
+| HyperBackup |  |
 | HyperBackupVault |  |
 | LogAnalysis | OK |
 | LogCenter | OK |
