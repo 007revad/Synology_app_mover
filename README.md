@@ -37,7 +37,7 @@ Just test files here...
 | PHP8.2 | OK |
 | PrestoServer | Resets to default settings!?!? |
 | ProxyServer | OK |
-| RadiusServer |  |
+| RadiusServer | OK |
 | SnapshotReplication | OK |
 | SSOServer |  |
 | StorageAnalyzer | OK |
