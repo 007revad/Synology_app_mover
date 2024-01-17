@@ -49,7 +49,7 @@ Just test files here...
 | Tailscale | OK |
 | TextEditor | OK |
 | UniversalViewer | OK |
-| VideoStation |  |
+| VideoStation | OK |
 | Virtualization |  |
 | VPNCenter |  |
 | WebDAVServer | OK |
