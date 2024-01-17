@@ -7,7 +7,7 @@ Just test files here...
 ### Confirmed working for
 
 | Package | Result |
-|-----|-----|
+|---------|--------|
 | ActiveBackup |  |
 | ActiveBackup-GSuite |  |
 | ActiveBackup-Office365 |  |
@@ -62,4 +62,30 @@ Just test files here...
 | VPNCenter | OK |
 | WebDAVServer | OK |
 | WebStation | OK |
+
+<br>
+
+### Not tested
+
+| Package | Result |
+|---------|--------|
+| Archiware P5 |  |
+| BRAVIA Signage |  |
+| Data Deposit Box |  |
+| Domotz Network Monitoring |  |
+| ElephantDrive |  |
+| Emby Server |  |
+| GoodSync |  |
+| IDrive |  |
+| KodiExplorer |  |
+| MEGAcmd |  |
+| MinimServer |  |
+| NAKIVO Backup and Replication |  |
+| NAKIVO Transporter |  |
+| Plex Media Server |  |
+| Ragic Cloud DB |  |
+| Resilo Sync |  |
+| Tailscale |  |
+| TeamViewer |  |
+| VirtualHere |  |
 
