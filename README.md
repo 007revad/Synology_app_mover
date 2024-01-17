@@ -35,17 +35,18 @@ sudo -i /volume1/scripts/syno_app_mover.sh
 
 If the script won't run check the following:
 
-1. If the path to the script contains any spaces you need to enclose the path/scriptname in double quotes:
+1. Make sure you download the zip file and unzipped it to a folder on your Synology (not on your computer).
+2. If the path to the script contains any spaces you need to enclose the path/scriptname in double quotes:
    ```YAML
    sudo -i "/volume1/my scripts/syno_app_mover.sh"
    ```
-2. Make sure you unpacked the zip or rar file that you downloaded and are trying to run the syno_app_mover.sh file.
-3. Set the script file as executable:
+3. Make sure you unpacked the zip or rar file that you downloaded and are trying to run the syno_app_mover.sh file.
+4. Set the script file as executable:
    ```YAML
    sudo chmod +x "/volume1/scripts/syno_app_mover.sh"
    ```
 
-### DSM 7 screen shots
+### DSM 7 screenshots
 
 <p align="center"><img src="/images/app.png"></p>
 
