@@ -6,67 +6,68 @@
 
 | Package | Result |
 |---------|--------|
-| ActiveBackup |  |
-| ActiveBackup-GSuite |  |
-| ActiveBackup-Office365 |  |
+| Active Backup |  |
+| Active Backup GSuite |  |
+| Active Backup Office365 |  |
 | AntiVirus | OK |
 | Apache |  |
-| AudioStation | OK |	
+| Audio Station | OK |	
 | C2IdentityLDAPAgent |  |
 | Calendar | OK |
 | Chat |  |
-| CloudSync | OK |
+| Cloud Sync | OK |
 | CMS | OK |
-| CodecPack | OK |
+| Codec Pack | OK |
 | Contacts | OK |
-| ContainerManager |  |
-| DirectoryServer | OK |
-| DirectoryServerForWindowsDomain | OK |
-| DNSServer | OK |
-| DownloadStation | OK |
+| Container Manager |  |
+| Directory Server | OK |
+| Directory Server For Windows Domain | OK |
+| DNS Server | OK |
+| Download Station | OK |
 | exFAT-Free | OK |
 | git | OK |
 | Git | OK |
-| HyperBackup |  |
-| HyperBackupVault |  |
+| Hyper Backup |  |
+| Hyper Backup Vault |  |
 | Joomla |  |
 | LogAnalysis | OK |
-| LogCenter | OK |
-| MailPlus-Server |  |
+| Log Center | OK |
+| MailPlus Server |  |
 | MariaDB |  |
-| MediaServer | OK |
+| Media Server | OK |
 | MediaWiki |  |
-| Node.js_v18 | Works but shows Error. Can Repair from Package Center |
-| NoteStation | OK |
+| Node.js v18 | Works but shows Error. Can Repair from Package Center |
+| Note Station | OK |
 | PACS |  |
-| PDFViewer | OK |
+| PDF Viewer | OK |
 | Perl | OK |
 | PHP8.2 | OK |
 | phpMyAdmin |  |
-| PlexMediaServer | OK |
+| Plex Media Server | OK |
 | PrestoServer | Resets to default settings!?!? |
 | ProxyServer | OK |
-| Python3.9 | OK |
-| RadiusServer | OK |
-| SnapshotReplication | OK |
+| Python 3.9 | OK |
+| Radius Server | OK |
+| Snapshot Replication | OK |
 | SpreadSheet (part of Office) |  |
-| SSOServer | OK |
-| StorageAnalyzer | OK |
-| SurveillanceStation |  |
+| SSO Server | OK |
+| Storage Analyzer | OK |
+| Surveillance Station |  |
 | SynoCli Tools | OK |
-| SynologyApplicationService | OK |
-| SynologyDrive | OK |
-| SynologyPhotos | OK |
+| Synology Application Service | OK |
+| Synology Drive | OK |
+| Synology High Availability |  |
+| Synology Photos | OK |
 | SynoSmisProvider | OK |
 | Tailscale | OK |
-| TextEditor | OK |
-| UniversalViewer | OK |
-| VideoStation | OK |
+| Text Editor | OK |
+| Universal Viewer | OK |
+| Video Station | OK |
 | Virtualization |  |
-| VPNCenter | OK |
+| VPN Center | OK |
 | vtigerDRM |  |
-| WebDAVServer | OK |
-| WebStation | OK |
+| WebDAV Server | OK |
+| Web Station | OK |
 | Wordpress |  |
 
 <br>
