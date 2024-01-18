@@ -10,7 +10,7 @@
 | Active Backup GSuite |  |
 | Active Backup Office365 |  |
 | AntiVirus Essential | OK |
-| AntiVirus by McAfee |  |
+| AntiVirus by McAfee | OK |
 | Apache |  |
 | Audio Station | OK |	
 | C2IdentityLDAPAgent |  |
