@@ -55,7 +55,7 @@
 | SurveillanceStation |  |
 | SynoCli Tools | OK |
 | SynologyApplicationService | OK |
-| SynologyDrive |  |
+| SynologyDrive | OK |
 | SynologyPhotos | OK |
 | SynoSmisProvider | OK |
 | Tailscale | OK |
