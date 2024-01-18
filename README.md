@@ -56,7 +56,6 @@
 | SynoCli Tools | OK |
 | Synology Application Service | OK |
 | Synology Drive | OK |
-| Synology High Availability |  |
 | Synology Photos | OK |
 | SynoSmisProvider | OK |
 | Tailscale | OK |
