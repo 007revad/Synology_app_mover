@@ -32,8 +32,8 @@
 | Joomla |  |
 | LogAnalysis | OK |
 | Log Center | OK |
-| MailPlus |  |
-| MailPlus Server |  |
+| MailPlus | OK |
+| MailPlus Server | OK |
 | Mail Server | OK |
 | Mail Station | OK |
 | MariaDB |  |
