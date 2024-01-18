@@ -23,7 +23,7 @@
 | DirectoryServer | OK |
 | DirectoryServerForWindowsDomain | OK |
 | DNSServer | OK |
-| DownloadStation |  |
+| DownloadStation | OK |
 | exFAT-Free | OK |
 | git | OK |
 | Git | OK |
