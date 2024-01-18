@@ -34,7 +34,7 @@
 | Log Center | OK |
 | MailPlus |  |
 | MailPlus Server |  |
-| Mail Server | OK, but shares log folder with MailPlus Server |
+| Mail Server | OK |
 | Mail Station | OK |
 | MariaDB |  |
 | Media Server | OK |
