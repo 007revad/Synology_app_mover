@@ -32,7 +32,10 @@
 | Joomla |  |
 | LogAnalysis | OK |
 | Log Center | OK |
+| MailPlus |  |
 | MailPlus Server |  |
+| Mail Server |  |
+| Mail Station |  |
 | MariaDB |  |
 | Media Server | OK |
 | MediaWiki |  |
