@@ -30,7 +30,6 @@
 | Git | OK |
 | Hyper Backup |  |
 | Hyper Backup Vault |  |
-| Joomla | Won't install, don't care |
 | LogAnalysis | OK |
 | Log Center | OK |
 | MailPlus | OK |
@@ -40,7 +39,6 @@
 | MariaDB 10 | OK |
 | Media Server | OK |
 | MediaInfo | OK |
-| MediaWiki | Won't install, don't care |
 | MinimServer | OK |
 | Node.js v18 | Works but shows Error. Can Repair from Package Center |
 | Note Station | OK |
@@ -91,7 +89,9 @@
 | Emby Server |  |
 | GoodSync |  |
 | IDrive |  |
+| Joomla | Won't install, don't care |
 | KodiExplorer |  |
+| MediaWiki | Won't install, don't care |
 | MEGAcmd |  |
 | NAKIVO Backup and Replication |  |
 | NAKIVO Transporter |  |
