@@ -11,7 +11,7 @@
 | Active Backup Office365 |  |
 | AntiVirus Essential | OK |
 | AntiVirus by McAfee | OK |
-| Apache |  |
+| Apache 2.4 | OK |
 | Audio Station | OK |	
 | C2IdentityLDAPAgent |  |
 | Calendar | OK |
@@ -37,7 +37,7 @@
 | MailPlus Server | OK |
 | Mail Server | OK |
 | Mail Station | OK |
-| MariaDB |  |
+| MariaDB 10 | OK |
 | Media Server | OK |
 | MediaWiki |  |
 | Node.js v18 | Works but shows Error. Can Repair from Package Center |
@@ -45,7 +45,9 @@
 | PACS |  |
 | PDF Viewer | OK |
 | Perl | OK |
-| PHP8.2 | OK |
+| PHP 7.4 | OK |
+| PHP 8.0 | OK |
+| PHP 8.2 | OK |
 | phpMyAdmin |  |
 | Plex Media Server | OK |
 | PrestoServer | Resets to default settings!?!? |
