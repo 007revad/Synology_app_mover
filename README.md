@@ -40,7 +40,7 @@
 | MariaDB 10 | OK |
 | Media Server | OK |
 | MediaWiki |  |
-| MinimServer |  |
+| MinimServer | OK |
 | Node.js v18 | Works but shows Error. Can Repair from Package Center |
 | Note Station | OK |
 | PACS |  |
