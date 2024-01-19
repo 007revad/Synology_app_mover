@@ -56,7 +56,7 @@
 | SpreadSheet (part of Office) |  |
 | SSO Server | OK |
 | Storage Analyzer | OK |
-| Surveillance Station |  |
+| Surveillance Station | OK |
 | SynoCli Tools | OK |
 | Synology Application Service | OK |
 | Synology Drive | OK |
