@@ -39,6 +39,7 @@
 | Mail Station | OK |
 | MariaDB 10 | OK |
 | Media Server | OK |
+| MediaInfo | OK |
 | MediaWiki |  |
 | MinimServer | OK |
 | Node.js v18 | Works but shows Error. Can Repair from Package Center |
