@@ -25,6 +25,7 @@
 | Directory Server For Windows Domain | OK |
 | DNS Server | OK |
 | Download Station | OK |
+| Emby Server | OK |
 | exFAT-Free | OK |
 | git | OK |
 | Git | OK |
@@ -86,7 +87,6 @@
 | Data Deposit Box |  |
 | Domotz Network Monitoring |  |
 | ElephantDrive |  |
-| Emby Server |  |
 | GoodSync |  |
 | IDrive |  |
 | Joomla | Won't install, don't care |
