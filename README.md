@@ -30,7 +30,7 @@
 | Git | OK |
 | Hyper Backup |  |
 | Hyper Backup Vault |  |
-| Joomla |  |
+| Joomla | Won't install, don't care |
 | LogAnalysis | OK |
 | Log Center | OK |
 | MailPlus | OK |
@@ -40,7 +40,7 @@
 | MariaDB 10 | OK |
 | Media Server | OK |
 | MediaInfo | OK |
-| MediaWiki |  |
+| MediaWiki | Won't install, don't care |
 | MinimServer | OK |
 | Node.js v18 | Works but shows Error. Can Repair from Package Center |
 | Note Station | OK |
