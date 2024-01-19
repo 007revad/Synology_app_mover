@@ -93,10 +93,8 @@
 | IDrive |  |
 | KodiExplorer |  |
 | MEGAcmd |  |
-| MinimServer |  |
 | NAKIVO Backup and Replication |  |
 | NAKIVO Transporter |  |
-| Plex Media Server |  |
 | Ragic Cloud DB |  |
 | Resilo Sync |  |
 | TeamViewer |  |
