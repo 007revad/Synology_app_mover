@@ -48,7 +48,6 @@
 | PHP 7.4 | OK |
 | PHP 8.0 | OK |
 | PHP 8.2 | OK |
-| phpMyAdmin |  |
 | Plex Media Server | OK |
 | PrestoServer | Resets to default settings!?!? |
 | ProxyServer | OK |
@@ -108,6 +107,7 @@ These need MarioDB and they either fail to install or don't run properly!?!?
 |---------|--------|
 | Joomla | Doesn't install |
 | MediaWiki | Doesn't install |
+| phpMyAdmin | Won't test |
 | Wordpress | Won't test |
 | vtigerCRM | Installs but doesn't run |
 
