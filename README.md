@@ -63,6 +63,7 @@
 | SynoCli Tools | OK |
 | Synology Application Service | OK |
 | Synology Drive | OK |
+| Synology Office |  |
 | Synology Photos | OK |
 | Synology Virtual Machine | OK |
 | Syno Smis Provider | OK |
