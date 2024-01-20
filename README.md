@@ -64,12 +64,12 @@
 | Synology Application Service | OK |
 | Synology Drive | OK |
 | Synology Photos | OK |
-| SynoSmisProvider | OK |
+| Synology Virtual Machine | OK |
+| Syno Smis Provider | OK |
 | Tailscale | OK |
 | Text Editor | OK |
 | Universal Viewer | OK |
 | Video Station | OK |
-| Virtualization |  |
 | VPN Center | OK |
 | vtigerDRM |  |
 | WebDAV Server | OK |
