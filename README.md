@@ -74,7 +74,6 @@
 | VPN Center | OK |
 | WebDAV Server | OK |
 | Web Station | OK |
-| Wordpress |  |
 
 <br>
 
@@ -108,7 +107,8 @@ These need MarioDB and they either fail to install or don't run properly!?!?
 
 | Package | Result |
 |---------|--------|
-| Joomla | Won't install, don't care |
-| MediaWiki | Won't install, don't care |
-| vtigerCRM | Won't run, don't care |
+| Joomla | Doesn't install |
+| MediaWiki | Doesn't install |
+| Wordpress | Won't test |
+| vtigerCRM | Doesn't run |
 
