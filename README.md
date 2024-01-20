@@ -43,7 +43,7 @@
 | MinimServer | OK |
 | Node.js v18 | Works but shows Error. Can Repair from Package Center |
 | Note Station | OK |
-| PACS |  |
+| PACS | Needs ContainerManager |
 | PDF Viewer | OK |
 | Perl | OK |
 | PHP 7.4 | OK |
@@ -72,7 +72,6 @@
 | Universal Viewer | OK |
 | Video Station | OK |
 | VPN Center | OK |
-| vtigerCRM |  |
 | WebDAV Server | OK |
 | Web Station | OK |
 | Wordpress |  |
@@ -90,9 +89,7 @@
 | ElephantDrive |  |
 | GoodSync |  |
 | IDrive |  |
-| Joomla | Won't install, don't care |
 | KodiExplorer |  |
-| MediaWiki | Won't install, don't care |
 | MEGAcmd |  |
 | NAKIVO Backup and Replication |  |
 | NAKIVO Transporter |  |
@@ -100,4 +97,18 @@
 | Resilo Sync |  |
 | TeamViewer |  |
 | VirtualHere |  |
+
+<br>
+
+### Packages that won't be tested
+
+These need MarioDB and they either fail to install or don't run properly!?!?
+
+**Note:** I will not test any package that needs MariaDB
+
+| Package | Result |
+|---------|--------|
+| Joomla | Won't install, don't care |
+| MediaWiki | Won't install, don't care |
+| vtigerCRM | Won't run, don't care |
 
