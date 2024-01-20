@@ -1,8 +1,10 @@
 v2.0.6
+- Confirmed working for 64 packages.
 - Updated to work correctly with the following packages that have extra folders or symlinks:
   - Chat, Hyper Backup, MailPlus Server, Mail Server, Presto Server, Surveillance Station, 
   - Synology Application Service, Synology Drive, WebDAV Server and Virtual Machine Manager. 
 - Added a progress bar so you know the script is still working on long running processes.
+- Now shows the current volume for each package. Issue #12 Thanks woozu-shin
 - Now stops (and later starts) dependant packages when moving a package with dependancies.
 - Now asks if you want to start the package (in case you want to move it's shared folder first).
 - Now instructs how to move packages' shared folder(s) for the following packages:
@@ -11,7 +13,7 @@ v2.0.6
   - Cloud Sync, Download Station, Note Station, Synology Drive and Virtual Machine Manager.
 - Now if package is ContainerManager or Docker:
   - Offers to backup @docker.
-  - Moves @docker if there's enough space.
+  - Moves @docker if there's enough space on the target volume.
   - Instructs how to move your docker shared folder.
 - Now gets the permissions of the original folder to set on the new target folder.
 - Fixed bug which allowed typing an invalid package selection.
