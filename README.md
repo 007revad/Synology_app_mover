@@ -61,7 +61,7 @@
 | Surveillance Station | OK |
 | SynoCli Tools | OK |
 | Synology Application Service | OK |
-| Synology Chat Server |  |
+| Synology Chat Server | OK |
 | Synology Drive | OK |
 | Synology Office |  |
 | Synology Photos | OK |
