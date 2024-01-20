@@ -16,6 +16,7 @@ v2.0.6
   - Moves @docker if there's enough space on the target volume.
   - Instructs how to move your docker shared folder.
 - Now gets the permissions of the original folder to set on the new target folder.
+- Now checks if there's a new version of the script and asks if you want the script to update itself.
 - Fixed bug which allowed typing an invalid package selection.
 - Fixed bug which allowed typing an invalid volume selection.
 
