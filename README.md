@@ -13,7 +13,129 @@ You just select the package and the destination volume and the script will stop 
 
 Handy for moving packages to an SSD volume.
 
-  - Supports DSM 7 and DSM 6.
+  - Supports DSM 7. Not tested with DSM 6.
+
+
+### Packages confirmed working (or being tested)
+
+<details>
+  <summary>Click here to see list</summary>
+
+| Package | Result |
+|---------|--------|
+| Active Backup |  |
+| Active Backup GSuite |  |
+| Active Backup Office365 |  |
+| AntiVirus Essential | OK |
+| AntiVirus by McAfee | OK |
+| Apache 2.4 | OK |
+| Audio Station | OK |	
+| C2 Identity LDAP Agent | Runs in Container Manager |
+| Calendar | OK |
+| Cloud Sync | OK |
+| CMS | OK |
+| Codec Pack | OK |
+| Contacts | OK |
+| Container Manager |  |
+| Directory Server | OK |
+| Directory Server For Windows Domain | OK |
+| DNS Server | OK |
+| Download Station | OK |
+| Emby Server | OK |
+| exFAT-Free | OK |
+| git | OK |
+| Git | OK |
+| Hyper Backup |  |
+| Hyper Backup Vault |  |
+| LogAnalysis | OK |
+| Log Center | OK |
+| MailPlus | OK |
+| MailPlus Server | OK |
+| Mail Server | OK |
+| Mail Station | OK |
+| MariaDB 10 | OK |
+| Media Server | OK |
+| MediaInfo | OK |
+| MinimServer | OK |
+| Node.js v18 | Works but shows Error. Can Repair from Package Center |
+| Note Station | OK |
+| PACS | Runs in Container Manager |
+| PDF Viewer | OK |
+| Perl | OK |
+| PHP 7.4 | OK |
+| PHP 8.0 | OK |
+| PHP 8.2 | OK |
+| Plex Media Server | OK |
+| PrestoServer | Resets to default settings!?!? |
+| ProxyServer | OK |
+| Python 3.9 | OK |
+| Radius Server | OK |
+| Snapshot Replication | OK |
+| SSO Server | OK |
+| Storage Analyzer | OK |
+| Surveillance Station | OK |
+| SynoCli Tools | OK |
+| Synology Application Service | OK |
+| Synology Chat Server | OK |
+| Synology Drive | OK |
+| Synology Office (aka SpreadSheet) | OK |
+| Synology Photos | OK |
+| Synology Virtual Machine | OK |
+| Syno Smis Provider | OK |
+| Tailscale | OK |
+| Text Editor | OK |
+| Universal Viewer | OK |
+| Video Station | OK |
+| VPN Center | OK |
+| WebDAV Server | OK |
+| Web Station | OK |
+
+</details>
+
+#### Packages not tested
+
+<details>
+  <summary>Click here to see list</summary>
+
+| Package | Result |
+|---------|--------|
+| Archiware P5 |  |
+| BRAVIA Signage |  |
+| Data Deposit Box |  |
+| Domotz Network Monitoring |  |
+| ElephantDrive |  |
+| GoodSync |  |
+| IDrive |  |
+| KodiExplorer |  |
+| MEGAcmd |  |
+| NAKIVO Backup and Replication |  |
+| NAKIVO Transporter |  |
+| Ragic Cloud DB |  |
+| Resilo Sync |  |
+| TeamViewer |  |
+| VirtualHere |  |
+
+</details>
+
+#### Packages that won't be tested
+
+<details>
+  <summary>Click here to see list</summary>
+
+These need MarioDB and they either fail to install or don't run properly!?!?
+
+**Note:** I will not test any package that needs MariaDB.
+
+| Package | Result |
+|---------|--------|
+| Joomla | Doesn't install |
+| MediaWiki | Doesn't install |
+| phpMyAdmin | Won't test |
+| Wordpress | Won't test |
+| vtigerCRM | Installs but doesn't run |
+
+</details>
+
 
 ### Download the script
 
