@@ -1,4 +1,7 @@
 v2.0.6
+- Updated to work correctly with the following packages that have extra folders or symlinks:
+  - Chat, Hyper Backup, MailPlus Server, Mail Server, Presto Server, Surveillance Station, 
+  - Synology Application Service, Synology Drive, WebDAV Server and Virtual Machine Manager. 
 - Added a progress bar so you know the script is still working on long running processes.
 - Now stops (and later starts) dependant packages when moving a package with dependancies.
 - Now asks if you want to start the package (in case you want to move it's shared folder first).
