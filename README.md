@@ -72,7 +72,7 @@
 | Universal Viewer | OK |
 | Video Station | OK |
 | VPN Center | OK |
-| vtigerDRM |  |
+| vtigerCRM |  |
 | WebDAV Server | OK |
 | Web Station | OK |
 | Wordpress |  |
