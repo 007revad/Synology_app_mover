@@ -13,7 +13,7 @@
 | AntiVirus by McAfee | OK |
 | Apache 2.4 | OK |
 | Audio Station | OK |	
-| C2 Identity LDAP Agent | Needs ContainerManager |
+| C2 Identity LDAP Agent | Runs in Container Manager |
 | Calendar | OK |
 | Cloud Sync | OK |
 | CMS | OK |
@@ -42,7 +42,7 @@
 | MinimServer | OK |
 | Node.js v18 | Works but shows Error. Can Repair from Package Center |
 | Note Station | OK |
-| PACS | Needs ContainerManager |
+| PACS | Runs in Container Manager |
 | PDF Viewer | OK |
 | Perl | OK |
 | PHP 7.4 | OK |
