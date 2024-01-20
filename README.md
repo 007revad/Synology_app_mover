@@ -103,12 +103,12 @@
 
 These need MarioDB and they either fail to install or don't run properly!?!?
 
-**Note:** I will not test any package that needs MariaDB
+**Note:** I will not test any package that needs MariaDB.
 
 | Package | Result |
 |---------|--------|
 | Joomla | Doesn't install |
 | MediaWiki | Doesn't install |
 | Wordpress | Won't test |
-| vtigerCRM | Doesn't run |
+| vtigerCRM | Installs but doesn't run |
 
