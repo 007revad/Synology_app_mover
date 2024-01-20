@@ -15,7 +15,6 @@
 | Audio Station | OK |	
 | C2 Identity LDAP Agent | Needs ContainerManager |
 | Calendar | OK |
-| Chat |  |
 | Cloud Sync | OK |
 | CMS | OK |
 | Codec Pack | OK |
@@ -62,6 +61,7 @@
 | Surveillance Station | OK |
 | SynoCli Tools | OK |
 | Synology Application Service | OK |
+| Synology Chat Server |  |
 | Synology Drive | OK |
 | Synology Office |  |
 | Synology Photos | OK |
