@@ -1,16 +1,26 @@
 v2.0.6
+- Added a progress bar so you know the script is still working on long running processes.
 - Now stops (and later starts) dependant packages when moving a package with dependancies.
-
-v1.1.5
-- If package is ContainerManager or Docker:
+- Now asks if you want to start the package (in case you want to move it's shared folder first).
+- Now instructs how to move packages' shared folder(s) for the following packages:
+  - Audio Station
+  - Chat
+  - Cloud Sync
+  - MinimServer
+  - Plex Media Server
+  - Surveillance Station
+  - Video Station
+- Now instructs how to change the packages' database location for the following packages:
+  - Cloud Sync
+  - Download Station
+  - Note Station
+  - Synology Drive
+  - Virtual Machine Manager
+- Now if package is ContainerManager or Docker:
   - Offers to backup @docker.
   - Moves @docker if there's enough space.
   - Instructs how to move your docker shared folder.
-- If package is Plex Media Server.
-  - Instructs how to move the PlexMediaServer shared folder.
-- Added progress bar so you know the script is still working on long running processes.
 - Now gets the permissions of the original folder to set on the new target folder.
-- Now asks if you want to start the package.
 - Fixed bug which allowed typing an invalid package selection.
 - Fixed bug which allowed typing an invalid volume selection.
 
