@@ -55,7 +55,6 @@
 | Python 3.9 | OK |
 | Radius Server | OK |
 | Snapshot Replication | OK |
-| SpreadSheet (part of Office) |  |
 | SSO Server | OK |
 | Storage Analyzer | OK |
 | Surveillance Station | OK |
@@ -63,7 +62,7 @@
 | Synology Application Service | OK |
 | Synology Chat Server | OK |
 | Synology Drive | OK |
-| Synology Office |  |
+| Synology Office (aka SpreadSheet) | OK |
 | Synology Photos | OK |
 | Synology Virtual Machine | OK |
 | Syno Smis Provider | OK |
