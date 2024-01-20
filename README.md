@@ -13,7 +13,7 @@
 | AntiVirus by McAfee | OK |
 | Apache 2.4 | OK |
 | Audio Station | OK |	
-| C2 Identity LDAP Agent |  |
+| C2 Identity LDAP Agent | Needs ContainerManager |
 | Calendar | OK |
 | Chat |  |
 | Cloud Sync | OK |
