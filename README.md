@@ -57,7 +57,10 @@ Handy for moving packages to an SSD volume.
 | Media Server | OK |
 | MediaInfo | OK |
 | MinimServer | OK |
-| Node.js v18 | Works but shows Error. Can Repair from Package Center |
+| Node.js v14 | OK |
+| Node.js v16 | OK |
+| Node.js v18 | OK |
+| Node.js v20 | OK |
 | Note Station | OK |
 | PACS | Runs in Container Manager |
 | PDF Viewer | OK |
