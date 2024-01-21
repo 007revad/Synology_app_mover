@@ -68,8 +68,8 @@ Handy for moving packages to an SSD volume.
 | PHP 8.0 | OK |
 | PHP 8.2 | OK |
 | Plex Media Server | OK |
-| PrestoServer | OK |
-| ProxyServer | OK |
+| Presto File Server | OK |
+| Proxy Server | OK |
 | Python 3.9 | OK |
 | Radius Server | OK |
 | Snapshot Replication | OK |
