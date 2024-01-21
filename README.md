@@ -51,7 +51,7 @@
 | PHP 8.0 | OK |
 | PHP 8.2 | OK |
 | Plex Media Server | OK |
-| PrestoServer | Resets to default settings!?!? |
+| PrestoServer | OK |
 | ProxyServer | OK |
 | Python 3.9 | OK |
 | Radius Server | OK |
