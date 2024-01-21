@@ -1,7 +1,7 @@
 v2.0.6
 - Confirmed working for 64 packages.
 - Updated to work correctly with the following packages that have extra folders or symlinks:
-  - Chat, Hyper Backup, MailPlus Server, Mail Server, Node.js, Presto Server, Surveillance Station, 
+  - Chat, Hyper Backup, MailPlus Server, Mail Server, Node.js, Presto File Server, Surveillance Station, 
   - Synology Application Service, Synology Drive, WebDAV Server and Virtual Machine Manager. 
 - Added a progress bar so you know the script is still working on long running processes.
 - Now shows the current volume for each package. Issue #12 Thanks woozu-shin
