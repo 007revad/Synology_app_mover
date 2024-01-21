@@ -1,8 +1,10 @@
 v2.0.6
 - Confirmed working for 64 packages.
 - Updated to work correctly with the following packages that have extra folders or symlinks:
-  - Chat, Hyper Backup, MailPlus Server, Mail Server, Node.js, Presto File Server, Surveillance Station, 
-  - Synology Application Service, Synology Drive, WebDAV Server and Virtual Machine Manager. 
+  - Chat, Container Manager, Hyper Backup, MailPlus Server, Mail Server, Node.js, Presto File Server,
+  - Surveillance Station, Synology Application Service, Synology Drive, WebDAV Server, Virtual Machine Manager. 
+- Moving Container Manager now includes your images and containers.
+  - It also asks if you want to backup the @docker folder (just in case).
 - Added a progress bar so you know the script is still working on long running processes.
 - Now shows the current volume for each package. Issue #12 Thanks woozu-shin
 - Now stops (and later starts) dependant packages when moving a package with dependancies.
