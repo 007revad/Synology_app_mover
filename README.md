@@ -47,8 +47,10 @@
 | Note Station | OK |
 | PDF Viewer | OK |
 | Perl | OK |
+| PHP 7.3 | OK |
 | PHP 7.4 | OK |
 | PHP 8.0 | OK |
+| PHP 8.1 | OK |
 | PHP 8.2 | OK |
 | Plex Media Server | OK |
 | Presto File Server | OK |
