@@ -36,7 +36,7 @@ Handy for moving packages to an SSD volume.
 | CMS | OK |
 | Codec Pack | OK |
 | Contacts | OK |
-| Container Manager |  |
+| Container Manager | OK |
 | Directory Server | OK |
 | Directory Server For Windows Domain | OK |
 | DNS Server | OK |
