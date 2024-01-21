@@ -62,7 +62,6 @@ Handy for moving packages to an SSD volume.
 | Node.js v18 | OK |
 | Node.js v20 | OK |
 | Note Station | OK |
-| PACS | Runs in Container Manager |
 | PDF Viewer | OK |
 | Perl | OK |
 | PHP 7.4 | OK |
@@ -133,6 +132,7 @@ These need MarioDB and they either fail to install or don't run properly!?!?
 |---------|--------|
 | Joomla | Doesn't install |
 | MediaWiki | Doesn't install |
+| PACS |  Won't test |
 | phpMyAdmin | Won't test |
 | Wordpress | Won't test |
 | vtigerCRM | Installs but doesn't run |
