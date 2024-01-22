@@ -23,9 +23,9 @@ Handy for moving packages to an SSD volume.
 
 | Package | Result |
 |---------|--------|
-| Active Backup |  |
-| Active Backup GSuite |  |
-| Active Backup Office365 |  |
+| Active Backup | Testing... |
+| Active Backup GSuite | Testing... |
+| Active Backup Office365 | Testing... |
 | AntiVirus Essential | OK |
 | AntiVirus by McAfee | OK |
 | Apache 2.4 | OK |
