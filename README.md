@@ -45,7 +45,7 @@ Handy for moving packages to an SSD volume.
 | exFAT-Free | OK |
 | git | OK |
 | Git | OK |
-| Hyper Backup |  |
+| Hyper Backup | OK |
 | Hyper Backup Vault |  |
 | LogAnalysis | OK |
 | Log Center | OK |
