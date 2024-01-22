@@ -84,7 +84,7 @@ Handy for moving packages to an SSD volume.
 | Synology Drive | OK |
 | Synology Office (aka SpreadSheet) | OK |
 | Synology Photos | OK |
-| Synology Virtual Machine | OK |
+| Synology Virtual Machine Manager | OK |
 | Syno Smis Provider | OK |
 | Tailscale | OK |
 | Text Editor | OK |
