@@ -46,7 +46,7 @@ Handy for moving packages to an SSD volume.
 | git | OK |
 | Git | OK |
 | Hyper Backup | OK |
-| Hyper Backup Vault |  |
+| Hyper Backup Vault | OK |
 | LogAnalysis | OK |
 | Log Center | OK |
 | MailPlus | OK |
