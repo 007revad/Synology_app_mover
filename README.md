@@ -19,7 +19,7 @@
 | CMS | OK |
 | Codec Pack | OK |
 | Contacts | OK |
-| Container Manager |  |
+| Container Manager | OK |
 | Directory Server | OK |
 | Directory Server For Windows Domain | OK |
 | DNS Server | OK |
@@ -28,7 +28,7 @@
 | exFAT-Free | OK |
 | git | OK |
 | Git | OK |
-| Hyper Backup |  |
+| Hyper Backup | OK  |
 | Hyper Backup Vault |  |
 | LogAnalysis | OK |
 | Log Center | OK |
