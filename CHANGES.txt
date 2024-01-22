@@ -1,5 +1,5 @@
 v2.0.6
-- Confirmed working for 64 packages.
+- Confirmed working for 67 packages.
 - Updated to work correctly with the following packages that have extra folders or symlinks:
   - Chat, Container Manager, MailPlus Server, Mail Server, Node.js, Presto File Server, Surveillance Station, 
     Synology Application Service, Synology Drive, WebDAV Server, Virtual Machine Manager. 
