@@ -27,7 +27,6 @@ Handy for moving packages to an SSD volume.
 | Active Backup for Business Agent | Testing... |
 | Active Backup for Google Workspace | Still Testing... |
 | Active Backup for Microsoft Office 365 | Still Testing... |
-| Active Insight |  |
 | Advanced Media Extensions | is codec pack? |
 | AntiVirus Essential | OK |
 | AntiVirus by McAfee | OK |
