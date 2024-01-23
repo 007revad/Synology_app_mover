@@ -27,6 +27,8 @@ Handy for moving packages to an SSD volume.
 | Active Backup for Business Agent | Testing... |
 | Active Backup for Google Workspace | Still Testing... |
 | Active Backup for Microsoft Office 365 | Still Testing... |
+| Active Insight |  |
+| Advanced Media Extensions | is codec pack? |
 | AntiVirus Essential | OK |
 | AntiVirus by McAfee | OK |
 | Apache 2.4 | OK |
@@ -34,7 +36,7 @@ Handy for moving packages to an SSD volume.
 | C2 Identity LDAP Agent | OK but I don't have a C2 account to fully test |
 | Cloud Sync | OK |
 | Central Management System | OK |
-| Codec Pack | OK |
+| Codec Pack | OK  is Advanced Media Extensions ? |
 | Container Manager | OK |
 | Directory Server For Windows Domain | OK |
 | DNS Server | OK |
@@ -45,6 +47,7 @@ Handy for moving packages to an SSD volume.
 | Git | OK |
 | Hyper Backup | OK |
 | Hyper Backup Vault | OK |
+| LDAP Server |  |
 | LogAnalysis | OK |
 | Log Center | OK |
 | Mail Station | OK |
