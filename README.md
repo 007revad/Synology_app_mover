@@ -31,7 +31,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | AntiVirus Essential | AntiVirus | OK |
 | Apache 2.4 | Apache2.4 | OK |
 | Audio Station | AudioStation | OK |	
-| Bitdefender for MailPlus | BitDefenderForMailPlus | OK |
+| Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
 | C2 Identity LDAP Server | C2IdentityLDAPAgent | OK but I don't have a C2 account to fully test |
 | Central Management System | CMS | OK |
 | Cloud Sync | CloudSync | OK |
