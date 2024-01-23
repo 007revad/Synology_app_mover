@@ -23,7 +23,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 | Package Center Name | DSM Name shown in script | Result |
 |---------------------|-------------|--------|
-| Active Backup for Business | ActiveBackup | Still Testing... |
+| Active Backup for Business | ActiveBackup | OK |
 | Active Backup for Google Workspace | ActiveBackup-GSuite | Still Testing... |
 | Active Backup for Microsoft Office 365 | ActiveBackup-Office365 | Still Testing... |
 | Advanced Media Extensions | CodecPack | OK |
