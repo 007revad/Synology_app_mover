@@ -156,7 +156,7 @@ These need MarioDB and they either fail to install or don't run properly!?!?
 [How to enable SSH and login to DSM via SSH](https://kb.synology.com/en-global/DSM/tutorial/How_to_login_to_DSM_with_root_permission_via_SSH_Telnet)
 
 ```YAML
-sudo -i /volume1/scripts/syno_app_mover.sh
+sudo -s /volume1/scripts/syno_app_mover.sh
 ```
 
 **Note:** Replace /volume1/scripts/ with the path to where the script is located.
@@ -168,7 +168,7 @@ If the script won't run check the following:
 1. Make sure you download the zip file and unzipped it to a folder on your Synology (not on your computer).
 2. If the path to the script contains any spaces you need to enclose the path/scriptname in double quotes:
    ```YAML
-   sudo -i "/volume1/my scripts/syno_app_mover.sh"
+   sudo -s "/volume1/my scripts/syno_app_mover.sh"
    ```
 3. Make sure you unpacked the zip or rar file that you downloaded and are trying to run the syno_app_mover.sh file.
 4. Set the script file as executable:
