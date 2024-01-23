@@ -11,7 +11,7 @@ Easily move Synology packages from one volume to another volume
 
 You just select the package and the destination volume and the script will stop the app, move it, update the symlinks then start the app.
 
-Handy for moving packages to an SSD volume.
+Handy for moving packages to an SSD volume, or to another volume so you can delete the original volume.
 
   - Supports DSM 7. Not tested with DSM 6.
 
