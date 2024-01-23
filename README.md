@@ -43,11 +43,11 @@ Handy for moving packages to an SSD volume.
 | Download Station | DownloadStation | OK |
 | Emby Server | Emby | OK |
 | exFAT Access | exFAT-Free | OK |
-| git |  | OK |
-| Git |  | OK |
+| git | git | OK |
+| Git | Git | OK |
 | Glacier Backup |  |  |
 | Hyper Backup | HyperBackup | OK |
-| Hyper Backup Vault |  | OK |
+| Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server |  |  |
 | LogAnalysis | LogAnalysis | OK |
 | Log Center |  | OK |
@@ -64,23 +64,23 @@ Handy for moving packages to an SSD volume.
 | Note Station |  | OK |
 | PDF Viewer |  | OK |
 | Perl | Perl | OK |
-| PHP 7.3 |  | OK |
-| PHP 7.4 |  | OK |
-| PHP 8.0 |  | OK |
-| PHP 8.1 |  | OK |
-| PHP 8.2 |  | OK |
-| Plex Media Server |  | OK |
+| PHP 7.3 | PHP7.3 | OK |
+| PHP 7.4 | PHP7.4 | OK |
+| PHP 8.0 | PHP8.0 | OK |
+| PHP 8.1 | PHP8.1 | OK |
+| PHP 8.2 | PHP8.2 | OK |
+| Plex Media Server | PlexMediaServer | OK |
 | Presto File Server | PrestoServer | OK |
 | Proxy Server |  | OK |
 | Python 3.9 | Python3.9 | OK |
 | Radius Server |  | OK |
 | Replication Service |  |  |
 | SMI-S Provider |  |  |
-| Snapshot Replication |  | OK |
+| Snapshot Replication | SnapshotReplication | OK |
 | SSO Server |  | OK |
-| Storage Analyzer |  | OK |
-| Surveillance Station |  | OK |
-| SynoCli Tools | synocli-<toolname> | OK |
+| Storage Analyzer | StorageAnalyzer | OK |
+| Surveillance Station | SurveillanceStation | OK |
+| SynoCli Tools | synocli-"toolname" | OK |
 | Synology Application Service | SynologyApplicationService | OK |
 | Synology Calendar | Calendar | OK |
 | Synology Chat Server | Chat | OK |
@@ -91,7 +91,7 @@ Handy for moving packages to an SSD volume.
 | Synology MailPlus |  | OK |
 | Synology MailPlus Server |  | OK |
 | Synology Mail Server |  | OK |
-| Synology Office (aka SpreadSheet) |  | OK |
+| Synology Office | SpreadSheet | OK |
 | Synology Photos |  | OK |
 | Syno Smis Provider |  | OK |
 | Tailscale | Tailscale | OK |
