@@ -43,7 +43,7 @@ Handy for moving packages to an SSD volume.
 | exFAT Access | exFAT-Free | OK |
 | git | git | OK |
 | Git | Git | OK |
-| Glacier Backup |  |  |
+| Glacier Backup | GlacierBackup | OK but I don't have a Glacier account to fully test |
 | Hyper Backup | HyperBackup | OK |
 | Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server | DirectoryServer |  |
