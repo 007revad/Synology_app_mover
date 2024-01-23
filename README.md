@@ -27,8 +27,8 @@ Handy for moving packages to an SSD volume.
 | Active Backup for Google Workspace | ActiveBackup-GSuite | Still Testing... |
 | Active Backup for Microsoft Office 365 | ActiveBackup-Office365 | Still Testing... |
 | Advanced Media Extensions | CodecPack | OK |
-| AntiVirus Essential | AntiVirus | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
+| AntiVirus Essential | AntiVirus | OK |
 | Apache 2.4 | Apache2.4 | OK |
 | Audio Station | AudioStation | OK |	
 | Bitdefender for MailPlus | BitDefenderForMailPlus |  |
