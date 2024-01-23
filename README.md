@@ -24,8 +24,8 @@ Handy for moving packages to an SSD volume.
 | Package Center Name | System Name | Result |
 |---------------------|-------------|--------|
 | Active Backup for Business | ActiveBackup | Still Testing... |
-| Active Backup for Google Workspace |  | Still Testing... |
-| Active Backup for Microsoft Office 365 |  | Still Testing... |
+| Active Backup for Google Workspace | ActiveBackup-GSuite | Still Testing... |
+| Active Backup for Microsoft Office 365 | ActiveBackup-Office365 | Still Testing... |
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus Essential |  | OK |
 | AntiVirus by McAfee |  | OK |
@@ -36,7 +36,7 @@ Handy for moving packages to an SSD volume.
 | Cloud Sync | CloudSync | OK |
 | Central Management System | CMS | OK |
 | Container Manager | ContainerManager | OK |
-| Directory Server For Windows Domain |  | OK |
+| Directory Server For Windows Domain | DirectoryServer | OK |
 | DNS Server |  | OK |
 | DHCP Server |  |  |
 | Document Viewer |  |  |
@@ -61,7 +61,7 @@ Handy for moving packages to an SSD volume.
 | Node.js v16 | Node.js_v16 | OK |
 | Node.js v18 | Node.js_v18 | OK |
 | Node.js v20 | Node.js_v20 | OK |
-| Note Station |  | OK |
+| Note Station | NoteStation | OK |
 | PDF Viewer |  | OK |
 | Perl | Perl | OK |
 | PHP 7.3 | PHP7.3 | OK |
@@ -89,7 +89,7 @@ Handy for moving packages to an SSD volume.
 | Synology Drive Server | SynologyDrive | OK |
 | Synology High Availability |  |  |
 | Synology MailPlus |  | OK |
-| Synology MailPlus Server |  | OK |
+| Synology MailPlus Server | MailPlusServer | OK |
 | Synology Mail Server |  | OK |
 | Synology Office | SpreadSheet | OK |
 | Synology Photos |  | OK |
