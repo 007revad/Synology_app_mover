@@ -36,8 +36,8 @@ Handy for moving packages to an SSD volume.
 | Cloud Sync | CloudSync | OK |
 | Central Management System | CMS | OK |
 | Container Manager | ContainerManager | OK |
-| Directory Server For Windows Domain | DirectoryServer | OK |
-| DNS Server |  | OK |
+| Directory Server For Windows Domain | DirectoryServerForWindowsDomain | OK |
+| DNS Server | DNSServer | OK |
 | DHCP Server |  |  |
 | Document Viewer |  |  |
 | Download Station | DownloadStation | OK |
@@ -74,7 +74,6 @@ Handy for moving packages to an SSD volume.
 | Proxy Server |  | OK |
 | Python 3.9 | Python3.9 | OK |
 | Radius Server |  | OK |
-| Replication Service |  |  |
 | SMI-S Provider |  |  |
 | Snapshot Replication | SnapshotReplication | OK |
 | SSO Server |  | OK |
@@ -88,11 +87,11 @@ Handy for moving packages to an SSD volume.
 | Synology Directory Server |  | OK |
 | Synology Drive Server | SynologyDrive | OK |
 | Synology High Availability |  |  |
-| Synology MailPlus |  | OK |
-| Synology MailPlus Server | MailPlusServer | OK |
+| Synology MailPlus | MailPlus | OK |
+| Synology MailPlus Server | MailPlus-Server | OK |
 | Synology Mail Server |  | OK |
-| Synology Office | SpreadSheet | OK |
-| Synology Photos |  | OK |
+| Synology Office | Spreadsheet | OK |
+| Synology Photos | SynologyPhotos | OK |
 | Syno Smis Provider |  | OK |
 | Tailscale | Tailscale | OK |
 | Text Editor |  | OK |
