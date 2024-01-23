@@ -23,9 +23,9 @@ Handy for moving packages to an SSD volume.
 
 | Package | Result |
 |---------|--------|
-| Active Backup | Testing... |
-| Active Backup GSuite | Testing... |
-| Active Backup Office365 | Testing... |
+| Active Backup | Still Testing... |
+| Active Backup GSuite | Still Testing... |
+| Active Backup Office365 | Still Testing... |
 | AntiVirus Essential | OK |
 | AntiVirus by McAfee | OK |
 | Apache 2.4 | OK |
@@ -175,7 +175,17 @@ If the script won't run check the following:
 
 ### DSM 7 screenshots
 
-<p align="center"><img src="/images/app.png"></p>
+<p align="center">Moving a package (with dependencies)</p>
+<p align="center"><img src="/images/app2.png"></p>
 
-<p align="center"><img src="/images/docker.png"></p>
+<br>
+
+<p align="center">Moving packages with shared folders</p>
+<p align="center"><img src="/images/app3.png"></p>
+<p align="center"><img src="/images/app4.png"></p>
+
+<br>
+
+<p align="center">Moving a package that has a volume location setting</p>
+<p align="center"><img src="/images/app5.png"></p>
 
