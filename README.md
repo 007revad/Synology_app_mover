@@ -7,6 +7,7 @@
 | Package | Result |
 |---------|--------|
 | Active Backup | Testing... |
+| Active Backup for Business Agent | Testing... |
 | Active Backup GSuite | Testing... |
 | Active Backup Office365 | Testing... |
 | AntiVirus Essential | OK |
