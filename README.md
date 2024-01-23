@@ -33,8 +33,8 @@ Handy for moving packages to an SSD volume.
 | Audio Station | AudioStation | OK |	
 | Bitdefender for MailPlus | BitDefenderForMailPlus |  |
 | C2 Identity LDAP Server | C2IdentityLDAPAgent | OK but I don't have a C2 account to fully test |
-| Cloud Sync | CloudSync | OK |
 | Central Management System | CMS | OK |
+| Cloud Sync | CloudSync | OK |
 | Container Manager | ContainerManager | OK |
 | Directory Server For Windows Domain | DirectoryServerForWindowsDomain | OK |
 | DNS Server | DNSServer | OK |
