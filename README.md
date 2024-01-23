@@ -46,7 +46,7 @@ Handy for moving packages to an SSD volume.
 | Glacier Backup | GlacierBackup | OK but I don't have a Glacier account to fully test |
 | Hyper Backup | HyperBackup | OK |
 | Hyper Backup Vault | HyperBackupVault | OK |
-| LDAP Server | DirectoryServer |  |
+| LDAP Server | DirectoryServer | OK |
 | LogAnalysis | LogAnalysis | OK |
 | Log Center | Log Center | OK |
 | Mail Station | MailStation | OK |
