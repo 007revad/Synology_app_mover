@@ -24,7 +24,6 @@ Handy for moving packages to an SSD volume.
 | Package | Result |
 |---------|--------|
 | Active Backup for Business | Still Testing... |
-| Active Backup for Business Agent | Testing... |
 | Active Backup for Google Workspace | Still Testing... |
 | Active Backup for Microsoft Office 365 | Still Testing... |
 | Advanced Media Extensions | is codec pack? |
