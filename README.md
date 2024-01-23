@@ -16,7 +16,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
   - Supports DSM 7. Not tested with DSM 6.
 
 
-### Packages confirmed working (or being tested)
+### Packages confirmed working
 
 <details>
   <summary>Click here to see list</summary>
