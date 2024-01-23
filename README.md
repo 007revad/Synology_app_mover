@@ -57,22 +57,22 @@ Handy for moving packages to an SSD volume.
 | MediaInfo |  | OK |
 | Migration Asssitant |  |  |
 | MinimServer |  | OK |
-| Node.js v14 |  | OK |
-| Node.js v16 |  | OK |
-| Node.js v18 |  | OK |
-| Node.js v20 |  | OK |
+| Node.js v14 | Node.js_v14 | OK |
+| Node.js v16 | Node.js_v16 | OK |
+| Node.js v18 | Node.js_v18 | OK |
+| Node.js v20 | Node.js_v20 | OK |
 | Note Station |  | OK |
 | PDF Viewer |  | OK |
-| Perl |  | OK |
+| Perl | Perl | OK |
 | PHP 7.3 |  | OK |
 | PHP 7.4 |  | OK |
 | PHP 8.0 |  | OK |
 | PHP 8.1 |  | OK |
 | PHP 8.2 |  | OK |
 | Plex Media Server |  | OK |
-| Presto File Server |  | OK |
+| Presto File Server | PrestoServer | OK |
 | Proxy Server |  | OK |
-| Python 3.9 |  | OK |
+| Python 3.9 | Python3.9 | OK |
 | Radius Server |  | OK |
 | Replication Service |  |  |
 | SMI-S Provider |  |  |
@@ -80,13 +80,13 @@ Handy for moving packages to an SSD volume.
 | SSO Server |  | OK |
 | Storage Analyzer |  | OK |
 | Surveillance Station |  | OK |
-| SynoCli Tools |  | OK |
-| Synology Application Service |  | OK |
+| SynoCli Tools | synocli-<toolname> | OK |
+| Synology Application Service | SynologyApplicationService | OK |
 | Synology Calendar | Calendar | OK |
 | Synology Chat Server | Chat | OK |
 | Synology Contacts | Contacts | OK |
 | Synology Directory Server |  | OK |
-| Synology Drive Server |  | OK |
+| Synology Drive Server | SynologyDrive | OK |
 | Synology High Availability |  |  |
 | Synology MailPlus |  | OK |
 | Synology MailPlus Server |  | OK |
@@ -94,13 +94,13 @@ Handy for moving packages to an SSD volume.
 | Synology Office (aka SpreadSheet) |  | OK |
 | Synology Photos |  | OK |
 | Syno Smis Provider |  | OK |
-| Tailscale |  | OK |
+| Tailscale | Tailscale | OK |
 | Text Editor |  | OK |
-| Universal Viewer |  | OK |
-| Video Station |  | OK |
-| Virtual Machine Manager |  | OK |
+| Universal Viewer | UniversalViewer | OK |
+| Video Station | VideoStation | OK |
+| Virtual Machine Manager | Virtualization | OK |
 | VPN Server |  | OK |
-| Web Station |  | OK |
+| Web Station | WebStation | OK |
 | WebDAV Server |  | OK |
 
 </details>
