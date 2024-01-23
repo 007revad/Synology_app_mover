@@ -21,7 +21,7 @@ Handy for moving packages to an SSD volume.
 <details>
   <summary>Click here to see list</summary>
 
-| Package Center Name | System Name | Result |
+| Package Center Name | DSM Internal Name | Result |
 |---------------------|-------------|--------|
 | Active Backup for Business | ActiveBackup | Still Testing... |
 | Active Backup for Google Workspace | ActiveBackup-GSuite | Still Testing... |
