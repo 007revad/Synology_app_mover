@@ -36,9 +36,8 @@ Handy for moving packages to an SSD volume.
 | Central Management System | CMS | OK |
 | Cloud Sync | CloudSync | OK |
 | Container Manager | ContainerManager | OK |
-| Directory Server For Windows Domain | DirectoryServerForWindowsDomain | OK |
 | DNS Server | DNSServer | OK |
-| Document Viewer | DocumentViewer |  |
+| Document Viewer | DocumentViewer | OK |
 | Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
 | exFAT Access | exFAT-Free | OK |
@@ -47,7 +46,7 @@ Handy for moving packages to an SSD volume.
 | Glacier Backup |  |  |
 | Hyper Backup | HyperBackup | OK |
 | Hyper Backup Vault | HyperBackupVault | OK |
-| LDAP Server |  |  |
+| LDAP Server | DirectoryServer |  |
 | LogAnalysis | LogAnalysis | OK |
 | Log Center | Log Center | OK |
 | Mail Station | MailStation | OK |
@@ -72,7 +71,7 @@ Handy for moving packages to an SSD volume.
 | Proxy Server | ProxyServer | OK |
 | Python 3.9 | Python3.9 | OK |
 | Radius Server | RadiusServer | OK |
-| SMI-S Provider | SynoSmisProvider |  |
+| SMI-S Provider | SynoSmisProvider | OK |
 | Snapshot Replication | SnapshotReplication | OK |
 | SSO Server | SSOServer | OK |
 | Storage Analyzer | StorageAnalyzer | OK |
@@ -82,15 +81,14 @@ Handy for moving packages to an SSD volume.
 | Synology Calendar | Calendar | OK |
 | Synology Chat Server | Chat | OK |
 | Synology Contacts | Contacts | OK |
-| Synology Directory Server | DirectoryServer | OK |
+| Synology Directory Server | DirectoryServerForWindowsDomain | OK |
 | Synology Drive Server | SynologyDrive | OK |
 | Synology High Availability |  |  |
+| Synology Mail Server | MailServer | OK |
 | Synology MailPlus | MailPlus | OK |
 | Synology MailPlus Server | MailPlus-Server | OK |
-| Synology Mail Server | MailServer | OK |
 | Synology Office | Spreadsheet | OK |
 | Synology Photos | SynologyPhotos | OK |
-| Syno Smis Provider | SynoSmisProvider | OK |
 | Tailscale | Tailscale | OK |
 | Text Editor | TextEditor | OK |
 | Universal Viewer | UniversalViewer | OK |
