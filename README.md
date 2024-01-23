@@ -32,30 +32,26 @@ Handy for moving packages to an SSD volume.
 | Apache 2.4 | OK |
 | Audio Station | OK |	
 | C2 Identity LDAP Agent | OK but I don't have a C2 account to fully test |
-| Calendar | OK |
 | Cloud Sync | OK |
 | Central Management System | OK |
 | Codec Pack | OK |
 | Container Manager | OK |
-| Directory Server | OK |
 | Directory Server For Windows Domain | OK |
 | DNS Server | OK |
 | Download Station | OK |
 | Emby Server | OK |
-| exFAT-Free | OK |
+| exFAT Access | OK |
 | git | OK |
 | Git | OK |
 | Hyper Backup | OK |
 | Hyper Backup Vault | OK |
 | LogAnalysis | OK |
 | Log Center | OK |
-| MailPlus | OK |
-| MailPlus Server | OK |
-| Mail Server | OK |
 | Mail Station | OK |
 | MariaDB 10 | OK |
 | Media Server | OK |
 | MediaInfo | OK |
+| Migration Asssitant |  |
 | MinimServer | OK |
 | Node.js v14 | OK |
 | Node.js v16 | OK |
@@ -80,9 +76,15 @@ Handy for moving packages to an SSD volume.
 | Surveillance Station | OK |
 | SynoCli Tools | OK |
 | Synology Application Service | OK |
+| Synology Calendar | OK |
 | Synology Chat Server | OK |
 | Synology Contacts | OK |
+| Synology Directory Server | OK |
 | Synology Drive Server | OK |
+| Synology High Availability |  |
+| Synology MailPlus | OK |
+| Synology MailPlus Server | OK |
+| Synology Mail Server | OK |
 | Synology Office (aka SpreadSheet) | OK |
 | Synology Photos | OK |
 | Synology Virtual Machine Manager | OK |
