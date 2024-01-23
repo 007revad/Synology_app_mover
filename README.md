@@ -23,9 +23,10 @@ Handy for moving packages to an SSD volume.
 
 | Package | Result |
 |---------|--------|
-| Active Backup | Still Testing... |
-| Active Backup GSuite | Still Testing... |
-| Active Backup Office365 | Still Testing... |
+| Active Backup for Business | Still Testing... |
+| Active Backup for Business Agent | Testing... |
+| Active Backup for Google Workspace | Still Testing... |
+| Active Backup for Microsoft Office 365 | Still Testing... |
 | AntiVirus Essential | OK |
 | AntiVirus by McAfee | OK |
 | Apache 2.4 | OK |
@@ -33,9 +34,8 @@ Handy for moving packages to an SSD volume.
 | C2 Identity LDAP Agent | OK but I don't have a C2 account to fully test |
 | Calendar | OK |
 | Cloud Sync | OK |
-| CMS | OK |
+| Central Management System | OK |
 | Codec Pack | OK |
-| Contacts | OK |
 | Container Manager | OK |
 | Directory Server | OK |
 | Directory Server For Windows Domain | OK |
@@ -81,7 +81,8 @@ Handy for moving packages to an SSD volume.
 | SynoCli Tools | OK |
 | Synology Application Service | OK |
 | Synology Chat Server | OK |
-| Synology Drive | OK |
+| Synology Contacts | OK |
+| Synology Drive Server | OK |
 | Synology Office (aka SpreadSheet) | OK |
 | Synology Photos | OK |
 | Synology Virtual Machine Manager | OK |
