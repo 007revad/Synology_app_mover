@@ -28,20 +28,20 @@ Handy for moving packages to an SSD volume.
 | Active Backup for Microsoft Office 365 | ActiveBackup-Office365 | Still Testing... |
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus Essential | AntiVirus | OK |
-| AntiVirus by McAfee |  | OK |
-| Apache 2.4 |  | OK |
+| AntiVirus by McAfee | AntiVirus-McAfee | OK |
+| Apache 2.4 | Apache2.4 | OK |
 | Audio Station | AudioStation | OK |	
-| Bitdefender for MailPlus |  |  |
+| Bitdefender for MailPlus | BitDefenderForMailPlus |  |
 | C2 Identity LDAP Server | C2IdentityLDAPAgent | OK but I don't have a C2 account to fully test |
 | Cloud Sync | CloudSync | OK |
 | Central Management System | CMS | OK |
 | Container Manager | ContainerManager | OK |
 | Directory Server For Windows Domain | DirectoryServerForWindowsDomain | OK |
 | DNS Server | DNSServer | OK |
-| DHCP Server |  |  |
-| Document Viewer |  |  |
+| DHCP Server | DhcpServer |  |
+| Document Viewer | DocumentViewer |  |
 | Download Station | DownloadStation | OK |
-| Emby Server | Emby | OK |
+| Emby Server | EmbyServer | OK |
 | exFAT Access | exFAT-Free | OK |
 | git | git | OK |
 | Git | Git | OK |
@@ -50,19 +50,18 @@ Handy for moving packages to an SSD volume.
 | Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server |  |  |
 | LogAnalysis | LogAnalysis | OK |
-| Log Center |  | OK |
-| Mail Station |  | OK |
-| MariaDB 10 |  | OK |
-| Media Server |  | OK |
-| MediaInfo |  | OK |
-| Migration Asssitant |  |  |
-| MinimServer |  | OK |
+| Log Center | Log Center | OK |
+| Mail Station | MailStation | OK |
+| MariaDB 10 | MariaDB10 | OK |
+| Media Server | MediaServer | OK |
+| MediaInfo | mediainfo | OK |
+| MinimServer | MinimServer | OK |
 | Node.js v14 | Node.js_v14 | OK |
 | Node.js v16 | Node.js_v16 | OK |
 | Node.js v18 | Node.js_v18 | OK |
 | Node.js v20 | Node.js_v20 | OK |
 | Note Station | NoteStation | OK |
-| PDF Viewer |  | OK |
+| PDF Viewer | PDFViewer | OK |
 | Perl | Perl | OK |
 | PHP 7.3 | PHP7.3 | OK |
 | PHP 7.4 | PHP7.4 | OK |
@@ -71,12 +70,12 @@ Handy for moving packages to an SSD volume.
 | PHP 8.2 | PHP8.2 | OK |
 | Plex Media Server | PlexMediaServer | OK |
 | Presto File Server | PrestoServer | OK |
-| Proxy Server |  | OK |
+| Proxy Server | ProxyServer | OK |
 | Python 3.9 | Python3.9 | OK |
-| Radius Server |  | OK |
+| Radius Server | RadiusServer | OK |
 | SMI-S Provider |  |  |
 | Snapshot Replication | SnapshotReplication | OK |
-| SSO Server |  | OK |
+| SSO Server | SSOServer | OK |
 | Storage Analyzer | StorageAnalyzer | OK |
 | Surveillance Station | SurveillanceStation | OK |
 | SynoCli Tools | synocli-"toolname" | OK |
@@ -84,23 +83,23 @@ Handy for moving packages to an SSD volume.
 | Synology Calendar | Calendar | OK |
 | Synology Chat Server | Chat | OK |
 | Synology Contacts | Contacts | OK |
-| Synology Directory Server |  | OK |
+| Synology Directory Server | DirectoryServer | OK |
 | Synology Drive Server | SynologyDrive | OK |
 | Synology High Availability |  |  |
 | Synology MailPlus | MailPlus | OK |
 | Synology MailPlus Server | MailPlus-Server | OK |
-| Synology Mail Server |  | OK |
+| Synology Mail Server | MailServer | OK |
 | Synology Office | Spreadsheet | OK |
 | Synology Photos | SynologyPhotos | OK |
-| Syno Smis Provider |  | OK |
+| Syno Smis Provider | SynoSmisProvider | OK |
 | Tailscale | Tailscale | OK |
-| Text Editor |  | OK |
+| Text Editor | TextEditor | OK |
 | Universal Viewer | UniversalViewer | OK |
 | Video Station | VideoStation | OK |
 | Virtual Machine Manager | Virtualization | OK |
-| VPN Server |  | OK |
+| VPN Server | VPNCenter | OK |
 | Web Station | WebStation | OK |
-| WebDAV Server |  | OK |
+| WebDAV Server | WebDAVServer | OK |
 
 </details>
 
