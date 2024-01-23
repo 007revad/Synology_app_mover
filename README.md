@@ -83,7 +83,6 @@ Handy for moving packages to an SSD volume.
 | Synology Contacts | Contacts | OK |
 | Synology Directory Server | DirectoryServerForWindowsDomain | OK |
 | Synology Drive Server | SynologyDrive | OK |
-| Synology High Availability |  |  |
 | Synology Mail Server | MailServer | OK |
 | Synology MailPlus | MailPlus | OK |
 | Synology MailPlus Server | MailPlus-Server | OK |
