@@ -21,89 +21,88 @@ Handy for moving packages to an SSD volume.
 <details>
   <summary>Click here to see list</summary>
 
-| Package | Result |
-|---------|--------|
-| Active Backup for Business | Still Testing... |
-| Active Backup for Google Workspace | Still Testing... |
-| Active Backup for Microsoft Office 365 | Still Testing... |
-| Advanced Media Extensions (aka Codecpack) | OK |
-| AntiVirus Essential | OK |
-| AntiVirus by McAfee | OK |
-| Apache 2.4 | OK |
-| Audio Station | OK |	
-| Bitdefender for MailPlus |  |
-| C2 Identity LDAP Agent | OK but I don't have a C2 account to fully test |
-| C2 Identity LDAP Server | is C2 Identity LDAP Agent?t |
-| Cloud Sync | OK |
-| Central Management System | OK |
-| Container Manager | OK |
-| Directory Server For Windows Domain | OK |
-| DNS Server | OK |
-| DHCP Server |  |
-| Document Viewer |  |
-| Download Station | OK |
-| Emby Server | OK |
-| exFAT Access | OK |
-| git | OK |
-| Git | OK |
-| Glacier Backup |  |
-| Hybrid Share |  |
-| Hyper Backup | OK |
-| Hyper Backup Vault | OK |
-| LDAP Server |  |
-| LogAnalysis | OK |
-| Log Center | OK |
-| Mail Station | OK |
-| MariaDB 10 | OK |
-| Media Server | OK |
-| MediaInfo | OK |
-| Migration Asssitant |  |
-| MinimServer | OK |
-| Node.js v14 | OK |
-| Node.js v16 | OK |
-| Node.js v18 | OK |
-| Node.js v20 | OK |
-| Note Station | OK |
-| PDF Viewer | OK |
-| Perl | OK |
-| PHP 7.3 | OK |
-| PHP 7.4 | OK |
-| PHP 8.0 | OK |
-| PHP 8.1 | OK |
-| PHP 8.2 | OK |
-| Plex Media Server | OK |
-| Presto File Server | OK |
-| Proxy Server | OK |
-| Python 3.9 | OK |
-| Radius Server | OK |
-| Replication Service |  |
-| SMI-S Provider |  |
-| Snapshot Replication | OK |
-| SSO Server | OK |
-| Storage Analyzer | OK |
-| Surveillance Station | OK |
-| SynoCli Tools | OK |
-| Synology Application Service | OK |
-| Synology Calendar | OK |
-| Synology Chat Server | OK |
-| Synology Contacts | OK |
-| Synology Directory Server | OK |
-| Synology Drive Server | OK |
-| Synology High Availability |  |
-| Synology MailPlus | OK |
-| Synology MailPlus Server | OK |
-| Synology Mail Server | OK |
-| Synology Office (aka SpreadSheet) | OK |
-| Synology Photos | OK |
-| Syno Smis Provider | OK |
-| Tailscale | OK |
-| Text Editor | OK |
-| Universal Viewer | OK |
-| Video Station | OK |
-| Virtual Machine Manager | OK |
-| VPN Server | OK |
-| Web Station | OK |
-| WebDAV Server | OK |
+| Package Center Name | System Name | Result |
+|---------------------|-------------|--------|
+| Active Backup for Business |  | Still Testing... |
+| Active Backup for Google Workspace |  | Still Testing... |
+| Active Backup for Microsoft Office 365 |  | Still Testing... |
+| Advanced Media Extensions | CodecPack | OK |
+| AntiVirus Essential |  | OK |
+| AntiVirus by McAfee |  | OK |
+| Apache 2.4 |  | OK |
+| Audio Station |  | OK |	
+| Bitdefender for MailPlus |  |  |
+| C2 Identity LDAP Server | C2IdentityLDAPAgent | OK but I don't have a C2 account to fully test |
+| Cloud Sync |  | OK |
+| Central Management System |  | OK |
+| Container Manager |  | OK |
+| Directory Server For Windows Domain |  | OK |
+| DNS Server |  | OK |
+| DHCP Server |  |  |
+| Document Viewer |  |  |
+| Download Station |  | OK |
+| Emby Server |  | OK |
+| exFAT Access |  | OK |
+| git |  | OK |
+| Git |  | OK |
+| Glacier Backup |  |  |
+| Hybrid Share |  |  |
+| Hyper Backup |  | OK |
+| Hyper Backup Vault |  | OK |
+| LDAP Server |  |  |
+| LogAnalysis |  | OK |
+| Log Center |  | OK |
+| Mail Station |  | OK |
+| MariaDB 10 |  | OK |
+| Media Server |  | OK |
+| MediaInfo |  | OK |
+| Migration Asssitant |  |  |
+| MinimServer |  | OK |
+| Node.js v14 |  | OK |
+| Node.js v16 |  | OK |
+| Node.js v18 |  | OK |
+| Node.js v20 |  | OK |
+| Note Station |  | OK |
+| PDF Viewer |  | OK |
+| Perl |  | OK |
+| PHP 7.3 |  | OK |
+| PHP 7.4 |  | OK |
+| PHP 8.0 |  | OK |
+| PHP 8.1 |  | OK |
+| PHP 8.2 |  | OK |
+| Plex Media Server |  | OK |
+| Presto File Server |  | OK |
+| Proxy Server |  | OK |
+| Python 3.9 |  | OK |
+| Radius Server |  | OK |
+| Replication Service |  |  |
+| SMI-S Provider |  |  |
+| Snapshot Replication |  | OK |
+| SSO Server |  | OK |
+| Storage Analyzer |  | OK |
+| Surveillance Station |  | OK |
+| SynoCli Tools |  | OK |
+| Synology Application Service |  | OK |
+| Synology Calendar |  | OK |
+| Synology Chat Server |  | OK |
+| Synology Contacts |  | OK |
+| Synology Directory Server |  | OK |
+| Synology Drive Server |  | OK |
+| Synology High Availability |  |  |
+| Synology MailPlus |  | OK |
+| Synology MailPlus Server |  | OK |
+| Synology Mail Server |  | OK |
+| Synology Office (aka SpreadSheet) |  | OK |
+| Synology Photos |  | OK |
+| Syno Smis Provider |  | OK |
+| Tailscale |  | OK |
+| Text Editor |  | OK |
+| Universal Viewer |  | OK |
+| Video Station |  | OK |
+| Virtual Machine Manager |  | OK |
+| VPN Server |  | OK |
+| Web Station |  | OK |
+| WebDAV Server |  | OK |
 
 </details>
 
