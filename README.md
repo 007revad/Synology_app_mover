@@ -33,18 +33,24 @@ Handy for moving packages to an SSD volume.
 | AntiVirus by McAfee | OK |
 | Apache 2.4 | OK |
 | Audio Station | OK |	
+| Bitdefender for MailPlus |  |
 | C2 Identity LDAP Agent | OK but I don't have a C2 account to fully test |
+| C2 Identity LDAP Server | is C2 Identity LDAP Agent?t |
 | Cloud Sync | OK |
 | Central Management System | OK |
 | Codec Pack | OK  is Advanced Media Extensions ? |
 | Container Manager | OK |
 | Directory Server For Windows Domain | OK |
 | DNS Server | OK |
+| DHCP Server |  |
+| Document Viewer |  |
 | Download Station | OK |
 | Emby Server | OK |
 | exFAT Access | OK |
 | git | OK |
 | Git | OK |
+| Glacier Backup |  |
+| Hybrid Share |  |
 | Hyper Backup | OK |
 | Hyper Backup Vault | OK |
 | LDAP Server |  |
@@ -73,6 +79,8 @@ Handy for moving packages to an SSD volume.
 | Proxy Server | OK |
 | Python 3.9 | OK |
 | Radius Server | OK |
+| Replication Service |  |
+| SMI-S Provider |  |
 | Snapshot Replication | OK |
 | SSO Server | OK |
 | Storage Analyzer | OK |
@@ -90,15 +98,15 @@ Handy for moving packages to an SSD volume.
 | Synology Mail Server | OK |
 | Synology Office (aka SpreadSheet) | OK |
 | Synology Photos | OK |
-| Synology Virtual Machine Manager | OK |
 | Syno Smis Provider | OK |
 | Tailscale | OK |
 | Text Editor | OK |
 | Universal Viewer | OK |
 | Video Station | OK |
-| VPN Center | OK |
-| WebDAV Server | OK |
+| Virtual Machine Manager | OK |
+| VPN Server | OK |
 | Web Station | OK |
+| WebDAV Server | OK |
 
 </details>
 
