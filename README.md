@@ -38,7 +38,6 @@ Handy for moving packages to an SSD volume.
 | Container Manager | ContainerManager | OK |
 | Directory Server For Windows Domain | DirectoryServerForWindowsDomain | OK |
 | DNS Server | DNSServer | OK |
-| DHCP Server | DhcpServer |  |
 | Document Viewer | DocumentViewer |  |
 | Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
@@ -73,7 +72,7 @@ Handy for moving packages to an SSD volume.
 | Proxy Server | ProxyServer | OK |
 | Python 3.9 | Python3.9 | OK |
 | Radius Server | RadiusServer | OK |
-| SMI-S Provider |  |  |
+| SMI-S Provider | SynoSmisProvider |  |
 | Snapshot Replication | SnapshotReplication | OK |
 | SSO Server | SSOServer | OK |
 | Storage Analyzer | StorageAnalyzer | OK |
