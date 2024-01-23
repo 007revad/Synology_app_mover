@@ -22,7 +22,7 @@ See <a href=images/how_to_download_generic.png/>How to download the script</a> f
 ### To run the script
 
 ```YAML
-sudo -i /volume1/scripts/syno_app_mover.sh
+sudo -s /volume1/scripts/syno_app_mover.sh
 ```
 
 **Note:** Replace /volume1/scripts/ with the path to where the script is located.
@@ -33,7 +33,7 @@ If the script won't run check the following:
 
 1. If the path to the script contains any spaces you need to enclose the path/scriptname in double quotes:
    ```YAML
-   sudo -i "/volume1/my scripts/syno_app_mover.sh"
+   sudo -s "/volume1/my scripts/syno_app_mover.sh"
    ```
 2. Make sure you unpacked the zip or rar file that you downloaded and are trying to run the syno_app_mover.sh file.
 3. Set the script file as executable:
