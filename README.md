@@ -24,15 +24,15 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Package Center Name | DSM Name shown in script | Result |
 |---------------------|-------------|--------|
 | Active Backup for Business | ActiveBackup | OK |
-| Active Backup for Google Workspace | ActiveBackup-GSuite | Still Testing... |
-| Active Backup for Microsoft 365 | ActiveBackup-Office365 | Still Testing... |
+| Active Backup for Google Workspace | ActiveBackup-GSuite | OK |
+| Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | AntiVirus Essential | AntiVirus | OK |
 | Apache 2.4 | Apache2.4 | OK |
 | Audio Station | AudioStation | OK |	
 | Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
-| C2 Identity LDAP Server | C2IdentityLDAPAgent | OK but I don't have a C2 account to fully test |
+| C2 Identity LDAP Server | C2IdentityLDAPAgent | OK - need a C2 account to fully test |
 | Central Management System | CMS | OK |
 | Cloud Sync | CloudSync | OK |
 | Container Manager | ContainerManager | OK |
@@ -43,7 +43,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | exFAT Access | exFAT-Free | OK |
 | git | git | OK |
 | Git | Git | OK |
-| Glacier Backup | GlacierBackup | OK but I don't have a Glacier account to fully test |
+| Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
 | Hyper Backup | HyperBackup | OK |
 | Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server | DirectoryServer | OK |
