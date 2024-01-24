@@ -1,5 +1,5 @@
 v2.0.6
-- Confirmed working for 74 packages.
+- Confirmed working for 73 packages.
 - Updated to work correctly with the following packages that have extra folders or symlinks:
   - Active Backup for Business, Active Backup for Google Workspace, Active Backup for Microsoft 365, 
     Synology Chat Server, Container Manager, Glacier Backup, MailPlus Server, Mail Server, Node.js, 
