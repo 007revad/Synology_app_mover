@@ -13,7 +13,8 @@ v2.0.6
   - Then later starts the dependant packages that the script stopped.
 - Now asks if you want to start the package (in case you want to move it's shared folder first).
 - Now instructs how to move packages' shared folder(s) for the following packages:
-  - Audio Station, Chat, Cloud Sync, MinimServer, Plex Media Server, Surveillance Station and Video Station.
+  - Active Backup for Business, Audio Station, Synology Chat Server, Cloud Sync, Synology MailPlus Server, 
+    MinimServer, Plex Media Server, Surveillance Station and Video Station.
 - Now instructs how to change the packages' database location for the following packages:
   - Cloud Sync, Download Station, Note Station, Synology Drive and Virtual Machine Manager.
 - Now if package is ContainerManager or Docker:
