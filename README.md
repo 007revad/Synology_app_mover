@@ -192,3 +192,7 @@ If the script won't run check the following:
 <p align="center">Moving a package that has a volume location setting</p>
 <p align="center"><img src="/images/app5.png"></p>
 
+<br>
+
+<p align="center">Moving Active Backup for Bussiness</p>
+<p align="center"><img src="/images/app6.png"></p>
