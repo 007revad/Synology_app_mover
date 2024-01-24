@@ -25,7 +25,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 |---------------------|-------------|--------|
 | Active Backup for Business | ActiveBackup | OK |
 | Active Backup for Google Workspace | ActiveBackup-GSuite | Still Testing... |
-| Active Backup for Microsoft Office 365 | ActiveBackup-Office365 | Still Testing... |
+| Active Backup for Microsoft 365 | ActiveBackup-Office365 | Still Testing... |
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | AntiVirus Essential | AntiVirus | OK |
