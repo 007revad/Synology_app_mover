@@ -637,10 +637,15 @@ move_extras(){
             ;;
         HyperBackup)
 
-            # None of this is actually used right now.
+            # This section is not needed for moving HyperBackup.
+            # I left it here in case I can use it for some other package in future.
+
             # Moving "@img_bkp_cache" and editing synobackup.conf
             # to point the repos to the new location causes backup tasks
             # to show as offline with no way to fix them or delete them!
+            #
+            # Thankfully HyperBackup recreates the data in @img_bkp_cache
+            # when the backup task is run, or a resync is done.
 
             file=/var/packages/HyperBackup/etc/synobackup.conf
             # [repo_1]
