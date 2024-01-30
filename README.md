@@ -13,6 +13,8 @@ You just select the package and the destination volume and the script will stop 
 
 Handy for moving packages to an SSD volume, or to another volume so you can delete the original volume.
 
+**NEW** Now includes Backup and Restore modes.
+
   - Supports DSM 7. Not tested with DSM 6.
 
 
@@ -151,6 +153,12 @@ These need MarioDB and they either fail to install or don't run properly!?!?
 2. Save the download zip file to a folder on the Synology.
 3. Unzip the zip file.
 
+### Set backup location
+
+If you want to use use the backup and restore options you need edit the included syno_app_mover.conf file to set the location to backup to.
+
+The syno_app_mover.conf file must be in the same fodler as the syno_app_mover.sh file.
+
 ### To run the script
 
 [How to enable SSH and login to DSM via SSH](https://kb.synology.com/en-global/DSM/tutorial/How_to_login_to_DSM_with_root_permission_via_SSH_Telnet)
@@ -196,3 +204,8 @@ If the script won't run check the following:
 
 <p align="center">Moving Active Backup for Bussiness</p>
 <p align="center"><img src="/images/app6.png"></p>
+
+<br>
+
+<p align="center">Backing up Audio Station</p>
+<p align="center"><img src="/images/backup.png"></p>
