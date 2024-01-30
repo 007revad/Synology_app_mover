@@ -199,12 +199,31 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
                                     "$script-$shorttag sh file(s) to:\n $scriptpath/${scriptfile}"
                             fi
 
+                            # Copy script's conf file to script location if missing
+                            if [[ ! -f "$scriptpath/${scriptname}.conf" ]]; then
+                                # Set persmission on config file
+                                if ! chmod 664 "/tmp/$script-$shorttag/${scriptname}.conf"; then
+                                    permerr=1
+                                    echo -e "${Error}ERROR${Off} Failed to set read/write permissions on:"
+                                    echo "$scriptpath/${scriptname}.conf"
+                                fi
+
+                                # Copy conf file to script location
+                                if ! cp -p "/tmp/$script-$shorttag/${scriptname}.conf"\
+                                    "${scriptpath}/${scriptname}.conf";
+                                then
+                                    copyerr=1
+                                    echo -e "${Error}ERROR${Off} Failed to copy"\
+                                        "$script-$shorttag conf file to:\n $scriptpath/${scriptname}.conf"
+                                fi
+                            fi
+
                             # Copy new CHANGES.txt file to script location (if script on a volume)
                             if [[ $scriptpath =~ /volume* ]]; then
                                 # Set permsissions on CHANGES.txt
                                 if ! chmod 664 "/tmp/$script-$shorttag/CHANGES.txt"; then
                                     permerr=1
-                                    echo -e "${Error}ERROR${Off} Failed to set permissions on:"
+                                    echo -e "${Error}ERROR${Off} Failed to set read/write permissions on:"
                                     echo "$scriptpath/CHANGES.txt"
                                 fi
 
