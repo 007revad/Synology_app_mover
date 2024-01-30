@@ -13,7 +13,7 @@ You just select the package and the destination volume and the script will stop 
 
 Handy for moving packages to an SSD volume, or to another volume so you can delete the original volume.
 
-**NEW** Now includes Backup and Restore modes.
+**NEW** Now includes [Backup and Restore modes](/images/backup.png).
 
   - Supports DSM 7. Not tested with DSM 6.
 
@@ -155,7 +155,7 @@ These need MarioDB and they either fail to install or don't run properly!?!?
 
 ### Set backup location
 
-If you want to use use the backup and restore options you need edit the included **syno_app_mover.conf** file to set the location to backup to.
+If you want to use use the [backup and restore options](/images/backup.png) you need edit the included **syno_app_mover.conf** file to set the location to backup to.
 
 The **syno_app_mover.conf** file must be in the same foller as the **syno_app_mover.sh file**.
 
