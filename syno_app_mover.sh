@@ -25,9 +25,10 @@
 # DONE Confirm folder was created when creating folder
 # DONE Copy files/folders with same permissions when using cp command
 # DONE Change package selection to avoid invalid key presses
+# DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.8"
+scriptver="v3.0.9"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -210,11 +211,12 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
 
                                 # Copy conf file to script location
                                 if ! cp -p "/tmp/$script-$shorttag/${scriptname}.conf"\
-                                    "${scriptpath}/${scriptname}.conf";
-                                then
+                                    "${scriptpath}/${scriptname}.conf"; then
                                     copyerr=1
                                     echo -e "${Error}ERROR${Off} Failed to copy"\
                                         "$script-$shorttag conf file to:\n $scriptpath/${scriptname}.conf"
+                                else
+                                    conftxt=", ${scriptname}.conf"
                                 fi
                             fi
 
@@ -229,8 +231,7 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
 
                                 # Copy new CHANGES.txt file to script location
                                 if ! cp -p "/tmp/$script-$shorttag/CHANGES.txt"\
-                                    "${scriptpath}/${scriptname}_CHANGES.txt";
-                                then
+                                    "${scriptpath}/${scriptname}_CHANGES.txt"; then
                                     echo -e "${Error}ERROR${Off} Failed to copy"\
                                         "$script-$shorttag/CHANGES.txt to:\n $scriptpath"
                                 else
@@ -243,11 +244,11 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
 
                             # Notify of success (if there were no errors)
                             if [[ $copyerr != 1 ]] && [[ $permerr != 1 ]]; then
-                                echo -e "\n$tag ${scriptfile}$changestxt downloaded to: ${scriptpath}\n"
+                                echo -e "\n$tag ${scriptfile}$conftxt$changestxt downloaded to: ${scriptpath}\n"
 
                                 # Reload script
                                 printf -- '-%.0s' {1..79}; echo  # print 79 -
-                                exec "$0" "${args[@]}"
+                                exec "${scriptpath}/$scriptfile" "${args[@]}"
                             fi
                         fi
                     else
