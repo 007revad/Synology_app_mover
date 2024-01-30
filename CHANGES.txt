@@ -6,7 +6,7 @@ v3.0.9 Beta
 - Now only starts package if the script stopped it.
 - Now checks package status after uninstalling or installing.
 - Now confirms that folder was created when creating a folder.
-- Now copies files/folders with same permissions when copying @docker to @docker_backup.
+- Now copies files/folders with same permissions when copying `@docker` to `@docker_backup`.
 - Changed package selection to avoid invalid key presses.
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
