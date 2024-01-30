@@ -1,6 +1,6 @@
 v3.0.8 Beta
 - Added backup and restore modes.
-  - Edit included syno_app_mover.conf file to set the backup location.
+  - Includes syno_app_mover.conf file to set the backup location.
 - Changed so that cursor does not cover first letter when progress bar is showing.
 - Now only starts package if the script stopped it.
 - Now checks package status after uninstalling or installing.
