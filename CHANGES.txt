@@ -1,4 +1,4 @@
-v3.0.8 Beta
+v3.0.9 Beta
 - Added backup and restore modes.
   - Includes syno_app_mover.conf file to set the backup location.
 - Changed so that cursor does not cover first letter when progress bar is showing.
@@ -8,6 +8,7 @@ v3.0.8 Beta
 - Now confirms that folder was created when creating a folder.
 - Now copies files/folders with same permissions when copying @docker to @docker_backup.
 - Changed package selection to avoid invalid key presses.
+- Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 v2.0.6
 - Confirmed working for 73 packages.
