@@ -155,9 +155,9 @@ These need MarioDB and they either fail to install or don't run properly!?!?
 
 ### Set backup location
 
-If you want to use use the backup and restore options you need edit the included syno_app_mover.conf file to set the location to backup to.
+If you want to use use the backup and restore options you need edit the included **syno_app_mover.conf** file to set the location to backup to.
 
-The syno_app_mover.conf file must be in the same fodler as the syno_app_mover.sh file.
+The **syno_app_mover.conf** file must be in the same foller as the **syno_app_mover.sh file**.
 
 ### To run the script
 
