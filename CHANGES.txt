@@ -1,3 +1,13 @@
+v3.0.8 Beta
+- Added backup and restore modes.
+  - Edit included syno_app_mover.conf file to set the backup location.
+- Changed so that cursor does not cover first letter when progress bar is showing.
+- Now only starts package if the script stopped it.
+- Now checks package status after uninstalling or installing.
+- Now confirms that folder was created when creating a folder.
+- Now copies files/folders with same permissions when copying @docker to backup.
+- Changed package selection to avoid invalid key presses.
+
 v2.0.6
 - Confirmed working for 73 packages.
 - Updated to work correctly with the following packages that have extra folders or symlinks:
