@@ -37,7 +37,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.11"
+scriptver="v3.0.12"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -595,7 +595,7 @@ move_pkg_do(){
             #progbar $pid "$string"
             #wait "$pid"
             #progstatus "$?" "$string"
-            move_dir "${appdir:?}"
+            move_dir "$appdir"
 #        fi
     fi
 }
@@ -766,7 +766,7 @@ copy_dir(){
         #if [[ -d "${bkpath}/$1" ]]; then
             # If string is too long progbar gets messed up
             #cp -prf "${bkpath}/$1" "${targetvol}" &
-            cp -prf "${bkpath:?}${extras}/${1:?}" "${targetvol:?}}" &
+            cp -prf "${bkpath:?}${extras}/${1:?}" "${targetvol:?}" &
             pid=$!
             string="${action} ${Cyan}$1${Off} to $targetvol"
             progbar $pid "$string"
@@ -811,7 +811,7 @@ move_dir(){
             fi
 #        fi
     else
-        copy_dir "${1:?}" "$2"
+        copy_dir "$1" "$2"
     fi
 }
 
@@ -852,12 +852,21 @@ move_extras(){
         ContainerManager|Docker)
             move_dir "@docker" extras
             if [[ ${mode,,} != "backup" ]]; then
-                # /var/packages/ContainerManager/var/docker/ --> /volume1/@docker
-                # /var/packages/Docker/var/docker/ --> /volume1/@docker
-                if [[ -L "/var/packages/${pkg:?}/var/docker" ]]; then
-                    rm "/var/packages/${pkg:?}/var/docker"
+                dsm="$(get_key_value /etc.defaults/VERSION majorversion)"
+                if [[ $dsm -gt 6 ]]; then
+                    # /var/packages/ContainerManager/var/docker/ --> /volume1/@docker
+                    # /var/packages/Docker/var/docker/ --> /volume1/@docker
+                    if [[ -L "/var/packages/${pkg:?}/var/docker" ]]; then
+                        rm "/var/packages/${pkg:?}/var/docker"
+                    fi
+                    ln -s "${2:?}/@docker" "/var/packages/${pkg:?}/var/docker"
+                else
+                    # /var/packages/Docker/target/docker/ --> /volume1/@docker
+                    if [[ -L "/var/packages/${pkg:?}/target/docker" ]]; then
+                        rm "/var/packages/${pkg:?}/target/docker"
+                    fi
+                    ln -s "${2:?}/@docker" "/var/packages/${pkg:?}/target/docker"
                 fi
-                ln -s "${2:?}/@docker" "/var/packages/${pkg:?}/var/docker"
             fi
             echo ""
             ;;
@@ -922,7 +931,7 @@ move_extras(){
             echo ""
             ;;
         synocli*)
-            #move_dir "@${1:?}"
+            #move_dir "@$1"
             #echo ""
             ;;
         SynologyApplicationService)
@@ -1310,27 +1319,27 @@ if [[ $pkg =~ ActiveBackup* ]]; then
     backup_dir "@${pkg:?}" "${sourcevol:?}"
 
     # Uninstall and reinstall package
-    package_uninstall "${pkg:?}"
+    package_uninstall "$pkg"
     sleep 2
 
     # Check if package uninstalled
-    synopkg status "${pkg:?}" >/dev/null
+    synopkg status "${pkg}" >/dev/null
     if [[ $? == "255" ]]; then
         echo -e "${Cyan}${pkg}${Off} is didn't uninstall!"
         exit
     fi
 
-    package_install "${pkg:?}" "${targetvol:?}"
+    package_install "$pkg" "$targetvol"
     #wait_status "$pkg" start
 
     # Check if package installed
-    if ! synopkg status "${pkg:?}" >/dev/null; then
+    if ! synopkg status "${pkg}" >/dev/null; then
         echo -e "${Cyan}${pkg}${Off} is didn't install!"
         exit
     fi
 
     # Stop package
-    package_stop "${pkg:?}"
+    package_stop "$pkg"
     skip_start=""
 
     # Delete @ActiveBackup on target volume
@@ -1374,10 +1383,10 @@ elif [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
     # Check if @docker is on same volume as Docker package
     if [[ -d "/${sourcevol}/@docker" ]]; then
         # Get size of @docker folder
-        folder_size "/${sourcevol:?}/@docker"
+        folder_size "/${sourcevol}/@docker"
 
         # Get amount of free space on target volume
-        vol_free_space "${targetvol:?}"
+        vol_free_space "${targetvol}"
 
         # Check we have enough space
         if [[ ! $free -gt $needed ]]; then
@@ -1386,17 +1395,17 @@ elif [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
             echo -e "Free: $((free /1048576)) GB  Needed: $((need /1048576)) GB\n"
             exit
         else
-            move_pkg "${pkg:?}" "${targetvol:?}"
+            move_pkg "$pkg" "$targetvol"
         fi
     fi
 else
     # Move package and edit symlinks
-    move_pkg "$pkg" "${targetvol:?}"
+    move_pkg "$pkg" "$targetvol"
 fi
 echo ""
 
 # Move package's other folders
-move_extras "$pkg" "${targetvol:?}"
+move_extras "$pkg" "$targetvol"
 
 
 #------------------------------------------------------------------------------
@@ -1405,7 +1414,7 @@ move_extras "$pkg" "${targetvol:?}"
 suggest_move_share(){ 
     # show_move_share <package-name> <share-name>
     if [[ ${mode,,} == "move" ]]; then
-        case "${pkg:?}" in
+        case "$pkg" in
             ActiveBackup)
                 show_move_share "Active Backup for Business" ActiveBackupforBusiness
                 ;;
@@ -1474,11 +1483,11 @@ if [[ $skip_start != "yes" ]]; then
     fi
     if [[ ${answer,,} == "y" ]]; then
         # Start package
-        package_start "${pkg:?}"
+        package_start "$pkg"
         echo ""
 
         # Check package started
-        if ! package_status "${pkg:?}"; then
+        if ! package_status "$pkg"; then
             ding
             echo -e "${Error}ERROR${Off} Failed to start ${pkg}!"
             exit 1
