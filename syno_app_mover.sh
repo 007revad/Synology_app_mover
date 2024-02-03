@@ -15,7 +15,16 @@
 # "failed to uninstall a package who has dependers installed"
 #
 # TODO
-# Add support to backup/restore ContainerManager/Docker and ActiveBackup
+# Add support to backup/restore ActiveBackup
+#
+# Check all PS3 sections use case statement to verify choice.
+#
+# Add volume space check for all extras folders.
+#  Should check the volume space BEFORE moving or backing up package.
+#
+#
+# DONE Add support to backup/restore ContainerManager/Docker
+# DONE Added check that installed package version matches backup version
 #
 # DONE Add backup and restore modes
 # DONE Only start package if we stopped it
@@ -28,7 +37,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.9"
+scriptver="v3.0.10"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -93,6 +102,7 @@ productversion=$(get_key_value /etc.defaults/VERSION productversion)
 buildphase=$(get_key_value /etc.defaults/VERSION buildphase)
 buildnumber=$(get_key_value /etc.defaults/VERSION buildnumber)
 smallfixnumber=$(get_key_value /etc.defaults/VERSION smallfixnumber)
+majorversion=$(get_key_value /etc.defaults/VERSION majorversion)
 
 # Show DSM full version and model
 if [[ $buildphase == GM ]]; then buildphase=""; fi
@@ -293,24 +303,35 @@ debug(){
 progbar(){ 
     # $1 is pid of process
     # $2 is string to echo
-    local PROC
-    local delay
+    string="$2"
     local dots
     local progress
-    PROC="$1"
-    delay="0.3"
     dots=""
-    while [[ -d /proc/$PROC ]]; do
+    while [[ -d /proc/$1 ]]; do
         dots="${dots}."
         progress="$dots"
         if [[ ${#dots} -gt "10" ]]; then
             dots=""
             progress="           "
         fi
-        echo -ne "  ${2}$progress\r"; sleep "$delay"
+        echo -ne "  ${2}$progress\r"; sleep 0.3
     done
-    echo -e "$2            "
-    return 0
+}
+
+progstatus(){ 
+    # $1 is return status of process
+    # $2 is string to echo
+    if [[ $1 == "0" ]]; then
+        echo -e "$2            "
+    else
+        ding
+        echo -e "${Error}ERROR${Off} $2 failed!"
+        if [[ $exitonerror != "no" ]]; then
+            exit 1
+        fi
+    fi
+    exitonerror=""
+    #echo "return: $1"  # debug
 }
 
 package_status(){ 
@@ -362,7 +383,11 @@ package_stop(){
     # $1 is package name
     local num
     synopkg stop "$1" >/dev/null &
-    progbar $! "Stopping ${Cyan}${1}${Off}"
+    pid=$!
+    string="Stopping ${Cyan}${1}${Off}"
+    progbar $pid "$string"
+    wait "$pid"
+    progstatus "$?" "$string"
 
     # Allow package processes to finish stopping
     wait_status "$1" stop
@@ -372,7 +397,13 @@ package_stop(){
 package_start(){ 
     # $1 is package name
     synopkg start "$1" >/dev/null &
-    progbar $! "Starting ${Cyan}${1}${Off}"
+    pid=$!
+    string="Starting ${Cyan}${1}${Off}"
+    progbar $pid "$string"
+    wait "$pid"
+    progstatus "$?" "$string"
+
+    # Allow package processes to finish starting
     wait_status "$1" start
 }
 
@@ -420,14 +451,22 @@ dependant_pkgs_start(){
 package_uninstall(){ 
     # $1 is package name
     synopkg uninstall "$1" >/dev/null &
-    progbar $! "Uninstalling ${Cyan}${1}${Off}"
+    pid=$!
+    string="Uninstalling ${Cyan}${1}${Off}"
+    progbar $pid "$string"
+    wait "$pid"
+    progstatus "$?" "$string"
 }
 
 package_install(){ 
     # $1 is package name
     # $2 is /volume2 etc
     synopkg install_from_server "$1" "$2" >/dev/null &
-    progbar $! "Installing ${Cyan}${1}${Off} on ${Cyan}$2${Off}"
+    pid=$!
+    string="Installing ${Cyan}${1}${Off} on ${Cyan}$2${Off}"
+    progbar $pid "$string"
+    wait "$pid"
+    progstatus "$?" "$string"
 }
 
 is_empty(){ 
@@ -450,8 +489,8 @@ backup_dir(){
         # Make backup folder on $2
         if [[ ! -d "${2}/${1}_backup" ]]; then
             # Set same permissions as original folder
-            perms=$(stat -c %a "${2}/${1}")
-            if ! mkdir -m "$perms" "${2}/${1}_backup"; then
+            perms=$(stat -c %a "${2:?}/${1:?}")
+            if ! mkdir -m "$perms" "${2:?}/${1:?}_backup"; then
                 ding
                 echo -e "${Error}ERROR${Off} Failed to create directory!"
                 exit 1
@@ -459,7 +498,7 @@ backup_dir(){
         fi
 
         # Backup $1
-        if ! is_empty "${2}/${1}_backup"; then
+        if ! is_empty "${2:?}/${1:?}_backup"; then
             # @docker_backup folder exists and is not empty
             echo -e "There is already a backup of $1"
             echo -e "Do you want to overwrite it? [y/n]"
@@ -470,10 +509,13 @@ backup_dir(){
             fi
         fi
 
-        cp -prf "${2}/${1}/." "${2}/${1}_backup" &
+        cp -prf "${2:?}/${1:?}/." "${2:?}/${1:?}_backup" &
+        pid=$!
         # If string is too long progbar repeats string for each dot
-        #progbar $! "Backing up ${2}/$1 to ${Cyan}${2}/${1}_backup${Off}"
-        progbar $! "Backing up $1 to ${Cyan}${1}_backup${Off}"
+        string="Backing up $1 to ${Cyan}${1}_backup${Off}"
+        progbar $pid "$string"
+        wait "$pid"
+        progstatus "$?" "$string"
         echo ""
     fi
 }
@@ -494,8 +536,8 @@ create_dir(){
     # Create target folder with source folder's permissions
     if [[ ! -d "$2" ]]; then
         # Set same permissions as original folder
-        perms=$(stat -c %a "$1")
-        if ! mkdir -m "$perms" "$2"; then
+        perms=$(stat -c %a "${1:?}")
+        if ! mkdir -m "$perms" "${2:?}"; then
             ding
             echo -e "${Error}ERROR${Off} Failed to create directory!"
             exit 1
@@ -505,20 +547,55 @@ create_dir(){
 
 move_pkg_do(){ 
     # $1 is package name
-    # $2 is destination volume
+    # $2 is destination volume or path
 
-    # Move package
+    # Move package's @app directories
     if [[ ${mode,,} == "move" ]]; then
-        mv "$source" "${2}/$appdir" &
-        progbar $! "${action} $source to ${Cyan}$2${Off}"
+        #mv -f "${source:?}" "${2:?}/${appdir:?}" &
+        #pid=$!
+        #string="${action} $source to ${Cyan}$2${Off}"
+        #progbar $pid "$string"
+        #wait "$pid"
+        #progstatus "$?" "$string"
+
+        if [[ ! -d "${2:?}/${appdir:?}" ]]; then
+            mv -f "${source:?}" "${2:?}/${appdir:?}" &
+            pid=$!
+            string="${action} $source to ${Cyan}$2${Off}"
+            progbar $pid "$string"
+            wait "$pid"
+            progstatus "$?" "$string"
+        #elif ! is_empty "${source:?}"; then
+        else
+            # Copy source contents if target folder exists
+            cp -prf "${source:?}" "${2:?}/${appdir:?}" &
+            pid=$!
+            string="Copying $source to ${Cyan}$2${Off}"
+            progbar $pid "$string"
+            wait "$pid"
+            progstatus "$?" "$string"
+
+            #rm -rf "${source:?}/" &
+            rm -rf "${source:?}" &
+            pid=$!
+            exitonerror="no"
+            string="Removing $source"
+            progbar $pid "$string"
+            wait "$pid"
+            progstatus "$?" "$string"
+        fi
     else
-#        if ! is_empty "${destination}/${appdir}/${1}"; then
+#        if ! is_empty "${destination:?}/${appdir:?}/${1:?}"; then
 #            echo "Skipping ${action,,} ${appdir}/$1 as target is not empty:"
 #            echo "  ${destination}/${appdir}/$1"
 #        else
-            #mv "$source" "${2}/$appdir" &
-            #progbar $! "${action} $source to ${Cyan}$2${Off}"
-            move_dir "$appdir"
+            #mv -f "${source:?}" "${2:?}/${appdir:?}" &
+            #pid=$!
+            #string="${action} $source to ${Cyan}$2${Off}"
+            #progbar $pid "$string"
+            #wait "$pid"
+            #progstatus "$?" "$string"
+            move_dir "${appdir:?}"
 #        fi
     fi
 }
@@ -530,35 +607,35 @@ edit_symlinks(){
     # Edit /var/packages symlinks
     case "$appdir" in
         @appconf)  # etc --> @appconf
-            rm "/var/packages/${1}/etc"
-            ln -s "${2}/@appconf/$1" "/var/packages/${1}/etc"
+            rm "/var/packages/${1:?}/etc"
+            ln -s "${2:?}/@{appconf:?}/${1:?}" "/var/packages/${1:?}/etc"
 
             # /usr/syno/etc/packages/$1
             # /volume1/@appconf/$1
-            if [[ -L "/usr/syno/etc/packages/$1" ]]; then
-                rm "/usr/syno/etc/packages/$1"
-                ln -s "${2}/@appconf/$1" "/usr/syno/etc/packages/$1"
+            if [[ -L "/usr/syno/etc/packages/${1:?}" ]]; then
+                rm "/usr/syno/etc/packages/${1:?}"
+                ln -s "${2:?}/@appconf/${1:?}" "/usr/syno/etc/packages/${1:?}"
             fi
             ;;
         @apphome)  # home --> @apphome
-            rm "/var/packages/${1}/home"
-            ln -s "${2}/@apphome/$1" "/var/packages/${1}/home"
+            rm "/var/packages/${1:?}/home"
+            ln -s "${2:?}/@apphome/${1:?}" "/var/packages/${1:?}/home"
             ;;
         @appshare)  # share --> @appshare
-            rm "/var/packages/${1}/share"
-            ln -s "${2}/@appshare/$1" "/var/packages/${1}/share"
+            rm "/var/packages/${1:?}/share"
+            ln -s "${2:?}/@appshare/${1:?}" "/var/packages/${1:?}/share"
             ;;
         @appstore)  # target --> @appstore
-            rm "/var/packages/${1}/target"
-            ln -s "${2}/@appstore/$1" "/var/packages/${1}/target"
+            rm "/var/packages/${1:?}/target"
+            ln -s "${2:?}/@appstore/${1:?}" "/var/packages/${1:?}/target"
             ;;
         @apptemp)  # tmp --> @apptemp
-            rm "/var/packages/${1}/tmp"
-            ln -s "${2}/@apptemp/$1" "/var/packages/${1}/tmp"
+            rm "/var/packages/${1:?}/tmp"
+            ln -s "${2:?}/@apptemp/${1:?}" "/var/packages/${1:?}/tmp"
             ;;
         @appdata)  # var --> @appdata
-            rm "/var/packages/${1}/var"
-            ln -s "${2}/@appdata/$1" "/var/packages/${1}/var"
+            rm "/var/packages/${1:?}/var"
+            ln -s "${2:?}/@appdata/${1:?}" "/var/packages/${1:?}/var"
             ;;
         *)
             echo -e "${Red}Oops!${Off} appdir: ${appdir}\n"
@@ -584,13 +661,17 @@ move_pkg(){
         #cdir /var/packages
     fi    
 
-    applist=( "@appconf" "@appdata" "@apphome" "@appshare" "@appstore" "@apptemp" )
+    if [[ $majorversion -gt 6 ]]; then
+        applist=( "@appconf" "@appdata" "@apphome" "@appshare" "@appstore" "@apptemp" )
+    else
+        applist=( "@appstore" )
+    fi
     if [[ ${mode,,} == "restore" ]]; then
         cdir "$bkpath"
         sourcevol=$(echo "$bkpath" | cut -d "/" -f2)  # var is used later in script
         while IFS=  read -r appdir; do
             if [[ "${applist[*]}" =~ "$appdir" ]]; then
-                create_dir "/$sourcevol/$appdir" "$destination/$appdir"
+                create_dir "/${sourcevol:?}/${appdir:?}" "${destination:?}/${appdir:?}"
                 move_pkg_do "$1" "$destination"
             fi
         done < <(find . -name "@app*" -exec basename \{} \;)
@@ -599,7 +680,7 @@ move_pkg(){
         while read -r link source; do
             appdir=$(echo "$source" | cut -d "/" -f3)
             sourcevol=$(echo "$source" | cut -d "/" -f2)  # var is used later in script
-            create_dir "/$sourcevol/$appdir" "$destination/$appdir"
+            create_dir "/${sourcevol:?}/${appdir:?}" "${destination:?}/${appdir:?}"
             move_pkg_do "$1" "$2"
             if [[ ${mode,,} == "move" ]]; then
                 edit_symlinks "$pkg" "$destination"
@@ -608,8 +689,6 @@ move_pkg(){
     fi
 }
 
-# move_docker(){ was here
-
 folder_size(){ 
     # $1 is folder to check size of
     need=""    # var is used later in script
@@ -617,7 +696,7 @@ folder_size(){
     if [[ -d "$1" ]]; then
         # Get size of $1 folder
         need=$(du -s "$1" | awk '{ print $1 }')
-        # Add 50GB
+        # Add 50GB so we don't fill volume
         needed=$((need +50000000))
     fi
 }
@@ -655,32 +734,44 @@ copy_dir(){
         #pack=""
         extras="/extras"
     else
-        pack="/$pkg"
+        pack="/${pkg:?}"
         #extras=""
     fi
 
     if [[ ${mode,,} == "backup" ]]; then
-        if  [[ $2 == "extras" ]] && [[ ! -d "${bkpath}/extras" ]]; then
-            mkdir -m 700 "${bkpath}/extras"
+        if  [[ $2 == "extras" ]] && [[ ! -d "${bkpath:?}/extras" ]]; then
+            mkdir -m 700 "${bkpath:?}/extras"
         fi
-        create_dir "/$sourcevol/$1$pack" "${bkpath}${extras}/$1"
-        #if ! is_empty "/${sourcevol}/${1}$pack"; then
+        create_dir "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}/${1:?}"
+        #if ! is_empty "/${sourcevol:?}/${1:?}$pack"; then
             if  [[ $2 == "extras" ]]; then
                 # If string is too long progbar gets messed up
-                cp -prf "/${sourcevol}/$1$pack" "${bkpath}${extras}" &
-                progbar $! "${action} /${sourcevol}/${1}/${Cyan}$pkg${Off}"
+                cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
+                pid=$!
+                string="${action} /${sourcevol}/${1}/${Cyan}$pkg${Off}"
+                progbar $pid "$string"
+                wait "$pid"
+                progstatus "$?" "$string"
             else
                 # If string is too long progbar gets messed up
-                cp -prf "/${sourcevol}/$1$pack" "${bkpath}${extras}/$1" &
-                progbar $! "${action} /${sourcevol}/${1}/${Cyan}$pkg${Off}"
+                cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}/${1:?}" &
+                pid=$!
+                string="${action} /${sourcevol}/${1}/${Cyan}$pkg${Off}"
+                progbar $pid "$string"
+                wait "$pid"
+                progstatus "$?" "$string"
             fi
         #fi
     elif [[ ${mode,,} == "restore" ]]; then
         #if [[ -d "${bkpath}/$1" ]]; then
             # If string is too long progbar gets messed up
             #cp -prf "${bkpath}/$1" "${targetvol}" &
-            cp -prf "${bkpath}${extras}/$1" "${targetvol}" &
-            progbar $! "${action} ${Cyan}$1${Off} to $targetvol"
+            cp -prf "${bkpath:?}${extras}/${1:?}" "${targetvol:?}}" &
+            pid=$!
+            string="${action} ${Cyan}$1${Off} to $targetvol"
+            progbar $pid "$string"
+            wait "$pid"
+            progstatus "$?" "$string"
         #fi
     fi
 }
@@ -689,12 +780,38 @@ move_dir(){
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
     if [[ ${mode,,} == "move" ]]; then
-        if [[ -d "/${sourcevol}/$1" ]]; then
-            mv "/${sourcevol}/$1" "${targetvol}/$1" &
-            progbar $! "${action} /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
-        fi
+        if [[ ! -d "/${targetvol:?}/${1:?}" ]]; then
+            mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+            pid=$!
+            string="${action} /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
+            progbar $pid "$string"
+            wait "$pid"
+            progstatus "$?" "$string"
+        elif ! is_empty "/${sourcevol:?}/${1:?}"; then
+
+            # Copy source contents if target folder exists
+            cp -prf "/${sourcevol:?}/${1:?}" "${targetvol:?}" &
+            pid=$!
+            string="Copying /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
+            progbar $pid "$string"
+            wait "$pid"
+            progstatus "$?" "$string"
+
+            # Delete source folder if empty
+#            if [[ $1 != "@docker" ]]; then
+                if is_empty "/${sourcevol:?}/${1:?}"; then
+                    rm -rf "/${sourcevol:?}/${1:?}" &
+                    pid=$!
+                    exitonerror="no"
+                    string="Removing /${sourcevol}/$1"
+                    progbar $pid "$string"
+                    wait "$pid"
+                    progstatus "$?" "$string"
+                fi
+            fi
+#        fi
     else
-        copy_dir "$1" "$2"
+        copy_dir "${1:?}" "${2:?}"
     fi
 }
 
@@ -705,35 +822,42 @@ move_extras(){
     local value
     # Change /volume1 to /volume2 etc
     case "$1" in
+        ActiveBackup)
+            move_dir "@ActiveBackup" extras
+            echo ""
+            ;;
+        ActiveBackup-GSuite)
+            move_dir "@ActiveBackup-GSuite" extras
+            echo ""
+            ;;
+        ActiveBackup-Office365)
+            move_dir "@ActiveBackup-Office365" extras
+            echo ""
+            ;;
         Chat)
             if [[ ${mode,,} == "move" ]]; then
                 echo -e "Are you going to move the ${Cyan}chat${Off} shared folder to ${Cyan}${targetvol}${Off}? [y/n]"
                 read -r answer
                 echo ""
                 if [[ ${answer,,} == y ]]; then
-                    chat_move="yes"
                     # /var/packages/Chat/shares/chat --> /volume1/chat
-                    rm "/var/packages/${1}/shares/chat"
-                    ln -s "${2}/chat" "/var/packages/${1}/shares/chat"
+                    rm "/var/packages/${1:?}/shares/chat"
+                    ln -s "${2:?}/chat" "/var/packages/${1:?}shares/chat"
                     # /var/packages/Chat/target/synochat --> /volume1/chat/@ChatWorking
-                    rm "/var/packages/${1}/target/synochat"
-                    ln -s "${2}/chat/@ChatWorking" "/var/packages/${1}/target/synochat"
+                    rm "/var/packages/${1:?}/target/synochat"
+                    ln -s "${2:?}/chat/@ChatWorking" "/var/packages/${1:?}target/synochat"
                 fi
             fi
             ;;
         ContainerManager|Docker)
             move_dir "@docker" extras
-            if [[ ${mode,,} == "move" ]]; then
+            if [[ ${mode,,} != "backup" ]]; then
                 # /var/packages/ContainerManager/var/docker/ --> /volume1/@docker
                 # /var/packages/Docker/var/docker/ --> /volume1/@docker
-                rm "/var/packages/${pkg}/var/docker"
-                ln -s "${2}/@docker" "/var/packages/${pkg}/var/docker"
-
-                # Fix symlink if DSM 7
-                if [[ -L "${2}/@docker/@docker" ]]; then
-                    rm "${2}/@docker/@docker"
-                    ln -s "${2}/@docker" "${2}/@docker"
+                if [[ -L "/var/packages/${pkg:?}/var/docker" ]]; then
+                    rm "/var/packages/${pkg:?}/var/docker"
                 fi
+                ln -s "${2:?}/@docker" "/var/packages/${pkg:?}/var/docker"
             fi
             echo ""
             ;;
@@ -762,12 +886,12 @@ move_extras(){
             if [[ ${mode,,} == "move" ]]; then
                 if readlink /usr/local/bin/node | grep "$1" >/dev/null; then
                     rm /usr/local/bin/node
-                    ln -s "$2/@appstore/$1/usr/local/bin/node" /usr/local/bin/node
+                    ln -s "${2:?}/@appstore/${1:?}/usr/local/bin/node" /usr/local/bin/node
                 fi
                 for n in /usr/local/node/nvm/versions/* ; do
-                    if readlink "$n/bin/node" | grep "$1" >/dev/null; then
-                        rm "$n/bin/node"
-                        ln -s "$2/@appstore/$1/usr/local/bin/node" "$n/bin/node"
+                    if readlink "${n:?}/bin/node" | grep "${1:?}" >/dev/null; then
+                        rm "${n:?}/bin/node"
+                        ln -s "${2:?}/@appstore/${1:?}/usr/local/bin/node" "${n:?}/bin/node"
                     fi
                 done
             fi
@@ -777,7 +901,7 @@ move_extras(){
             if [[ ${mode,,} == "move" ]]; then
                 file=/var/packages/PrestoServer/etc/db-path.conf
                 if [[ -f "$file" ]]; then
-                    echo "db-vol=$2" > "$file"
+                    echo "db-vol=${2:?}" > "$file"
                 fi
             fi
             echo ""
@@ -788,27 +912,25 @@ move_extras(){
             if [[ ${mode,,} == "move" ]]; then
                 file=/var/packages/SurveillanceStation/etc/settings.conf
                 if [[ -f "$file" ]]; then
-                    synosetkeyvalue "$file" active_volume "$2"
+                    synosetkeyvalue "$file" active_volume "${2:?}"
                     file=/var/packages/SurveillanceStation/target/@surveillance
                     rm "$file"
-                    ln -s "$2/@surveillance" /var/packages/SurveillanceStation/target
+                    ln -s "${2:?}/@surveillance" /var/packages/SurveillanceStation/target
                     chown -h SurveillanceStation:SurveillanceStation "$file"
                 fi
             fi
             echo ""
             ;;
         synocli*)
-            #move_dir "@$1"
+            #move_dir "@${1:?}"
             #echo ""
-            #move_dir "@foobar" extras  # test #################################
-            #echo ""                    # test #################################
             ;;
         SynologyApplicationService)
             move_dir "@SynologyApplicationService" extras
             if [[ ${mode,,} == "move" ]]; then
                 file=/var/packages/SynologyApplicationService/etc/settings.conf
                 if [[ -f "$file" ]]; then
-                    synosetkeyvalue "$file" volume "$2/@SynologyApplicationService"
+                    synosetkeyvalue "$file" volume "${2:?}/@SynologyApplicationService"
                 fi
             fi
             echo ""
@@ -819,7 +941,7 @@ move_extras(){
             if [[ ${mode,,} == "move" ]]; then
                 file=/var/packages/SynologyDrive/etc/sharesync/daemon.conf
                 if [[ -f "$file" ]]; then
-                    sed -i 's|'/"$sourcevol"'|'"$2"'|g' "$file"
+                    sed -i 's|'/"$sourcevol"'|'"${2:?}"'|g' "$file"
                     chmod 644 "$file"
                 fi
 
@@ -827,14 +949,13 @@ move_extras(){
                 if [[ -f "$file" ]]; then
                     value="$(synogetkeyvalue "$file" system_db_path)"
                     if [[ -n $value ]]; then
-                        #synosetkeyvalue "$file" system_db_path "${value/${sourcevol}/"$2"}"
-                        synosetkeyvalue "$file" system_db_path "${value/${sourcevol}/$(basename "$2")}"
+                        synosetkeyvalue "$file" system_db_path "${value/${sourcevol}/$(basename "${2:?}")}"
                     fi
                 fi
 
                 file=/var/packages/SynologyDrive/etc/sharesync/service.conf
                 if [[ -f "$file" ]]; then
-                    synosetkeyvalue "$file" volume "$2"
+                    synosetkeyvalue "$file" volume "${2:?}"
                 fi
             fi
             echo ""
@@ -914,7 +1035,7 @@ if [[ ${mode,,} != "move" ]]; then
         exit 1
     elif [[ ! -d "$backuppath" ]]; then
         ding
-        echo -e "${Error}ERROR${Off} $backuppath not found!"
+        echo -e "${Error}ERROR${Off} Backup folder ${Cyan}$backuppath${Off} not found!"
         exit 1
     fi
 fi
@@ -953,7 +1074,6 @@ if [[ ${mode,,} != "restore" ]]; then
             info="${package_infos_sorted[i-1]}"
             before_pipe="${info%%|*}"
             after_pipe="${info#*|}"
-            #printf "%-3s %-9s %s\n" "$i)" "$before_pipe" "$after_pipe"
             package_infos_show+=("$before_pipe  $after_pipe")
         done
 
@@ -977,7 +1097,7 @@ if [[ ${mode,,} != "restore" ]]; then
 
     echo -e "You selected ${Cyan}${pkg}${Off} in ${Cyan}${package_volume}${Off}\n"
     target=$(readlink "/var/packages/${pkg}/target")
-    linktargetvol="/$(printf %s "$target" | cut -d'/' -f2 )"
+    linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
 
 elif [[ ${mode,,} == "restore" ]]; then
     # Select package to backup
@@ -1070,18 +1190,18 @@ if [[ ${mode,,} == "move" ]]; then
         exit 1
     fi
 elif [[ ${mode,,} == "backup" ]]; then
-    targetvol="/$(echo "$backuppath" | cut -d"/" -f2)"
+    targetvol="/$(echo "${backuppath:?}" | cut -d"/" -f2)"
     echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
 elif [[ ${mode,,} == "restore" ]]; then
-    targetvol="/$(readlink "/var/packages/${pkg}/target" | cut -d"/" -f2)"
+    targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
     echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
 fi
 
 # Check user is ready
 if [[ ${mode,,} == "backup" ]]; then
-    echo -e "Ready to ${Yellow}${mode,,}${Off} ${Cyan}${pkg}${Off} to ${Cyan}${backuppath}${Off}? [y/n]"
+    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg}${Off} to ${Cyan}${backuppath}${Off}? [y/n]"
 else
-    echo -e "Ready to ${Yellow}${mode,,}${Off} ${Cyan}${pkg}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
+    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
 fi
 read -r answer
 echo ""
@@ -1096,16 +1216,48 @@ fi
 
 
 #------------------------------------------------------------------------------
+# Check installed package version and backup version
+
+# Get package version
+if [[ ${mode,,} != "move" ]]; then
+    pkgversion=$(synogetkeyvalue "/var/packages/$pkg/INFO" version)
+fi
+
+# Get backup package version
+if [[ ${mode,,} == "restore" ]]; then
+    pkgbackupversion=$(synogetkeyvalue "$bkpath/VERSION" version)
+    if [[ $pkgversion ]] && [[ $pkgbackupversion ]]; then
+        if [[ $pkgversion != "$pkgbackupversion" ]]; then
+            ding
+            echo -e "${Yellow}Backup and installed package versions don't match!${Off}"
+            echo "  Backed up version: $pkgbackupversion"
+            echo "  Installed version: $pkgversion"
+            echo "Do you want to continue restoring the package? [y/n]"
+            read -r reply
+            if [[ ${reply,,} != "y" ]]; then
+                exit
+            else
+                echo ""
+            fi
+        fi
+    fi
+fi
+
+
+#------------------------------------------------------------------------------
 # Create package folder if mode is backup
 
 if [[ ${mode,,} == "backup" ]]; then
     if [[ ! -d "$bkpath" ]]; then
-        if ! mkdir -p "$bkpath"; then
+        if ! mkdir -p "${bkpath:?}"; then
             ding
             echo -e "${Error}ERROR${Off} Failed to create directory!"
             exit 1
         fi
     fi
+
+    # Create package version file
+    synosetkeyvalue "$bkpath/VERSION" version "$pkgversion"
 fi
 
 
@@ -1135,24 +1287,18 @@ if package_status "$pkg"; then
             exit 1
         fi
     fi
+
+    if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
+        # Stop containerd-shim
+        killall containerd-shim >/dev/null
+    fi
 else
     skip_start="yes"
 fi
 
 
-
-if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]] ||\
-    [[ $pkg =~ ActiveBackup* ]]; then
-    if [[ ${mode,,} != "move" ]]; then
-        echo "${Yellow}WARN${Off} $mode not yet supported for %pkg"
-        exit
-    fi
-fi
-
-
-
 target=$(readlink "/var/packages/${pkg}/target")
-sourcevol="/$(printf %s "$target" | cut -d'/' -f2 )"
+sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
 
 # Move package
 if [[ $pkg =~ ActiveBackup* ]]; then 
@@ -1161,159 +1307,157 @@ if [[ $pkg =~ ActiveBackup* ]]; then
     # Backup @ActiveBackup folder
     # $1 is folder to backup (@ActiveBackup etc) 
     # $2 is volume (/volume1 etc)
-    backup_dir "@${pkg}" "$sourcevol"
+    backup_dir "@${pkg:?}" "${sourcevol:?}"
 
     # Uninstall and reinstall package
-    package_uninstall "$pkg"
+    package_uninstall "${pkg:?}"
     sleep 2
 
     # Check if package uninstalled
-    synopkg status "${pkg}" >/dev/null
+    synopkg status "${pkg:?}" >/dev/null
     if [[ $? == "255" ]]; then
         echo -e "${Cyan}${pkg}${Off} is didn't uninstall!"
         exit
     fi
 
-    package_install "$pkg" "$targetvol"
+    package_install "${pkg:?}" "${targetvol:?}"
     #wait_status "$pkg" start
 
     # Check if package installed
-    if ! synopkg status "${pkg}" >/dev/null; then
+    if ! synopkg status "${pkg:?}" >/dev/null; then
         echo -e "${Cyan}${pkg}${Off} is didn't install!"
         exit
     fi
 
     # Stop package
-    package_stop "$pkg"
+    package_stop "${pkg:?}"
     skip_start=""
 
     # Delete @ActiveBackup on target volume
-    if [[ -d "${targetvol}/@${pkg}" ]]; then
-        #rm -r "${targetvol}/@${pkg}" &
-        #progbar $! "Deleting new ${Cyan}$pkg${Off} settings and database"
+    if [[ -d "${targetvol:?}/@${pkg:?}" ]]; then
+        #rm -r "${targetvol:?}/@${pkg:?}" &
+        #pid=$!
+        #string="Deleting new ${Cyan}$pkg${Off} settings and database"
+        #progbar $pid "$string"
+        #wait "$pid"
+        #progstatus "$?" "$string"
         rm -r "${targetvol}/@${pkg}"
     fi
 
     # Copy source @ActiveBackup_backup to target @ActiveBackup
-    cp -prf "${sourcevol}/@${pkg}_backup" "${targetvol}/@${pkg}" &
-    progbar $! "Copying ${Cyan}$pkg${Off} settings and database to ${Cyan}$targetvol${Off}"
+    cp -prf "${sourcevol:?}/@${pkg:?}_backup" "${targetvol:?}/@${pkg:?}" &
+    pid=$!
+    string="Copying ${Cyan}$pkg${Off} settings and database to ${Cyan}$targetvol${Off}"
+    progbar $pid "$string"
+    wait "$pid"
+    progstatus "$?" "$string"
 
 elif [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
     # Move @docker if package is ContainerManager or Docker
 
     # Backup @docker
     if [[ ${mode,,} != "backup" ]]; then
-        echo -e "Do you want to backup ${pkg}? [y/n]"
+        if [[ ${mode,,} == "move" ]]; then
+            dockerbakvol="$sourcevol"
+        elif [[ ${mode,,} == "restore" ]]; then
+            dockerbakvol="$targetvol"
+        fi
+        echo -e "Do you want to ${Yellow}backup${Off} the"\
+            "${Cyan}@docker${Off} folder on $dockerbakvol? [y/n]"
         read -r answer
         echo ""
         if [[ ${answer,,} == "y" ]]; then
-            # $1 is folder to backup (@docker etc) 
-            # $2 is package volume (volume1 etc)
-            backup_dir "@docker" "${1}"
+            backup_dir "@docker" "$dockerbakvol"
         fi
     fi
 
     # Check if @docker is on same volume as Docker package
     if [[ -d "/${sourcevol}/@docker" ]]; then
         # Get size of @docker folder
-        folder_size "/${sourcevol}/@docker"
+        folder_size "/${sourcevol:?}/@docker"
 
         # Get amount of free space on target volume
-        vol_free_space "${targetvol}"
+        vol_free_space "${targetvol:?}"
 
         # Check we have enough space
         if [[ ! $free -gt $needed ]]; then
             echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,} "\
                 "/${sourcevol}/${Cyan}@docker${Off} to $targetvol"
             echo -e "Free: $((free /1048576)) GB  Needed: $((need /1048576)) GB\n"
+            exit
         else
-            if [[ ${mode,,} == "move" ]]; then
-                move_pkg "$pkg" "$targetvol"
-
-                # Show how to move docker share
-                show_move_share "$pkg" docker
-            elif [[ ${mode,,} == "backup" ]]; then
-                move_pkg "$pkg" "$targetvol"
-            elif [[ ${mode,,} == "restore" ]]; then
-                move_pkg "$pkg" "$targetvol"
-            fi
+            move_pkg "${pkg:?}" "${targetvol:?}"
         fi
     fi
 else
     # Move package and edit symlinks
-    move_pkg "$pkg" "$targetvol"
+    move_pkg "$pkg" "${targetvol:?}"
 fi
 echo ""
 
 # Move package's other folders
-move_extras "$pkg" "$targetvol"
+move_extras "$pkg" "${targetvol:?}"
 
 
 #------------------------------------------------------------------------------
-# Show how to move related shared folder
+# Show how to move related shared folder(s)
 
-suggest_change_location(){ 
+suggest_move_share(){ 
     # show_move_share <package-name> <share-name>
-    case "$pkg" in
-        ActiveBackup)
-            # show_move_share "Active Backup for Business" ActiveBackupforBusiness
-            ;;
-        ActiveBackup-GSuite)
-            # Need to check the shared folder name is correct
-            # show_move_share "Active Backup for Google Workspace" ActiveBackup-GSuite
-            ;;
-        ActiveBackup-Office365)
-            # Need to check the shared folder name is correct
-            # show_move_share "Active Backup for Microsoft 365" ActiveBackup-Office365
-            ;;
-        AudioStation)
-            share_link=$(readlink /var/packages/AudioStation/shares/music)
-            if [[ $share_link == "/${sourcevol}/music" ]]; then
-                show_move_share "Audio Station" music
-            fi
-            ;;
-        Chat)
-            if [[ $chat_move == "yes" ]]; then
-                echo "  1. Go to 'Control Panel > Shared Folders'."
-                echo "  2. Select the chat shared folder and click Edit."
-                echo "  3. Change Location to /volume2 and click Save."
-                echo -e "  4. After step 3 has finished start Chat from Package Center.\n"
-                exit
-            fi
-            ;;
-        CloudSync)
-            show_move_share "Cloud Sync" CloudSync
-            ;;
-        MailPlus-Server)
-            show_move_share "MailPlus-Server" MailPlus
-            ;;
-        MinimServer)
-            show_move_share "MinimServer" MinimServer
-            ;;
-        Plex*Media*Server)
-            dsm="$(get_key_value /etc.defaults/VERSION majorversion)"
-            if [[ $dsm -lt 7 ]]; then
-                show_move_share "Plex Media Server" Plex
-            else
-                show_move_share "Plex Media Server" PlexMediaServer
-            fi
-            ;;
-        SurveillanceStation)
-            show_move_share "Surveillance Station" surveillance
-            ;;
-        VideoStation)
-            share_link=$(readlink /var/packages/VideoStation/shares/video)
-            if [[ $share_link == "/${sourcevol}/video" ]]; then
-                show_move_share "Video Station" video
-            fi
-            ;;
-        *)  
-            ;;
-     esac
+    if [[ ${mode,,} == "move" ]]; then
+        case "${pkg:?}" in
+            ActiveBackup)
+                show_move_share "Active Backup for Business" ActiveBackupforBusiness
+                ;;
+            AudioStation)
+                share_link=$(readlink /var/packages/AudioStation/shares/music)
+                if [[ $share_link == "/${sourcevol}/music" ]]; then
+                    show_move_share "Audio Station" music
+                fi
+                ;;
+            Chat)
+                show_move_share "Chat Server" chat
+                ;;
+            CloudSync)
+                show_move_share "Cloud Sync" CloudSync
+                ;;
+            ContainerManager)
+                show_move_share "Container Manager" docker
+                ;;
+            Docker)
+                show_move_share "Docker" docker
+                ;;
+            MailPlus-Server)
+                show_move_share "MailPlus Server" MailPlus
+                ;;
+            MinimServer)
+                show_move_share "Minim Server" MinimServer
+                ;;
+            Plex*Media*Server)
+                dsm="$(get_key_value /etc.defaults/VERSION majorversion)"
+                if [[ $dsm -lt 7 ]]; then
+                    show_move_share "Plex Media Server" Plex
+                else
+                    show_move_share "Plex Media Server" PlexMediaServer
+                fi
+                ;;
+            SurveillanceStation)
+                show_move_share "Surveillance Station" surveillance
+                ;;
+            VideoStation)
+                share_link=$(readlink /var/packages/VideoStation/shares/video)
+                if [[ $share_link == "/${sourcevol}/video" ]]; then
+                    show_move_share "Video Station" video
+                fi
+                ;;
+            *)  
+                ;;
+        esac
+    fi
 }
 
 if [[ ${mode,,} == "move" ]]; then
-    suggest_change_location
+    suggest_move_share
 fi
 
 
@@ -1330,11 +1474,11 @@ if [[ $skip_start != "yes" ]]; then
     fi
     if [[ ${answer,,} == "y" ]]; then
         # Start package
-        package_start "$pkg"
+        package_start "${pkg:?}"
         echo ""
 
         # Check package started
-        if ! package_status "$pkg"; then
+        if ! package_status "${pkg:?}"; then
             ding
             echo -e "${Error}ERROR${Off} Failed to start ${pkg}!"
             exit 1
@@ -1349,9 +1493,9 @@ echo -e "Finished ${action,,} $pkg\n"
 
 
 #------------------------------------------------------------------------------
-# Suggest moving shared folder(s)
+# Suggest change location of shared folder(s)
 
-suggest_move_share(){ 
+suggest_change_location(){ 
     # Suggest moving CloudSync database if package is CloudSync
     if [[ $pkg == CloudSync ]]; then
         # Show how to move CloudSync database
@@ -1422,7 +1566,7 @@ suggest_move_share(){
 }
 
 if [[ ${mode,,} == "move" ]]; then
-    suggest_move_share
+    suggest_change_location
 fi
 
 exit
