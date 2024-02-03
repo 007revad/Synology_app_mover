@@ -811,7 +811,7 @@ move_dir(){
             fi
 #        fi
     else
-        copy_dir "${1:?}" "${2:?}"
+        copy_dir "${1:?}" "$2"
     fi
 }
 
