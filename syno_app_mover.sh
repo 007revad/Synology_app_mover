@@ -37,7 +37,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.12"
+scriptver="v3.0.13"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -575,8 +575,8 @@ move_pkg_do(){
             wait "$pid"
             progstatus "$?" "$string"
 
-            #rm -rf "${source:?}/" &
-            rm -rf "${source:?}" &
+            #rm -rf "${source:?}" &
+            rm -r --preserve-root "${source:?}" &
             pid=$!
             exitonerror="no"
             string="Removing $source"
@@ -800,7 +800,7 @@ move_dir(){
             # Delete source folder if empty
 #            if [[ $1 != "@docker" ]]; then
                 if is_empty "/${sourcevol:?}/${1:?}"; then
-                    rm -rf "/${sourcevol:?}/${1:?}" &
+                    rm -rf --preserve-root "/${sourcevol:?}/${1:?}" &
                     pid=$!
                     exitonerror="no"
                     string="Removing /${sourcevol}/$1"
@@ -1344,13 +1344,13 @@ if [[ $pkg =~ ActiveBackup* ]]; then
 
     # Delete @ActiveBackup on target volume
     if [[ -d "${targetvol:?}/@${pkg:?}" ]]; then
-        #rm -r "${targetvol:?}/@${pkg:?}" &
+        #rm -r --preserve-root "${targetvol:?}/@${pkg:?}" &
         #pid=$!
         #string="Deleting new ${Cyan}$pkg${Off} settings and database"
         #progbar $pid "$string"
         #wait "$pid"
         #progstatus "$?" "$string"
-        rm -r "${targetvol}/@${pkg}"
+        rm -r --preserve-root "${targetvol}/@${pkg}"
     fi
 
     # Copy source @ActiveBackup_backup to target @ActiveBackup
