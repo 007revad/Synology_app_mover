@@ -37,7 +37,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.13"
+scriptver="v3.0.14"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -608,7 +608,7 @@ edit_symlinks(){
     case "$appdir" in
         @appconf)  # etc --> @appconf
             rm "/var/packages/${1:?}/etc"
-            ln -s "${2:?}/@{appconf:?}/${1:?}" "/var/packages/${1:?}/etc"
+            ln -s "${2:?}/@appconf/${1:?}" "/var/packages/${1:?}/etc"
 
             # /usr/syno/etc/packages/$1
             # /volume1/@appconf/$1
