@@ -37,7 +37,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | C2 Identity LDAP Server | C2IdentityLDAPAgent | OK - need a C2 account to fully test |
 | Central Management System | CMS | OK |
 | Cloud Sync | CloudSync | OK |
-| Container Manager | ContainerManager | OK |
+| Container Manager | ContainerManager | OK - Move, Backup and Restore |
 | DNS Server | DNSServer | OK |
 | Document Viewer | DocumentViewer | OK |
 | Download Station | DownloadStation | OK |
@@ -89,7 +89,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Synology MailPlus | MailPlus | OK |
 | Synology MailPlus Server | MailPlus-Server | Still Testing... |
 | Synology Office | Spreadsheet | OK |
-| Synology Photos | SynologyPhotos | OK |
+| Synology Photos | SynologyPhotos | OK - Move, Backup and Restore |
 | Tailscale | Tailscale | OK |
 | Text Editor | TextEditor | OK |
 | Universal Viewer | UniversalViewer | OK |
