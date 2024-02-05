@@ -39,10 +39,11 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Cloud Sync | CloudSync | OK |
 | Container Manager | ContainerManager | OK - Move, Backup and Restore |
 | DNS Server | DNSServer | OK |
+| Docker | Docker | OK - Move, Backup and Restore |
 | Document Viewer | DocumentViewer | OK |
 | Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
-| exFAT Access | exFAT-Free | OK |
+| exFAT Access | exFAT-Free | OK - Move, Backup and Restore |
 | git | git | OK |
 | Git | Git | OK |
 | Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
@@ -54,7 +55,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Mail Station | MailStation | OK |
 | MariaDB 10 | MariaDB10 | OK |
 | Media Server | MediaServer | OK |
-| MediaInfo | mediainfo | OK |
+| MediaInfo | mediainfo | OK - Move, Backup and Restore |
 | MinimServer | MinimServer | OK |
 | Node.js v14 | Node.js_v14 | OK |
 | Node.js v16 | Node.js_v16 | OK |
@@ -62,16 +63,16 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Node.js v20 | Node.js_v20 | OK |
 | Note Station | NoteStation | OK |
 | PDF Viewer | PDFViewer | OK |
-| Perl | Perl | OK |
-| PHP 7.3 | PHP7.3 | OK |
-| PHP 7.4 | PHP7.4 | OK |
-| PHP 8.0 | PHP8.0 | OK |
-| PHP 8.1 | PHP8.1 | OK |
-| PHP 8.2 | PHP8.2 | OK |
+| Perl | Perl | OK - Move, Backup and Restore |
+| PHP 7.3 | PHP7.3 | OK - Move, Backup and Restore |
+| PHP 7.4 | PHP7.4 | OK - Move, Backup and Restore |
+| PHP 8.0 | PHP8.0 | OK - Move, Backup and Restore |
+| PHP 8.1 | PHP8.1 | OK - Move, Backup and Restore |
+| PHP 8.2 | PHP8.2 | OK - Move, Backup and Restore |
 | Plex Media Server | PlexMediaServer | OK |
 | Presto File Server | PrestoServer | OK |
 | Proxy Server | ProxyServer | OK |
-| Python 3.9 | Python3.9 | OK |
+| Python 3.9 | Python3.9 | OK - Move, Backup and Restore |
 | Radius Server | RadiusServer | OK |
 | SMI-S Provider | SynoSmisProvider | OK |
 | Snapshot Replication | SnapshotReplication | OK |
