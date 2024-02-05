@@ -49,7 +49,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Hyper Backup | HyperBackup | OK |
 | Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server | DirectoryServer | OK |
-| LogAnalysis | LogAnalysis | OK |
+| LogAnalysis | LogAnalysis | OK - Move, Backup and Restore |
 | Log Center | Log Center | OK |
 | Mail Station | MailStation | OK |
 | MariaDB 10 | MariaDB10 | OK |
