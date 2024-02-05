@@ -109,7 +109,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Package | Result |
 |---------|--------|
 | Archiware P5 |  |
-| BRAVIA Signage |  |
+| BRAVIA Signage | Won't install in Container Manager |
 | Data Deposit Box |  |
 | Domotz Network Monitoring |  |
 | ElephantDrive |  |
