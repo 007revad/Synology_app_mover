@@ -32,7 +32,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | AntiVirus Essential | AntiVirus | OK |
 | Apache 2.4 | Apache2.4 | OK |
-| Audio Station | AudioStation | OK |	
+| Audio Station | AudioStation | OK - Move, Backup and Restore |	
 | Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
 | C2 Identity LDAP Server | C2IdentityLDAPAgent | OK - need a C2 account to fully test |
 | Central Management System | CMS | OK |
