@@ -15,21 +15,20 @@
 # "failed to uninstall a package who has dependers installed"
 #
 # TODO
-# Add support to backup/restore ActiveBackup
-#
-# Check all PS3 sections use case statement to verify choice.
-#
 # Add volume space check for all extras folders.
 #  Should check the volume space BEFORE moving or backing up package.
 #
 #
-# DONE Add support to backup/restore ContainerManager/Docker
+# DONE Added support to backup/restore ActiveBackup
+# DONE Check all PS3 sections validate choice.
+#
+# DONE Added support to backup/restore ContainerManager/Docker
 # DONE Added check that installed package version matches backup version
 #
-# DONE Add backup and restore modes
+# DONE Added backup and restore modes
 # DONE Only start package if we stopped it
 # DONE Check exit status of package uninstall and install
-# DONE Add syno_app_mover.conf file for setting backup location
+# DONE Added syno_app_mover.conf file for setting backup location
 # DONE Change so when progress bar showing cursor doesn't cover first letter
 # DONE Confirm folder was created when creating folder
 # DONE Copy files/folders with same permissions when using cp command
@@ -37,7 +36,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.14"
+scriptver="v3.0.15"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -448,23 +447,25 @@ dependant_pkgs_start(){
     fi
 }
 
+# shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
 package_uninstall(){ 
     # $1 is package name
     synopkg uninstall "$1" >/dev/null &
     pid=$!
     string="Uninstalling ${Cyan}${1}${Off}"
-    progbar $pid "$string"
+    progbar "$pid" "$string"
     wait "$pid"
     progstatus "$?" "$string"
 }
 
+# shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
 package_install(){ 
     # $1 is package name
     # $2 is /volume2 etc
     synopkg install_from_server "$1" "$2" >/dev/null &
     pid=$!
     string="Installing ${Cyan}${1}${Off} on ${Cyan}$2${Off}"
-    progbar $pid "$string"
+    progbar "$pid" "$string"
     wait "$pid"
     progstatus "$?" "$string"
 }
@@ -558,14 +559,16 @@ move_pkg_do(){
         #wait "$pid"
         #progstatus "$?" "$string"
 
-        if [[ ! -d "${2:?}/${appdir:?}" ]]; then
+        if [[ ! -d "${2:?}/${appdir:?}/${1:?}" ]] ||\
+            is_empty "${2:?}/${appdir:?}/${1:?}"; then
+
+            # Move source folder to target folder
             mv -f "${source:?}" "${2:?}/${appdir:?}" &
             pid=$!
             string="${action} $source to ${Cyan}$2${Off}"
             progbar $pid "$string"
             wait "$pid"
             progstatus "$?" "$string"
-        #elif ! is_empty "${source:?}"; then
         else
             # Copy source contents if target folder exists
             cp -prf "${source:?}" "${2:?}/${appdir:?}" &
@@ -824,6 +827,18 @@ move_extras(){
     case "$1" in
         ActiveBackup)
             move_dir "@ActiveBackup" extras
+            # /var/packages/ActiveBackup/target/log/
+#            if [[ ${mode,,} == "move" ]]; then
+            if [[ ${mode,,} != "backup" ]]; then
+                if readlink /var/packages/ActiveBackup/target/log | grep "$1" >/dev/null; then
+                    rm /var/packages/ActiveBackup/target/log
+                    ln -s "${2:?}/@ActiveBackup/log" /var/packages/ActiveBackup/target/log
+                fi
+                file=/var/packages/ActiveBackup/target/etc/setting.conf
+                if [[ -f "$file" ]]; then
+                    echo "{\"conf_repo_volume_path\":\"$2\"}" > "$file"
+                fi
+            fi
             echo ""
             ;;
         ActiveBackup-GSuite)
@@ -872,7 +887,7 @@ move_extras(){
             ;;
         GlacierBackup)
             move_dir "@GlacierBackup" extras
-            if [[ ${mode,,} == "move" ]]; then
+            if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/GlacierBackup/etc/common.conf
                 if [[ -f "$file" ]]; then
                     echo "cache_volume=$2" > "$file"
@@ -892,7 +907,7 @@ move_extras(){
             echo ""
             ;;
         Node.js_v*)
-            if [[ ${mode,,} == "move" ]]; then
+            if [[ ${mode,,} != "backup" ]]; then
                 if readlink /usr/local/bin/node | grep "$1" >/dev/null; then
                     rm /usr/local/bin/node
                     ln -s "${2:?}/@appstore/${1:?}/usr/local/bin/node" /usr/local/bin/node
@@ -907,7 +922,7 @@ move_extras(){
             ;;
         PrestoServer)
             move_dir "@presto" extras
-            if [[ ${mode,,} == "move" ]]; then
+            if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/PrestoServer/etc/db-path.conf
                 if [[ -f "$file" ]]; then
                     echo "db-vol=${2:?}" > "$file"
@@ -918,7 +933,7 @@ move_extras(){
         SurveillanceStation)
             move_dir "@ssbackup" extras
             move_dir "@surveillance" extras
-            if [[ ${mode,,} == "move" ]]; then
+            if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SurveillanceStation/etc/settings.conf
                 if [[ -f "$file" ]]; then
                     synosetkeyvalue "$file" active_volume "${2:?}"
@@ -936,7 +951,7 @@ move_extras(){
             ;;
         SynologyApplicationService)
             move_dir "@SynologyApplicationService" extras
-            if [[ ${mode,,} == "move" ]]; then
+            if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SynologyApplicationService/etc/settings.conf
                 if [[ -f "$file" ]]; then
                     synosetkeyvalue "$file" volume "${2:?}/@SynologyApplicationService"
@@ -947,7 +962,7 @@ move_extras(){
         SynologyDrive)
             move_dir "@SynologyDrive" extras
             move_dir "@SynologyDriveShareSync" extras
-            if [[ ${mode,,} == "move" ]]; then
+            if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SynologyDrive/etc/sharesync/daemon.conf
                 if [[ -f "$file" ]]; then
                     sed -i 's|'/"$sourcevol"'|'"${2:?}"'|g' "$file"
@@ -1307,59 +1322,66 @@ fi
 
 
 target=$(readlink "/var/packages/${pkg}/target")
-sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
+#sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
+sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
 
 # Move package
 if [[ $pkg =~ ActiveBackup* ]]; then 
     # Can't uninstall package which has dependers
 
-    # Backup @ActiveBackup folder
-    # $1 is folder to backup (@ActiveBackup etc) 
-    # $2 is volume (/volume1 etc)
-    backup_dir "@${pkg:?}" "${sourcevol:?}"
-
-    # Uninstall and reinstall package
-    package_uninstall "$pkg"
-    sleep 2
-
-    # Check if package uninstalled
-    synopkg status "${pkg}" >/dev/null
-    if [[ $? == "255" ]]; then
-        echo -e "${Cyan}${pkg}${Off} is didn't uninstall!"
-        exit
-    fi
-
-    package_install "$pkg" "$targetvol"
-    #wait_status "$pkg" start
-
-    # Check if package installed
-    if ! synopkg status "${pkg}" >/dev/null; then
-        echo -e "${Cyan}${pkg}${Off} is didn't install!"
-        exit
-    fi
-
-    # Stop package
-    package_stop "$pkg"
-    skip_start=""
-
-    # Delete @ActiveBackup on target volume
-    if [[ -d "${targetvol:?}/@${pkg:?}" ]]; then
-        #rm -r --preserve-root "${targetvol:?}/@${pkg:?}" &
-        #pid=$!
-        #string="Deleting new ${Cyan}$pkg${Off} settings and database"
-        #progbar $pid "$string"
-        #wait "$pid"
-        #progstatus "$?" "$string"
-        rm -r --preserve-root "${targetvol}/@${pkg}"
-    fi
-
-    # Copy source @ActiveBackup_backup to target @ActiveBackup
-    cp -prf "${sourcevol:?}/@${pkg:?}_backup" "${targetvol:?}/@${pkg:?}" &
-    pid=$!
-    string="Copying ${Cyan}$pkg${Off} settings and database to ${Cyan}$targetvol${Off}"
-    progbar $pid "$string"
-    wait "$pid"
-    progstatus "$?" "$string"
+#    # Backup @ActiveBackup folder
+#    # $1 is folder to backup (@ActiveBackup etc) 
+#    # $2 is volume (/volume1 etc)
+#    backup_dir "@${pkg:?}" "${sourcevol:?}"
+#
+#    if [[ ${mode,,} == "move" ]]; then
+#        # Uninstall and reinstall package
+#        package_uninstall "$pkg"
+#        sleep 2
+#
+#        # Check if package uninstalled
+#        synopkg status "${pkg}" >/dev/null
+#        if [[ $? != "255" ]]; then
+#            echo -e "${Error}ERROR${Off} ${Cyan}${pkg}${Off} didn't uninstall!"
+#            exit
+#        fi
+#
+#        package_install "$pkg" "$targetvol"
+#        #wait_status "$pkg" start
+#
+#        # Check if package installed
+#        if ! synopkg status "${pkg}" >/dev/null; then
+#            ding
+#            echo -e "${Error}ERROR${Off} ${Cyan}${pkg}${Off} didn't install!"
+#            exit
+#        fi
+#
+#        # Stop package
+#        package_stop "$pkg"
+#        skip_start=""
+#
+#        # Delete @ActiveBackup on target volume
+#        if [[ -d "${targetvol:?}/@${pkg:?}" ]]; then
+#            #rm -r --preserve-root "${targetvol:?}/@${pkg:?}" &
+#            #pid=$!
+#            #string="Deleting new ${Cyan}$pkg${Off} settings and database"
+#            #progbar $pid "$string"
+#            #wait "$pid"
+#            #progstatus "$?" "$string"
+#            rm -r --preserve-root "${targetvol}/@${pkg}"
+#        fi
+#
+#        # Copy source @ActiveBackup_backup to target @ActiveBackup
+#        cp -prf "${sourcevol:?}/@${pkg:?}_backup" "${targetvol:?}/@${pkg:?}" &
+#        pid=$!
+#        string="Copying ${Cyan}$pkg${Off} settings and database to ${Cyan}$targetvol${Off}"
+#        progbar $pid "$string"
+#        wait "$pid"
+#        progstatus "$?" "$string"
+#    else
+        # Backup, or restore and edit symlinks
+        move_pkg "$pkg" "$targetvol"
+#    fi
 
 elif [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
     # Move @docker if package is ContainerManager or Docker
