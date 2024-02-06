@@ -25,7 +25,7 @@
 #
 # DONE Gets package display name from package's INFO file.
 # DONE Added Synology Calendar's '@calendar' folder.
-# DONE Added Download Station's '@downloads' folder.
+# DONE Added Download Station's '@download' folder.
 #
 # DONE Added support to backup/restore ActiveBackup
 # DONE Check all PS3 sections validate choice.
@@ -44,7 +44,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.17"
+scriptver="v3.0.18"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -743,6 +743,27 @@ vol_free_space(){
     fi
 }
 
+check_space(){ 
+    # $1 is /path/folder
+    # $2 is source volume or target volume
+
+    # Get size of @docker folder
+    folder_size "$1"
+
+    # Get amount of free space on target volume
+    vol_free_space "$2"
+
+    # Check we have enough space
+    if [[ ! $free -gt $needed ]]; then
+        echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,} "\
+            "/${sourcevol}/${Cyan}@docker${Off} to $targetvol"
+        echo -e "Free: $((free /1048576)) GB  Needed: $((need /1048576)) GB\n"
+        return 1
+    else
+        return 0
+    fi
+}
+
 show_move_share(){ 
     # $1 is package name
     # $2 is share name
@@ -920,7 +941,7 @@ move_extras(){
             echo ""
             ;;
         DownloadStation)
-            move_dir "@downloads" extras
+            move_dir "@download" extras
             echo ""
             ;;
         GlacierBackup)
@@ -1437,6 +1458,14 @@ if [[ $pkg =~ ActiveBackup* ]]; then
 elif [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
     # Move @docker if package is ContainerManager or Docker
 
+    # Check if @docker is on same volume as Docker package
+    if [[ -d "/${sourcevol}/@docker" ]]; then
+        # Check we have enough space
+        if ! check_space "/${sourcevol}/@docker" "${targetvol}"; then
+            exit
+        fi
+    fi
+
     # Backup @docker
     if [[ ${mode,,} != "backup" ]]; then
         if [[ ${mode,,} == "move" ]]; then
@@ -1449,28 +1478,53 @@ elif [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
         read -r answer
         echo ""
         if [[ ${answer,,} == "y" ]]; then
-            backup_dir "@docker" "$dockerbakvol"
+            # Check we have enough space
+            if ! check_space "/${sourcevol}/@docker" "${sourcevol}"; then
+                exit
+            else
+                backup_dir "@docker" "$dockerbakvol"
+            fi
         fi
     fi
 
-    # Check if @docker is on same volume as Docker package
-    if [[ -d "/${sourcevol}/@docker" ]]; then
-        # Get size of @docker folder
-        folder_size "/${sourcevol}/@docker"
+    # Move package and edit symlinks
+    move_pkg "$pkg" "$targetvol"
 
-        # Get amount of free space on target volume
-        vol_free_space "${targetvol}"
+elif [[ $pkg == "DownloadStation" ]]; then
+    # Move @download if package is DownloadStation
 
+    # Check if @download is on same volume as DownloadStation package
+    if [[ -d "/${sourcevol}/@download" ]]; then
         # Check we have enough space
-        if [[ ! $free -gt $needed ]]; then
-            echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,} "\
-                "/${sourcevol}/${Cyan}@docker${Off} to $targetvol"
-            echo -e "Free: $((free /1048576)) GB  Needed: $((need /1048576)) GB\n"
+        if ! check_space "/${sourcevol}/@download" "${targetvol}"; then
             exit
-        else
-            move_pkg "$pkg" "$targetvol"
         fi
     fi
+
+    # Backup @download
+    if [[ ${mode,,} != "backup" ]]; then
+        if [[ ${mode,,} == "move" ]]; then
+            downloadsbakvol="$sourcevol"
+        elif [[ ${mode,,} == "restore" ]]; then
+            downloadsbakvol="$targetvol"
+        fi
+        echo -e "Do you want to ${Yellow}backup${Off} the"\
+            "${Cyan}@download${Off} folder on $downloadsbakvol? [y/n]"
+        read -r answer
+        echo ""
+        if [[ ${answer,,} == "y" ]]; then
+            # Check we have enough space
+            if ! check_space "/${sourcevol}/@download" "${sourcevol}"; then
+                exit
+            else
+                backup_dir "@download" "$downloadsbakvol"
+            fi
+        fi
+    fi
+
+    # Move package and edit symlinks
+    move_pkg "$pkg" "$targetvol"
+
 else
     # Move package and edit symlinks
     move_pkg "$pkg" "$targetvol"
@@ -1588,7 +1642,7 @@ suggest_change_location(){
         echo -e "  4. Click Save.\n"
     fi
 
-    # Suggest moving @downloads if package is DownloadStation
+    # Suggest moving @download if package is DownloadStation
     if [[ $pkg == DownloadStation ]]; then
         # Show how to move DownloadStation database and temp files
         #file="/var/packages/DownloadStation/etc/db-path.conf"
