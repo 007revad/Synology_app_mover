@@ -15,11 +15,20 @@
 # "failed to uninstall a package who has dependers installed"
 #
 # TODO
-# Add warning that processing extra folder can take a long while.
+# Add "All" packages choice for backup and restore modes.
 #
 # Add volume space check for all extras folders.
 #  Should check the volume space BEFORE moving or backing up package.
 #
+#
+# DONE Added warning that moving @docker and #download can take a long time.
+# DONE Added check to stop script if package variable is empty.
+# DONE Bug fix for packages with no "display" value in their INFO file.
+#
+#
+# DONE Now checks if there's enough space to move `@docker`.
+# DONE Now checks if there's enough space to move `@download`.
+# DONE Now asks if you want to backup `@download`.
 #
 # DONE Added 5 minute timeout to stopping, and starting, packages.
 #
@@ -44,7 +53,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.18"
+scriptver="v3.0.19"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -920,6 +929,7 @@ move_extras(){
             echo ""
             ;;
         ContainerManager|Docker)
+            echo -e "${Red}WARNING Moving @docker could take a long time${Off}"
             move_dir "@docker" extras
             if [[ ${mode,,} != "backup" ]]; then
                 dsm="$(get_key_value /etc.defaults/VERSION majorversion)"
@@ -941,6 +951,7 @@ move_extras(){
             echo ""
             ;;
         DownloadStation)
+            echo -e "${Red}WARNING Moving @download could take a long time${Off}"
             move_dir "@download" extras
             echo ""
             ;;
@@ -1144,12 +1155,15 @@ if [[ ${mode,,} != "restore" ]]; then
         package="$(printf %s "$link" | cut -d'/' -f2 )"
         package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
         package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
-        if [[ ! ${package_infos[*]} =~ "${package_volume}|${package_name}" ]]; then
+        if [[ -z "$package_name" ]]; then
+            package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
+        fi
+        if [[ ! ${package_infos[*]} =~ "${package_volume}|${package_name:?}" ]]; then
             package_infos+=("${package_volume}|${package_name}")
         fi
-#        if [[ ! ${package_names[*]} =~ "${package}|${package_name}" ]]; then
+        if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
             package_names["${package_name}"]="${package}"
-#        fi
+        fi
     done < <(find . -maxdepth 2 -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
 
     # Sort array
@@ -1198,6 +1212,9 @@ elif [[ ${mode,,} == "restore" ]]; then
         if [[ -d "$package" ]] && [[ $package != "@eaDir" ]]; then
             if [[ ${package:0:1} != "-" ]]; then
                 package_name="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
+                if [[ -z "$package_name" ]]; then
+                    package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
+                fi
                 package_names["${package_name:?}"]="${package:?}"
             fi
         fi
