@@ -15,9 +15,17 @@
 # "failed to uninstall a package who has dependers installed"
 #
 # TODO
+# Add warning that processing extra folder can take a long while.
+#
 # Add volume space check for all extras folders.
 #  Should check the volume space BEFORE moving or backing up package.
 #
+# Add timeout to stopping, and starting, packages.
+#
+#
+# DONE Get package display name from package's INFO file.
+# DONE Added Synology Calendar's '@calendar' folder.
+# DONE Added Download Station's '@downloads' folder.
 #
 # DONE Added support to backup/restore ActiveBackup
 # DONE Check all PS3 sections validate choice.
@@ -36,7 +44,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.15"
+scriptver="v3.0.16"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -380,10 +388,11 @@ wait_status(){
 
 package_stop(){ 
     # $1 is package name
+    # $2 is package display name
     local num
     synopkg stop "$1" >/dev/null &
     pid=$!
-    string="Stopping ${Cyan}${1}${Off}"
+    string="Stopping ${Cyan}${2}${Off}"
     progbar $pid "$string"
     wait "$pid"
     progstatus "$?" "$string"
@@ -395,9 +404,10 @@ package_stop(){
 
 package_start(){ 
     # $1 is package name
+    # $2 is package display name
     synopkg start "$1" >/dev/null &
     pid=$!
-    string="Starting ${Cyan}${1}${Off}"
+    string="Starting ${Cyan}${2}${Off}"
     progbar $pid "$string"
     wait "$pid"
     progstatus "$?" "$string"
@@ -410,15 +420,16 @@ dependant_pkgs_stop(){
     if [[ ${#dependants[@]} -gt "0" ]]; then
         echo "Stopping dependant packages"
         for d in "${dependants[@]}"; do
+            d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" displayname)"
             if package_status "$d"; then
                 # Get list of dependers that were running
                 dependants2start+=( "$d" )
-                package_stop "$d"
+                package_stop "$d" "$d_name"
 
                 # Check packaged stopped
                 if package_status "$d"; then
                     ding
-                    echo -e "${Error}ERROR${Off} Failed to stop ${d}!"
+                    echo -e "${Error}ERROR${Off} Failed to stop ${d_name}!"
                     # If $fix = yes bypass exit for restoring to orig vol
                     if [[ $fix != "yes" ]]; then
                         exit 1
@@ -436,11 +447,12 @@ dependant_pkgs_start(){
         #sleep 5  # Allow main package processes to finish starting
         echo "Starting dependant packages"
         for d in "${dependants2start[@]}"; do
-            package_start "$d"
+            d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" displayname)"
+            package_start "$d" "$d_name"
 
             # Check packaged started
             if ! package_status "$d"; then
-                echo -e "${Error}ERROR${Off} Failed to start ${d}!"
+                echo -e "${Error}ERROR${Off} Failed to start ${d_name}!"
             fi
         done
         echo ""
@@ -674,21 +686,39 @@ move_pkg(){
         sourcevol=$(echo "$bkpath" | cut -d "/" -f2)  # var is used later in script
         while IFS=  read -r appdir; do
             if [[ "${applist[*]}" =~ "$appdir" ]]; then
-                create_dir "/${sourcevol:?}/${appdir:?}" "${destination:?}/${appdir:?}"
-                move_pkg_do "$1" "$destination"
+                appdirs_tmp+=("$appdir")
             fi
         done < <(find . -name "@app*" -exec basename \{} \;)
+
+        # Sort array
+        IFS=$'\n' appdirs=($(sort <<<"${appdirs_tmp[*]}")); unset IFS
+
+        if [[ ${#appdirs[@]} -gt 0 ]]; then
+            for appdir in "${appdirs[@]}"; do
+                create_dir "/${sourcevol:?}/${appdir:?}" "${destination:?}/${appdir:?}"
+                move_pkg_do "$1" "$destination"
+            done
+        fi
     else
         cdir /var/packages
         while read -r link source; do
-            appdir=$(echo "$source" | cut -d "/" -f3)
-            sourcevol=$(echo "$source" | cut -d "/" -f2)  # var is used later in script
-            create_dir "/${sourcevol:?}/${appdir:?}" "${destination:?}/${appdir:?}"
-            move_pkg_do "$1" "$2"
-            if [[ ${mode,,} == "move" ]]; then
-                edit_symlinks "$pkg" "$destination"
-            fi
+            app_paths_tmp+=("$source")
         done < <(find . -maxdepth 2 -type l -ls | grep "$1"'$' | awk '{print $(NF-2), $NF}')
+
+        # Sort array
+        IFS=$'\n' app_paths=($(sort <<<"${app_paths_tmp[*]}")); unset IFS
+
+        if [[ ${#app_paths[@]} -gt 0 ]]; then
+            for source in "${app_paths[@]}"; do
+                appdir=$(echo "$source" | cut -d "/" -f3)
+                sourcevol=$(echo "$source" | cut -d "/" -f2)  # var is used later in script
+                create_dir "/${sourcevol:?}/${appdir:?}" "${destination:?}/${appdir:?}"
+                move_pkg_do "$1" "$2"
+                if [[ ${mode,,} == "move" ]]; then
+                    edit_symlinks "$pkg" "$destination"
+                fi
+            done
+        fi
     fi
 }
 
@@ -864,6 +894,10 @@ move_extras(){
                 fi
             fi
             ;;
+        Calendar)
+            move_dir "@calendar" extras
+            echo ""
+            ;;
         ContainerManager|Docker)
             move_dir "@docker" extras
             if [[ ${mode,,} != "backup" ]]; then
@@ -883,6 +917,10 @@ move_extras(){
                     ln -s "${2:?}/@docker" "/var/packages/${pkg:?}/target/docker"
                 fi
             fi
+            echo ""
+            ;;
+        DownloadStation)
+            move_dir "@downloads" extras
             echo ""
             ;;
         GlacierBackup)
@@ -1073,6 +1111,8 @@ fi
 #------------------------------------------------------------------------------
 # Select package
 
+declare -A package_names
+
 if [[ ${mode,,} != "restore" ]]; then
     # Select package to move or backup
 
@@ -1082,9 +1122,13 @@ if [[ ${mode,,} != "restore" ]]; then
     while read -r link target; do
         package="$(printf %s "$link" | cut -d'/' -f2 )"
         package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
-        if [[ ! ${package_infos[*]} =~ "${package_volume}|${package}" ]]; then
-            package_infos+=("${package_volume}|${package}")
+        package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+        if [[ ! ${package_infos[*]} =~ "${package_volume}|${package_name}" ]]; then
+            package_infos+=("${package_volume}|${package_name}")
         fi
+#        if [[ ! ${package_names[*]} =~ "${package}|${package_name}" ]]; then
+            package_names["${package_name}"]="${package}"
+#        fi
     done < <(find . -maxdepth 2 -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
 
     # Sort array
@@ -1107,7 +1151,8 @@ if [[ ${mode,,} != "restore" ]]; then
                 /volume*)
                     # Parse selected element of array
                     package_volume="$(echo "$m" | awk '{print $1}')"
-                    pkg="$(echo "$m" | awk '{print $2}')"
+                    pkg_name=${m#"$package_volume  "}
+                    pkg="${package_names[${pkg_name}]}"
                     break
                     ;;
                 *)
@@ -1119,7 +1164,7 @@ if [[ ${mode,,} != "restore" ]]; then
         echo "No movable packages found!" && exit 1
     fi
 
-    echo -e "You selected ${Cyan}${pkg}${Off} in ${Cyan}${package_volume}${Off}\n"
+    echo -e "You selected ${Cyan}${pkg_name}${Off} in ${Cyan}${package_volume}${Off}\n"
     target=$(readlink "/var/packages/${pkg}/target")
     linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
 
@@ -1128,25 +1173,28 @@ elif [[ ${mode,,} == "restore" ]]; then
 
     # Get list of backed up packages
     cdir "${backuppath}/syno_app_mover"
-    backed_up_pkgs=( )
-    for d in *; do
-        if [[ -d "$d" ]] && [[ $d != "@eaDir" ]]; then
-            backed_up_pkgs+=("$d")
+    for package in *; do
+        if [[ -d "$package" ]] && [[ $package != "@eaDir" ]]; then
+            if [[ ${package:0:1} != "-" ]]; then
+                package_name="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
+                package_names["${package_name:?}"]="${package:?}"
+            fi
         fi
     done < <(find . -maxdepth 2 -type d)
 
     # Select package to restore
-    if [[ ${#backed_up_pkgs[@]} -gt 0 ]]; then
+    if [[ ${#package_names[@]} -gt 0 ]]; then
         echo -e "[Restorable package list]"
         PS3="Select the package to restore: "
-        select pkg in "${backed_up_pkgs[@]}"; do
+        select pkg_name in "${!package_names[@]}"; do
+            pkg="${package_names[${pkg_name}]}"
             if [[ $pkg ]]; then
                 if [[ -d $pkg ]]; then
-                    echo -e "You selected ${Cyan}${pkg}${Off}\n"
+                    echo -e "You selected ${Cyan}${pkg_name}${Off}\n"
                     break
                 else
                     ding
-                    echo -e "${Error}ERROR${Off} $pkg not found!"
+                    echo -e "${Error}ERROR${Off} $pkg_name not found!"
                     exit 1
                 fi
             else
@@ -1157,8 +1205,8 @@ elif [[ ${mode,,} == "restore" ]]; then
         # Check if package is installed
         synopkg status "${pkg}" >/dev/null
         if [[ $? == "255" ]]; then
-            echo -e "${Cyan}${pkg}${Off} is not installed!"
-            echo -e "Install ${Cyan}${pkg}${Off} then try Restore again"
+            echo -e "${Cyan}${pkg_name}${Off} is not installed!"
+            echo -e "Install ${Cyan}${pkg_name}${Off} then try Restore again"
             exit
         fi
     else
@@ -1223,9 +1271,9 @@ fi
 
 # Check user is ready
 if [[ ${mode,,} == "backup" ]]; then
-    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg}${Off} to ${Cyan}${backuppath}${Off}? [y/n]"
+    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${backuppath}${Off}? [y/n]"
 else
-    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
+    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
 fi
 read -r answer
 echo ""
@@ -1249,14 +1297,14 @@ fi
 
 # Get backup package version
 if [[ ${mode,,} == "restore" ]]; then
-    pkgbackupversion=$(synogetkeyvalue "$bkpath/VERSION" version)
+    pkgbackupversion=$(synogetkeyvalue "$bkpath/INFO" version)
     if [[ $pkgversion ]] && [[ $pkgbackupversion ]]; then
         if [[ $pkgversion != "$pkgbackupversion" ]]; then
             ding
             echo -e "${Yellow}Backup and installed package versions don't match!${Off}"
             echo "  Backed up version: $pkgbackupversion"
             echo "  Installed version: $pkgversion"
-            echo "Do you want to continue restoring the package? [y/n]"
+            echo "Do you want to continue restoring ${pkg_name}? [y/n]"
             read -r reply
             if [[ ${reply,,} != "y" ]]; then
                 exit
@@ -1280,8 +1328,11 @@ if [[ ${mode,,} == "backup" ]]; then
         fi
     fi
 
-    # Create package version file
-    synosetkeyvalue "$bkpath/VERSION" version "$pkgversion"
+#    # Create package version file
+#    synosetkeyvalue "$bkpath/INFO" version "$pkgversion"
+
+    # Backup package's INFO file
+    cp -p "/var/packages/$pkg/INFO" "$bkpath/INFO"
 fi
 
 
@@ -1299,14 +1350,14 @@ if package_status "$pkg"; then
 
     # Stop package
     if package_status "$pkg"; then
-        package_stop "$pkg"
+        package_stop "$pkg" "$pkg_name"
         echo ""
     fi
 
     # Check package stopped
     if package_status "$pkg"; then
         ding
-        echo -e "${Error}ERROR${Off} Failed to stop ${pkg}!"
+        echo -e "${Error}ERROR${Off} Failed to stop ${pkg_name}!"
         if [[ $fix != "yes" ]]; then  # bypass exit
             exit 1
         fi
@@ -1342,7 +1393,7 @@ if [[ $pkg =~ ActiveBackup* ]]; then
 #        # Check if package uninstalled
 #        synopkg status "${pkg}" >/dev/null
 #        if [[ $? != "255" ]]; then
-#            echo -e "${Error}ERROR${Off} ${Cyan}${pkg}${Off} didn't uninstall!"
+#            echo -e "${Error}ERROR${Off} ${Cyan}${pkg_name}${Off} didn't uninstall!"
 #            exit
 #        fi
 #
@@ -1352,12 +1403,12 @@ if [[ $pkg =~ ActiveBackup* ]]; then
 #        # Check if package installed
 #        if ! synopkg status "${pkg}" >/dev/null; then
 #            ding
-#            echo -e "${Error}ERROR${Off} ${Cyan}${pkg}${Off} didn't install!"
+#            echo -e "${Error}ERROR${Off} ${Cyan}${pkg_name}${Off} didn't install!"
 #            exit
 #        fi
 #
 #        # Stop package
-#        package_stop "$pkg"
+#        package_stop "$pkg" "$pkg_name"
 #        skip_start=""
 #
 #        # Delete @ActiveBackup on target volume
@@ -1499,19 +1550,19 @@ if [[ $skip_start != "yes" ]]; then
     if [[ ${mode,,} == "backup" ]]; then
         answer="y"
     else
-        echo -e "Do you want to start ${Cyan}$pkg${Off} now? [y/n]"
+        echo -e "Do you want to start ${Cyan}$pkg_name${Off} now? [y/n]"
         read -r answer
         echo ""
     fi
     if [[ ${answer,,} == "y" ]]; then
         # Start package
-        package_start "$pkg"
+        package_start "$pkg" "$pkg_name"
         echo ""
 
         # Check package started
         if ! package_status "$pkg"; then
             ding
-            echo -e "${Error}ERROR${Off} Failed to start ${pkg}!"
+            echo -e "${Error}ERROR${Off} Failed to start ${pkg_name}!"
             exit 1
         fi
 
@@ -1520,7 +1571,7 @@ if [[ $skip_start != "yes" ]]; then
     fi
 fi
 
-echo -e "Finished ${action,,} $pkg\n"
+echo -e "Finished ${action,,} $pkg_name\n"
 
 
 #------------------------------------------------------------------------------
