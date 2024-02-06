@@ -20,10 +20,10 @@
 # Add volume space check for all extras folders.
 #  Should check the volume space BEFORE moving or backing up package.
 #
-# Add timeout to stopping, and starting, packages.
 #
+# DONE Added 5 minute timeout to stopping, and starting, packages.
 #
-# DONE Get package display name from package's INFO file.
+# DONE Gets package display name from package's INFO file.
 # DONE Added Synology Calendar's '@calendar' folder.
 # DONE Added Download Station's '@downloads' folder.
 #
@@ -44,7 +44,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.16"
+scriptver="v3.0.17"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -367,6 +367,7 @@ wait_status(){
     # Wait for package to finish stopping or starting
     # $1 is package
     # $2 is start or stop
+    local num
     if [[ $2 == "start" ]]; then
         state="0"
     elif [[ $2 == "stop" ]]; then
@@ -389,8 +390,7 @@ wait_status(){
 package_stop(){ 
     # $1 is package name
     # $2 is package display name
-    local num
-    synopkg stop "$1" >/dev/null &
+    timeout 5.0m synopkg stop "$1" >/dev/null &
     pid=$!
     string="Stopping ${Cyan}${2}${Off}"
     progbar $pid "$string"
@@ -405,7 +405,7 @@ package_stop(){
 package_start(){ 
     # $1 is package name
     # $2 is package display name
-    synopkg start "$1" >/dev/null &
+    timeout 5.0m synopkg start "$1" >/dev/null &
     pid=$!
     string="Starting ${Cyan}${2}${Off}"
     progbar $pid "$string"
