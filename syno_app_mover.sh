@@ -27,6 +27,8 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
+# DONE Added how to export/import database for packages that use MariaDB.
+#
 # DONE Backup package's web_package folder if there is one.
 # DONE Restore package's web_package folder if there is one.
 # DONE Fix dependent typos (dependant).
@@ -62,7 +64,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.20"
+scriptver="v3.0.21"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1670,8 +1672,36 @@ fi
 #------------------------------------------------------------------------------
 # Show how to export and import package's database if dependent on MariaDB10
 
-
-#install_dep_packages
+info="/var/packages/${pkg}/INFO"
+if synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null; then
+    if [[ ${mode,,} == "backup" ]]; then
+        # Show how to export package's database
+        echo -e "If you want to backup the $pkg_name database"
+        echo "  If you don't have phpMyAdmin installed:"
+        echo "    1. Install phpMyAdmin."
+        echo "    2. Open phpMyAdmin"
+        echo "    3. Open phpMyAdmin"
+        echo "    4. Log in with user root and your MariaDB10 password."
+        echo "  Once you are logged in to phpMyAdmin:"
+        echo "    1. Click on the package name on the left."
+        echo "    2. Click on the Export tab at the top."
+        echo "    3. Click on the Export button."
+        echo -e "    4. Save the export to a safe location.\n"
+    elif [[ ${mode,,} == "restore" ]]; then
+        # Show how to import package's exported database
+        echo -e "If you want to backup the $pkg_name database"
+        echo "  If you don't have phpMyAdmin installed:"
+        echo "    1. Install phpMyAdmin."
+        echo "    2. Open phpMyAdmin"
+        echo "    3. Open phpMyAdmin"
+        echo "    4. Log in with user root and your MariaDB10 password."
+        echo "  Once you are logged in to phpMyAdmin:"
+        echo "    1. Click on the package name on the left."
+        echo "    2. Click on the Import tab at the top."
+        echo "    3. Click on the 'Choose file' button."
+        echo -e "    4. Browse to your exported .sql file and import it.\n"
+    fi
+fi
 
 
 #------------------------------------------------------------------------------
