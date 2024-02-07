@@ -24,7 +24,7 @@
 #  Should check the volume space BEFORE moving or backing up package.
 #
 # Instead of moving large extra folders copy them to the target volume.
-#   Then rename the source volume's @downloads to @downloads_backup.
+#   Then rename the source volume's @downloads to @downloads_backup. 
 #
 #
 # DONE Added reminder to edit docker volumes if user moved shared folders that docker uses.
