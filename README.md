@@ -211,5 +211,5 @@ If the script won't run check the following:
 <p align="center">Backing up Audio Station</p>
 <p align="center"><img src="/images/backup.png"></p>
 
-# Credits
+### Credits
 - wallacebrf for extensive beta testing of syno_app_mover v3.
