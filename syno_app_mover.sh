@@ -27,6 +27,8 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
+# DONE Added reminder to edit docker volumes if user moved shared folders that docker uses.
+#
 # DONE Fixed blank dependent package names if their INFO has no displayname set.
 #
 # DONE Added how to export/import database for packages that use MariaDB.
@@ -66,7 +68,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.22"
+scriptver="v3.0.23"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1173,6 +1175,8 @@ if [[ ${mode,,} != "move" ]]; then
         exit 1
     fi
     # Fix line endings
+    # grep can't detect Windows or Mac line endings 
+    #   but can detect if there's no Linux endings.
     if grep -rIl -m 1 $'\r' "$conffile" >/dev/null; then
         # Does not contain Linux line endings
         sed -i 's/\r\n/\n/g' "$conffile"  # Fix Windows line endings
@@ -1618,6 +1622,13 @@ fi
 #------------------------------------------------------------------------------
 # Show how to move related shared folder(s)
 
+docker_volume_edit(){ 
+    # Remind user to edit container's volume setting
+    echo "If you moved shared folders that your $pkg_name containers use"
+    echo "as volumes you will need to edit your docker compose or .env files,"
+    echo -e "or the container's settings, to point to the changed volume number.\n"
+}
+
 suggest_move_share(){ 
     # show_move_share <package-name> <share-name>
     if [[ ${mode,,} == "move" ]]; then
@@ -1639,9 +1650,11 @@ suggest_move_share(){
                 ;;
             ContainerManager)
                 show_move_share "Container Manager" docker
+                docker_volume_edit
                 ;;
             Docker)
                 show_move_share "Docker" docker
+                docker_volume_edit
                 ;;
             MailPlus-Server)
                 show_move_share "MailPlus Server" MailPlus
