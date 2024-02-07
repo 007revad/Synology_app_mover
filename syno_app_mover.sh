@@ -16,15 +16,24 @@
 #
 # TODO
 # Add "All" packages choice for backup and restore modes.
+#  Stop all packages that are on volumes (and their dependencies).
+#  Backup or restore those packages.
+#  Start all packages that we stopped (and their dependencies).
 #
 # Add volume space check for all extras folders.
 #  Should check the volume space BEFORE moving or backing up package.
 #
+# Instead of moving large extra folders copy them to the target volume.
+#   Then rename the source volume's @downloads to @downloads_backup.
 #
-# DONE Added warning that moving @docker and #download can take a long time.
+#
+# DONE Backup package's web_package folder if there is one.
+# DONE Restore package's web_package folder if there is one.
+# DONE Fix dependent typos (dependant).
+#
+# DONE Added warning that moving `@docker` and `@download` can take a long time.
 # DONE Added check to stop script if package variable is empty.
 # DONE Bug fix for packages with no "display" value in their INFO file.
-#
 #
 # DONE Now checks if there's enough space to move `@docker`.
 # DONE Now checks if there's enough space to move `@download`.
@@ -53,7 +62,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.19"
+scriptver="v3.0.20"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -85,7 +94,7 @@ if [[ $1 == "--debug" ]] || [[ $1 == "-d" ]]; then
 fi
 
 if [[ ${1,,} == "--fix" ]]; then
-    # Bypass exit if dependant package failed to stop
+    # Bypass exit if dependent package failed to stop
     # For restoring broken package to original volume
     fix="yes"
 fi
@@ -425,14 +434,14 @@ package_start(){
     wait_status "$1" start
 }
 
-dependant_pkgs_stop(){ 
-    if [[ ${#dependants[@]} -gt "0" ]]; then
-        echo "Stopping dependant packages"
-        for d in "${dependants[@]}"; do
+dependent_pkgs_stop(){ 
+    if [[ ${#dependents[@]} -gt "0" ]]; then
+        echo "Stopping dependent packages"
+        for d in "${dependents[@]}"; do
             d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" displayname)"
             if package_status "$d"; then
                 # Get list of dependers that were running
-                dependants2start+=( "$d" )
+                dependents2start+=( "$d" )
                 package_stop "$d" "$d_name"
 
                 # Check packaged stopped
@@ -450,12 +459,12 @@ dependant_pkgs_stop(){
     fi
 }
 
-dependant_pkgs_start(){ 
+dependent_pkgs_start(){ 
     # Only start dependers that were running
-    if [[ ${#dependants2start[@]} -gt "0" ]]; then
+    if [[ ${#dependents2start[@]} -gt "0" ]]; then
         #sleep 5  # Allow main package processes to finish starting
-        echo "Starting dependant packages"
-        for d in "${dependants2start[@]}"; do
+        echo "Starting dependent packages"
+        for d in "${dependents2start[@]}"; do
             d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" displayname)"
             package_start "$d" "$d_name"
 
@@ -506,7 +515,7 @@ backup_dir(){
     # $1 is folder to backup (@docker etc) 
     # $2 is volume (/volume1 etc)
     local perms
-    if  [[ -d "$2/$1" ]]; then
+    if [[ -d "$2/$1" ]]; then
 
         # Make backup folder on $2
         if [[ ! -d "${2}/${1}_backup" ]]; then
@@ -802,12 +811,12 @@ copy_dir(){
     fi
 
     if [[ ${mode,,} == "backup" ]]; then
-        if  [[ $2 == "extras" ]] && [[ ! -d "${bkpath:?}/extras" ]]; then
+        if [[ $2 == "extras" ]] && [[ ! -d "${bkpath:?}/extras" ]]; then
             mkdir -m 700 "${bkpath:?}/extras"
         fi
         create_dir "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}/${1:?}"
         #if ! is_empty "/${sourcevol:?}/${1:?}$pack"; then
-            if  [[ $2 == "extras" ]]; then
+            if [[ $2 == "extras" ]]; then
                 # If string is too long progbar gets messed up
                 cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
                 pid=$!
@@ -1068,6 +1077,45 @@ move_extras(){
             return
             ;;
     esac
+}
+
+web_packages(){ 
+    # $1 if pkg in lower case
+    web_pkg_path=$(synoshare --get-real-path web_packages)
+    if [[ -d "$web_pkg_path" ]]; then
+        if [[ -n "${pkg:?}" ]] && [[ -d "$web_pkg_path/${pkg,,}" ]]; then
+            if [[ ${mode,,} == "backup" ]]; then
+                if [[ ! -d "${bkpath}/web_packages" ]]; then
+                    mkdir -m 755 "${bkpath:?}/web_packages"
+                fi
+                if [[ -d "${bkpath}/web_packages" ]]; then
+                    # If string is too long progbar gets messed up
+                    cp -prf "${web_pkg_path:?}/${1:?}" "${bkpath:?}/web_packages" &
+                    pid=$!
+                    string="${action} $web_pkg_path/${pkg,,}"
+                    progbar $pid "$string"
+                    wait "$pid"
+                    progstatus "$?" "$string"
+                    echo ""
+                else
+                    ding
+                    echo -e "${Error}ERROR${Off} Failed to create directory!"
+                    echo -e "  ${bkpath:?}/web_packages\n"
+                fi
+            elif [[ ${mode,,} == "restore" ]]; then
+                if [[ -d "${bkpath}/web_packages/${1}" ]]; then
+                    # If string is too long progbar gets messed up
+                    cp -prf "${bkpath:?}/web_packages/${1:?}" "${web_pkg_path:?}" &
+                    pid=$!
+                    string="${action} $web_pkg_path/${pkg,,}"
+                    progbar $pid "$string"
+                    wait "$pid"
+                    progstatus "$?" "$string"
+                    echo ""
+                fi
+            fi
+        fi
+    fi
 }
 
 
@@ -1380,11 +1428,11 @@ fi
 # Check package is running
 if package_status "$pkg"; then
 
-    # Get list of dependant packages
-    dependants=($(synopkg list --name --depend-on "$pkg"))
+    # Get list of dependent packages
+    dependents=($(synopkg list --name --depend-on "$pkg"))
 
-    # Stop dependant packages
-    dependant_pkgs_stop
+    # Stop dependent packages
+    dependent_pkgs_stop
 
     # Stop package
     if package_status "$pkg"; then
@@ -1551,6 +1599,11 @@ echo ""
 # Move package's other folders
 move_extras "$pkg" "$targetvol"
 
+# Backup or restore package's web_packages folder
+if [[ ${mode,,} != "move" ]]; then
+    web_packages "${pkg,,}"
+fi
+
 
 #------------------------------------------------------------------------------
 # Show how to move related shared folder(s)
@@ -1615,6 +1668,13 @@ fi
 
 
 #------------------------------------------------------------------------------
+# Show how to export and import package's database if dependent on MariaDB10
+
+
+#install_dep_packages
+
+
+#------------------------------------------------------------------------------
 # Start package and dependent packages
 
 if [[ $skip_start != "yes" ]]; then
@@ -1637,8 +1697,8 @@ if [[ $skip_start != "yes" ]]; then
             exit 1
         fi
 
-        # Start dependant packages
-        dependant_pkgs_start
+        # Start dependent packages
+        dependent_pkgs_start
     fi
 fi
 
