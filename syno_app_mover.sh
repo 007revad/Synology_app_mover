@@ -27,6 +27,8 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
+# DONE Fixed blank dependent package names if their INFO has no displayname set.
+#
 # DONE Added how to export/import database for packages that use MariaDB.
 #
 # DONE Backup package's web_package folder if there is one.
@@ -64,7 +66,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.21"
+scriptver="v3.0.22"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -441,6 +443,9 @@ dependent_pkgs_stop(){
         echo "Stopping dependent packages"
         for d in "${dependents[@]}"; do
             d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" displayname)"
+            if [[ -z "$d_name" ]]; then
+                d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" package)"
+            fi
             if package_status "$d"; then
                 # Get list of dependers that were running
                 dependents2start+=( "$d" )
@@ -468,6 +473,9 @@ dependent_pkgs_start(){
         echo "Starting dependent packages"
         for d in "${dependents2start[@]}"; do
             d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" displayname)"
+            if [[ -z "$d_name" ]]; then
+                d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" package)"
+            fi
             package_start "$d" "$d_name"
 
             # Check packaged started
