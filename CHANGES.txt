@@ -46,7 +46,16 @@ v3.0.16
 - Bug fix for not processing Download Station's `@downloads` folder.
 
 v3.0.15
-
+- Active Backup for Business now working.
+  - Now does not uninstall and reinstall Active Backup.
+- Bug fix for not editing the following packages' extra volume# settings when restoring:
+  - Glacier Backup
+  - Node.js
+  - Presto Server
+  - Surveillance Station
+  - Synology Application Service
+  - Synology Drive
+- Bug fix for always copying instead of moving when Move selected.
 
 v3.0.14
 
