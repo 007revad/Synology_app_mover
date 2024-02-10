@@ -1,3 +1,64 @@
+v3.0.25
+- Backup and Restore modes now skip packages that are development tools with no data.
+  - Node.js, Perl, PHP, python3, SynoCli etc.
+
+v3.0.24
+- Added "All" packages choice for backup and restore modes.
+  1. Stops all packages that are on volumes (and their dependencies).
+  2. Backs up or restores all packages from backups.
+  3. Starts all packages that were stopped (and their dependencies).
+- Now sorts packages for selection when restore mode selected.
+- `@docker` and `@download` warning now instead of "Moving" says:
+  - Moving, Backing up or Restoring depending on the mode selected.
+- Added line number to error messages for easier debugging.
+
+v3.0.23
+- Added reminder to edit docker volume settings if user moved shared folders that docker uses.
+
+v3.0.22
+- Fixed blank dependent package names if their INFO file has no displayname set.
+
+v3.0.21
+
+
+v3.0.20
+
+
+v3.0.19
+
+
+v3.0.18
+
+
+v3.0.17
+
+
+v3.0.16
+
+
+v3.0.15
+
+
+v3.0.14
+
+
+v3.0.13
+
+
+v3.0.12
+- Bug fix for DSM 6 docker.
+- Bug fix for restore mode.
+
+v3.0.11
+- Bug fix.
+
+v3.0.10
+- Docker move, backup and restore now working.
+- Backup: Save package version during backup.
+- Restore: Warn if installed package version does not match backup package version.
+- Lots of improvements and bug fixes.
+- ActiveBackip still WIP.
+
 v3.0.9 Beta
 - Added backup and restore modes.
   - Includes syno_app_mover.conf file to set the backup location.
