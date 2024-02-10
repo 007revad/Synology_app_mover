@@ -1,3 +1,28 @@
+v3.0.xx final release notes
+- Added backup and restore modes.
+  - Includes syno_app_mover.conf file to set the backup location.
+  - Skips packages that are development tools with no data: Node.js, Perl, PHP, python3, SynoCli etc.
+Node.js, Perl, PHP, python3, SynoCli etc.
+- When backup or restore selected asks if you want to backup or restore all packages.
+- Changed so that cursor does not cover first letter when progress bar is showing.
+- Now shows package's display name.
+- Now automatically selects the target volume if there are only 2 volumes.
+- Now only starts package if the script stopped it.
+- Added 5 minute timeout to stopping, and starting, packages.
+- Added warning that moving @docker and @download can take a long time.
+- Now checks if there's enough space to move @docker
+- Now checks if there's enough space to move @download
+- Now asks if you want to backup @download
+- Added reminder to edit docker volume settings if user moved shared folders that docker uses.
+- Added how to export/import database for packages that use MariaDB.
+- Now checks package status after uninstalling or installing package.
+- Now confirms that folder was created when creating a folder.
+- Now copies files/folders with same permissions when copying `@docker` to `@docker_backup`.
+- Changed package selection to avoid invalid key presses.
+- Added line number to error messages for easier debugging.
+- Bug fix when script updates itself and user ran the script from ./scriptname.sh
+
+
 v3.0.25 Beta
 - Backup and Restore modes now skip packages that are development tools with no data.
   - Node.js, Perl, PHP, python3, SynoCli etc.
