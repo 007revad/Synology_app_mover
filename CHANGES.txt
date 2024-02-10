@@ -1,8 +1,8 @@
-v3.0.25
+v3.0.25 Beta
 - Backup and Restore modes now skip packages that are development tools with no data.
   - Node.js, Perl, PHP, python3, SynoCli etc.
 
-v3.0.24
+v3.0.24 Beta
 - Added "All" packages choice for backup and restore modes.
   1. Stops all packages that are on volumes (and their dependencies).
   2. Backs up or restores all packages from backups.
@@ -12,40 +12,40 @@ v3.0.24
   - Moving, Backing up or Restoring depending on the mode selected.
 - Added line number to error messages for easier debugging.
 
-v3.0.23
+v3.0.23 Beta
 - Added reminder to edit docker volume settings if user moved shared folders that docker uses.
 
-v3.0.22
+v3.0.22 Beta
 - Fixed blank dependent package names if their INFO file has no displayname set.
 
-v3.0.21
+v3.0.21 Beta
 - Added how to export/import database for packages that use MariaDB.
 
-v3.0.20
+v3.0.20 Beta
 - Backup package's web_package folder if there is one.
 - Restore package's web_package folder if there is one.
 - Fix dependent typos (dependant).
 
-v3.0.19
+v3.0.19 Beta
 - Added warning that moving `@docker` and `@download` can take a long time.
 - Added check to stop script if package variable is empty.
 - Bug fix for packages with no "display" value in their INFO file.
 
-v3.0.18
+v3.0.18 Beta
 - Bug fix for `@download` named `@downloads`
 - Now checks if there's enough space to move `@docker`
 - Now checks if there's enough space to move `@download`
 - Now asks if you want to backup `@download`
 
-v3.0.17
+v3.0.17 Beta
 - Added 5 minute timeout to stopping, and starting, packages.
 
-v3.0.16
+v3.0.16 Beta
 - Now shows package's display name.
 - Bug fix for not processing Synology Calendar's `@calendar` folder.
 - Bug fix for not processing Download Station's `@downloads` folder.
 
-v3.0.15
+v3.0.15 Beta
 - Active Backup for Business now working.
   - Now does not uninstall and reinstall Active Backup.
 - Bug fix for not editing the following packages' extra volume# settings when restoring:
@@ -57,20 +57,20 @@ v3.0.15
   - Synology Drive
 - Bug fix for always copying instead of moving when Move selected.
 
-v3.0.14
+v3.0.14 Beta
 - Bug fix for editing `@appdata` symlink
 
-v3.0.13
+v3.0.13 Beta
 - Added --preserve-root to rm -r commands
 
-v3.0.12
+v3.0.12 Beta
 - Bug fix for DSM 6 docker.
 - Bug fix for restore mode.
 
-v3.0.11
+v3.0.11 Beta
 - Bug fix.
 
-v3.0.10
+v3.0.10 Beta
 - Docker move, backup and restore now working.
 - Backup: Save package version during backup.
 - Restore: Warn if installed package version does not match backup package version.
