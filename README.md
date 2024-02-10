@@ -57,6 +57,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Media Server | MediaServer | OK |
 | MediaInfo | mediainfo | OK - Move, Backup and Restore |
 | MinimServer | MinimServer | OK |
+| phpMyAdmin | phpMyAdmin | OK |
 | Node.js v14 | Node.js_v14 | OK |
 | Node.js v16 | Node.js_v16 | OK |
 | Node.js v18 | Node.js_v18 | OK |
@@ -116,37 +117,21 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | ElephantDrive |  |
 | GoodSync |  |
 | IDrive |  |
+| Joomla |  |
 | KodiExplorer |  |
+| MediaWiki |  |
 | MEGAcmd |  |
 | NAKIVO Backup and Replication |  |
 | NAKIVO Transporter |  |
+| PACS |  |
 | Ragic Cloud DB |  |
 | Resilo Sync |  |
 | TeamViewer |  |
 | VirtualHere |  |
+| vtigerCRM |  |
+| Wordpress |  |
 
 </details>
-
-#### Packages that won't be tested
-
-<details>
-  <summary>Click here to see list</summary>
-
-These need MarioDB and they either fail to install or don't run properly!?!?
-
-**Note:** I will not test any package that needs MariaDB.
-
-| Package | Result |
-|---------|--------|
-| Joomla | Doesn't install |
-| MediaWiki | Doesn't install |
-| PACS |  Won't test |
-| phpMyAdmin | Won't test |
-| Wordpress | Won't test |
-| vtigerCRM | Installs but doesn't run |
-
-</details>
-
 
 ### Download the script
 
