@@ -61,7 +61,7 @@ v3.0.14
 - Bug fix for editing `@appdata` symlink
 
 v3.0.13
-
+- Added --preserve-root to rm -r commands
 
 v3.0.12
 - Bug fix for DSM 6 docker.
