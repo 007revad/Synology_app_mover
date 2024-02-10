@@ -58,7 +58,7 @@ v3.0.15
 - Bug fix for always copying instead of moving when Move selected.
 
 v3.0.14
-
+- Bug fix for editing `@appdata` symlink
 
 v3.0.13
 
