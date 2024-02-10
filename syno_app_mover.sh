@@ -22,13 +22,16 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
+# DONE For backup and restore skip packages that are development tools with no data.
+#  Node.js, Perl, PHP, python3, SynoCli etc.
+#
+#
 # DONE Add "All" packages choice for backup and restore modes.
 #  Stop all packages that are on volumes (and their dependencies).
 #  Start all packages that we stopped (and their dependencies).
 # DONE Now sorts packages for selection in restore mode.
 # DONE `@docker` and `@download` warning now instead of "Moving" says:
 #  Moving, Backing up or Restoring depending on the mode selected.
-#
 #
 # DONE Added reminder to edit docker volume settings if user moved shared folders that docker uses.
 #
@@ -71,7 +74,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.24"
+scriptver="v3.0.25"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1126,6 +1129,21 @@ check_pkg_versions_match(){
     fi
 }
 
+skip_dev_tools(){ 
+    # $1 is $pkg
+    local skip1
+    local skip2
+    if [[ ${mode,,} == "backup" ]]; then
+        skip1="$(synogetkeyvalue "/var/packages/${package}/INFO" startable)"
+        skip2="$(synogetkeyvalue "/var/packages/${package}/INFO" ctl_stop)"
+    fi
+    if [[ $skip1 == "no" ]] || [[ $skip2 == "no" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 
 #------------------------------------------------------------------------------
 # Select mode
@@ -1211,14 +1229,18 @@ if [[ ${mode,,} != "restore" ]]; then
         package="$(printf %s "$link" | cut -d'/' -f2 )"
         package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
         package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
-        if [[ -z "$package_name" ]]; then
-            package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
-        fi
-        if [[ ! ${package_infos[*]} =~ "${package_volume}|${package_name:?}" ]]; then
-            package_infos+=("${package_volume}|${package_name}")
-        fi
-        if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
-            package_names["${package_name}"]="${package}"
+
+        # Skip packages that are dev tools with no data
+        if ! skip_dev_tools "$package"; then
+            if [[ -z "$package_name" ]]; then
+                package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
+            fi
+            if [[ ! ${package_infos[*]} =~ "${package_volume}|${package_name:?}" ]]; then
+                package_infos+=("${package_volume}|${package_name}")
+            fi
+            if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
+                package_names["${package_name}"]="${package}"
+            fi
         fi
     done < <(find . -maxdepth 2 -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
 
@@ -1229,15 +1251,19 @@ elif [[ ${mode,,} == "restore" ]]; then
     for package in *; do
         if [[ -d "$package" ]] && [[ $package != "@eaDir" ]]; then
             if [[ ${package:0:1} != "-" ]]; then
-                package_name="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
-                if [[ -z "$package_name" ]]; then
-                    package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
-                fi
-                if [[ ! ${package_infos[*]} =~ "${package_name:?}" ]]; then
-                    package_infos+=("${package_name}")
-                fi
-                if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
-                    package_names["${package_name:?}"]="${package:?}"
+
+                # Skip packages that are dev tools with no data
+                if ! skip_dev_tools "$package"; then
+                    package_name="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
+                    if [[ -z "$package_name" ]]; then
+                        package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
+                    fi
+                    if [[ ! ${package_infos[*]} =~ "${package_name:?}" ]]; then
+                        package_infos+=("${package_name}")
+                    fi
+                    if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
+                        package_names["${package_name:?}"]="${package:?}"
+                    fi
                 fi
             fi
         fi
@@ -1337,6 +1363,7 @@ if [[ $all != "yes" ]]; then
     fi
 fi
 
+# Assign just the selected package to array
 if [[ $all != "yes" ]]; then
     unset package_names
     declare -A package_names
