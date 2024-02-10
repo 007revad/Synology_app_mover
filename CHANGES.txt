@@ -22,7 +22,9 @@ v3.0.21
 - Added how to export/import database for packages that use MariaDB.
 
 v3.0.20
-
+- Backup package's web_package folder if there is one.
+- Restore package's web_package folder if there is one.
+- Fix dependent typos (dependant).
 
 v3.0.19
 
