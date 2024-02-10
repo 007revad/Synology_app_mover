@@ -15,11 +15,6 @@
 # "failed to uninstall a package who has dependers installed"
 #
 # TODO
-# Add "All" packages choice for backup and restore modes.
-#  Stop all packages that are on volumes (and their dependencies).
-#  Backup or restore those packages.
-#  Start all packages that we stopped (and their dependencies).
-#
 # Add volume space check for all extras folders.
 #  Should check the volume space BEFORE moving or backing up package.
 #
@@ -27,7 +22,15 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Added reminder to edit docker volumes if user moved shared folders that docker uses.
+# DONE Add "All" packages choice for backup and restore modes.
+#  Stop all packages that are on volumes (and their dependencies).
+#  Start all packages that we stopped (and their dependencies).
+# DONE Now sorts packages for selection in restore mode.
+# DONE `@docker` and `@download` warning now instead of "Moving" says:
+#  Moving, Backing up or Restoring depending on the mode selected.
+#
+#
+# DONE Added reminder to edit docker volume settings if user moved shared folders that docker uses.
 #
 # DONE Fixed blank dependent package names if their INFO has no displayname set.
 #
@@ -68,7 +71,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.23"
+scriptver="v3.0.24"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -84,6 +87,7 @@ Yellow='\e[0;33m'   # ${Yellow}
 Cyan='\e[0;36m'     # ${Cyan}
 #White='\e[0;37m'   # ${White}
 Error='\e[41m'      # ${Error}
+#Warn='\e[47;31m'   # ${Warn}
 Off='\e[0m'         # ${Off}
 
 ding(){ 
@@ -356,7 +360,7 @@ progstatus(){
         echo -e "$2            "
     else
         ding
-        echo -e "${Error}ERROR${Off} $2 failed!"
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} $2 failed!"
         if [[ $exitonerror != "no" ]]; then
             exit 1
         fi
@@ -417,7 +421,7 @@ package_stop(){
     timeout 5.0m synopkg stop "$1" >/dev/null &
     pid=$!
     string="Stopping ${Cyan}${2}${Off}"
-    progbar $pid "$string"
+    progbar "$pid" "$string"
     wait "$pid"
     progstatus "$?" "$string"
 
@@ -432,61 +436,12 @@ package_start(){
     timeout 5.0m synopkg start "$1" >/dev/null &
     pid=$!
     string="Starting ${Cyan}${2}${Off}"
-    progbar $pid "$string"
+    progbar "$pid" "$string"
     wait "$pid"
     progstatus "$?" "$string"
 
     # Allow package processes to finish starting
     wait_status "$1" start
-}
-
-dependent_pkgs_stop(){ 
-    if [[ ${#dependents[@]} -gt "0" ]]; then
-        echo "Stopping dependent packages"
-        for d in "${dependents[@]}"; do
-            d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" displayname)"
-            if [[ -z "$d_name" ]]; then
-                d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" package)"
-            fi
-            if package_status "$d"; then
-                # Get list of dependers that were running
-                dependents2start+=( "$d" )
-                package_stop "$d" "$d_name"
-
-                # Check packaged stopped
-                if package_status "$d"; then
-                    ding
-                    echo -e "${Error}ERROR${Off} Failed to stop ${d_name}!"
-                    # If $fix = yes bypass exit for restoring to orig vol
-                    if [[ $fix != "yes" ]]; then
-                        exit 1
-                    fi
-                fi
-            fi
-        done
-        echo ""
-    fi
-}
-
-dependent_pkgs_start(){ 
-    # Only start dependers that were running
-    if [[ ${#dependents2start[@]} -gt "0" ]]; then
-        #sleep 5  # Allow main package processes to finish starting
-        echo "Starting dependent packages"
-        for d in "${dependents2start[@]}"; do
-            d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" displayname)"
-            if [[ -z "$d_name" ]]; then
-                d_name="$(synogetkeyvalue "/var/packages/${d}/INFO" package)"
-            fi
-            package_start "$d" "$d_name"
-
-            # Check packaged started
-            if ! package_status "$d"; then
-                echo -e "${Error}ERROR${Off} Failed to start ${d_name}!"
-            fi
-        done
-        echo ""
-    fi
 }
 
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
@@ -535,7 +490,7 @@ backup_dir(){
             perms=$(stat -c %a "${2:?}/${1:?}")
             if ! mkdir -m "$perms" "${2:?}/${1:?}_backup"; then
                 ding
-                echo -e "${Error}ERROR${Off} Failed to create directory!"
+                echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to create directory!"
                 exit 1
             fi
         fi
@@ -556,7 +511,7 @@ backup_dir(){
         pid=$!
         # If string is too long progbar repeats string for each dot
         string="Backing up $1 to ${Cyan}${1}_backup${Off}"
-        progbar $pid "$string"
+        progbar "$pid" "$string"
         wait "$pid"
         progstatus "$?" "$string"
         echo ""
@@ -567,7 +522,7 @@ cdir(){
     # $1 is path to cd to
     if ! cd "$1"; then
         ding
-        echo -e "${Error}ERROR${Off} cd to $1 failed!"
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} cd to $1 failed!"
         exit 1
     fi
 }
@@ -582,7 +537,7 @@ create_dir(){
         perms=$(stat -c %a "${1:?}")
         if ! mkdir -m "$perms" "${2:?}"; then
             ding
-            echo -e "${Error}ERROR${Off} Failed to create directory!"
+            echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to create directory!"
             exit 1
         fi
     fi
@@ -597,7 +552,7 @@ move_pkg_do(){
         #mv -f "${source:?}" "${2:?}/${appdir:?}" &
         #pid=$!
         #string="${action} $source to ${Cyan}$2${Off}"
-        #progbar $pid "$string"
+        #progbar "$pid" "$string"
         #wait "$pid"
         #progstatus "$?" "$string"
 
@@ -608,15 +563,16 @@ move_pkg_do(){
             mv -f "${source:?}" "${2:?}/${appdir:?}" &
             pid=$!
             string="${action} $source to ${Cyan}$2${Off}"
-            progbar $pid "$string"
+            progbar "$pid" "$string"
             wait "$pid"
             progstatus "$?" "$string"
         else
+
             # Copy source contents if target folder exists
             cp -prf "${source:?}" "${2:?}/${appdir:?}" &
             pid=$!
             string="Copying $source to ${Cyan}$2${Off}"
-            progbar $pid "$string"
+            progbar "$pid" "$string"
             wait "$pid"
             progstatus "$?" "$string"
 
@@ -625,7 +581,7 @@ move_pkg_do(){
             pid=$!
             exitonerror="no"
             string="Removing $source"
-            progbar $pid "$string"
+            progbar "$pid" "$string"
             wait "$pid"
             progstatus "$?" "$string"
         fi
@@ -637,7 +593,7 @@ move_pkg_do(){
             #mv -f "${source:?}" "${2:?}/${appdir:?}" &
             #pid=$!
             #string="${action} $source to ${Cyan}$2${Off}"
-            #progbar $pid "$string"
+            #progbar "$pid" "$string"
             #wait "$pid"
             #progstatus "$?" "$string"
             move_dir "$appdir"
@@ -695,6 +651,8 @@ move_pkg(){
     local appdir
     local perms
     local destination
+    local appdirs_tmp
+    local app_paths_tmp
     if [[ ${mode,,} == "backup" ]]; then
         destination="$bkpath"
         #cdir /var/packages
@@ -705,7 +663,6 @@ move_pkg(){
         destination="$2"
         #cdir /var/packages
     fi    
-
     if [[ $majorversion -gt 6 ]]; then
         applist=( "@appconf" "@appdata" "@apphome" "@appshare" "@appstore" "@apptemp" )
     else
@@ -819,6 +776,7 @@ copy_dir(){
         extras="/extras"
     else
         pack="/${pkg:?}"
+        packshow="${pkg:?}"
         #extras=""
     fi
 
@@ -832,8 +790,8 @@ copy_dir(){
                 # If string is too long progbar gets messed up
                 cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
                 pid=$!
-                string="${action} /${sourcevol}/${1}/${Cyan}$pkg${Off}"
-                progbar $pid "$string"
+                string="${action} /${sourcevol}/${1}"
+                progbar "$pid" "$string"
                 wait "$pid"
                 progstatus "$?" "$string"
             else
@@ -841,7 +799,7 @@ copy_dir(){
                 cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}/${1:?}" &
                 pid=$!
                 string="${action} /${sourcevol}/${1}/${Cyan}$pkg${Off}"
-                progbar $pid "$string"
+                progbar "$pid" "$string"
                 wait "$pid"
                 progstatus "$?" "$string"
             fi
@@ -849,11 +807,14 @@ copy_dir(){
     elif [[ ${mode,,} == "restore" ]]; then
         #if [[ -d "${bkpath}/$1" ]]; then
             # If string is too long progbar gets messed up
-            #cp -prf "${bkpath}/$1" "${targetvol}" &
             cp -prf "${bkpath:?}${extras}/${1:?}" "${targetvol:?}" &
             pid=$!
-            string="${action} ${Cyan}$1${Off} to $targetvol"
-            progbar $pid "$string"
+            if [[ -n "$extras" ]]; then
+                string="${action} $1 to $targetvol"
+            else
+                string="${action} ${1}/${Cyan}$packshow${Off} to $targetvol"
+            fi
+            progbar "$pid" "$string"
             wait "$pid"
             progstatus "$?" "$string"
         #fi
@@ -868,7 +829,7 @@ move_dir(){
             mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
             pid=$!
             string="${action} /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
-            progbar $pid "$string"
+            progbar "$pid" "$string"
             wait "$pid"
             progstatus "$?" "$string"
         elif ! is_empty "/${sourcevol:?}/${1:?}"; then
@@ -877,7 +838,7 @@ move_dir(){
             cp -prf "/${sourcevol:?}/${1:?}" "${targetvol:?}" &
             pid=$!
             string="Copying /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
-            progbar $pid "$string"
+            progbar "$pid" "$string"
             wait "$pid"
             progstatus "$?" "$string"
 
@@ -888,7 +849,7 @@ move_dir(){
                     pid=$!
                     exitonerror="no"
                     string="Removing /${sourcevol}/$1"
-                    progbar $pid "$string"
+                    progbar "$pid" "$string"
                     wait "$pid"
                     progstatus "$?" "$string"
                 fi
@@ -950,7 +911,7 @@ move_extras(){
             echo ""
             ;;
         ContainerManager|Docker)
-            echo -e "${Red}WARNING Moving @docker could take a long time${Off}"
+            echo -e "${Red}WARNING $action @docker could take a long time${Off}"
             move_dir "@docker" extras
             if [[ ${mode,,} != "backup" ]]; then
                 dsm="$(get_key_value /etc.defaults/VERSION majorversion)"
@@ -972,7 +933,7 @@ move_extras(){
             echo ""
             ;;
         DownloadStation)
-            echo -e "${Red}WARNING Moving @download could take a long time${Off}"
+            echo -e "${Red}WARNING $action @download could take a long time${Off}"
             move_dir "@download" extras
             echo ""
             ;;
@@ -1105,13 +1066,13 @@ web_packages(){
                     cp -prf "${web_pkg_path:?}/${1:?}" "${bkpath:?}/web_packages" &
                     pid=$!
                     string="${action} $web_pkg_path/${pkg,,}"
-                    progbar $pid "$string"
+                    progbar "$pid" "$string"
                     wait "$pid"
                     progstatus "$?" "$string"
                     echo ""
                 else
                     ding
-                    echo -e "${Error}ERROR${Off} Failed to create directory!"
+                    echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to create directory!"
                     echo -e "  ${bkpath:?}/web_packages\n"
                 fi
             elif [[ ${mode,,} == "restore" ]]; then
@@ -1120,12 +1081,47 @@ web_packages(){
                     cp -prf "${bkpath:?}/web_packages/${1:?}" "${web_pkg_path:?}" &
                     pid=$!
                     string="${action} $web_pkg_path/${pkg,,}"
-                    progbar $pid "$string"
+                    progbar "$pid" "$string"
                     wait "$pid"
                     progstatus "$?" "$string"
                     echo ""
                 fi
             fi
+        fi
+    fi
+}
+
+check_pkg_installed(){ 
+    # Check if package is installed
+    # $1 is package
+    # $2 is package name
+    synopkg status "${1:?}" >/dev/null
+    if [[ $? == "255" ]]; then
+        echo -e "${Cyan}${2}${Off} is not installed!"
+        echo -e "Install ${Cyan}${2}${Off} then try Restore again"
+        if [[ $all != "yes" ]]; then
+            exit
+        fi
+        return 1
+    else
+        return 0
+    fi
+}
+
+check_pkg_versions_match(){ 
+    # $1 is installed package version
+    # $2 is backed up package version
+    if [[ $1 != "$2" ]]; then
+        ding
+        echo -e "${Yellow}Backup and installed package versions don't match!${Off}"
+        echo "  Backed up version: $2"
+        echo "  Installed version: $1"
+        echo "Do you want to continue restoring ${pkg_name}? [y/n]"
+        read -r reply
+        if [[ ${reply,,} != "y" ]]; then
+            exit
+        else
+            echo ""
         fi
     fi
 }
@@ -1166,12 +1162,12 @@ echo -e "You selected ${Cyan}${mode}${Off}\n"
 if [[ ${mode,,} != "move" ]]; then
     if [[ ! -f "$conffile" ]]; then
         ding
-        echo -e "${Error}ERROR${Off} $conffile not found!"
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} $conffile not found!"
         exit 1
     fi
     if [[ ! -r "$conffile" ]]; then
         ding
-        echo -e "${Error}ERROR${Off} $conffile not readable!"
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} $conffile not readable!"
         exit 1
     fi
     # Fix line endings
@@ -1187,11 +1183,11 @@ if [[ ${mode,,} != "move" ]]; then
     backuppath="$(synogetkeyvalue "$conffile" backuppath)"
     if [[ -z "$backuppath" ]]; then
         ding
-        echo -e "${Error}ERROR${Off} backuppath missing from ${conffile}!"
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} backuppath missing from ${conffile}!"
         exit 1
     elif [[ ! -d "$backuppath" ]]; then
         ding
-        echo -e "${Error}ERROR${Off} Backup folder ${Cyan}$backuppath${Off} not found!"
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} Backup folder ${Cyan}$backuppath${Off} not found!"
         exit 1
     fi
 fi
@@ -1206,13 +1202,11 @@ fi
 # Select package
 
 declare -A package_names
-
+package_infos=( )
 if [[ ${mode,,} != "restore" ]]; then
-    # Select package to move or backup
-
     # Add non-system packages to array
+
     cdir /var/packages
-    package_infos=( )
     while read -r link target; do
         package="$(printf %s "$link" | cut -d'/' -f2 )"
         package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
@@ -1228,47 +1222,9 @@ if [[ ${mode,,} != "restore" ]]; then
         fi
     done < <(find . -maxdepth 2 -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
 
-    # Sort array
-    IFS=$'\n' package_infos_sorted=($(sort <<<"${package_infos[*]}")); unset IFS
-
-    # Select package to move
-    if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
-        #echo -e "\n[Installed package list]"
-        echo -e "[Installed package list]"
-        for ((i=1; i<=${#package_infos_sorted[@]}; i++)); do
-            info="${package_infos_sorted[i-1]}"
-            before_pipe="${info%%|*}"
-            after_pipe="${info#*|}"
-            package_infos_show+=("$before_pipe  $after_pipe")
-        done
-
-        PS3="Select the package to ${mode,,}: "
-        select m in "${package_infos_show[@]}"; do
-            case "$m" in
-                /volume*)
-                    # Parse selected element of array
-                    package_volume="$(echo "$m" | awk '{print $1}')"
-                    pkg_name=${m#"$package_volume  "}
-                    pkg="${package_names[${pkg_name}]}"
-                    break
-                    ;;
-                *)
-                    echo "Invalid choice! $m"
-                    ;;
-            esac
-        done
-    else
-        echo "No movable packages found!" && exit 1
-    fi
-
-    echo -e "You selected ${Cyan}${pkg_name}${Off} in ${Cyan}${package_volume}${Off}\n"
-    target=$(readlink "/var/packages/${pkg}/target")
-    linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
-
 elif [[ ${mode,,} == "restore" ]]; then
-    # Select package to backup
+    # Add list of backed up packages to array
 
-    # Get list of backed up packages
     cdir "${backuppath}/syno_app_mover"
     for package in *; do
         if [[ -d "$package" ]] && [[ $package != "@eaDir" ]]; then
@@ -1277,43 +1233,114 @@ elif [[ ${mode,,} == "restore" ]]; then
                 if [[ -z "$package_name" ]]; then
                     package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
                 fi
-                package_names["${package_name:?}"]="${package:?}"
+                if [[ ! ${package_infos[*]} =~ "${package_name:?}" ]]; then
+                    package_infos+=("${package_name}")
+                fi
+                if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
+                    package_names["${package_name:?}"]="${package:?}"
+                fi
             fi
         fi
     done < <(find . -maxdepth 2 -type d)
+fi
 
-    # Select package to restore
-    if [[ ${#package_names[@]} -gt 0 ]]; then
-        echo -e "[Restorable package list]"
-        PS3="Select the package to restore: "
-        select pkg_name in "${!package_names[@]}"; do
-            pkg="${package_names[${pkg_name}]}"
-            if [[ $pkg ]]; then
-                if [[ -d $pkg ]]; then
-                    echo -e "You selected ${Cyan}${pkg_name}${Off}\n"
-                    break
-                else
-                    ding
-                    echo -e "${Error}ERROR${Off} $pkg_name not found!"
-                    exit 1
-                fi
-            else
-                echo "Invalid choice!"
-            fi
-        done
+# Sort array
+IFS=$'\n' package_infos_sorted=($(sort <<<"${package_infos[*]}")); unset IFS
 
-        # Check if package is installed
-        synopkg status "${pkg}" >/dev/null
-        if [[ $? == "255" ]]; then
-            echo -e "${Cyan}${pkg_name}${Off} is not installed!"
-            echo -e "Install ${Cyan}${pkg_name}${Off} then try Restore again"
-            exit
-        fi
-    else
-        ding
-        echo -e "${Error}ERROR${Off} No package backups found!"
-        exit 1
+# Offer to backup or restore all packages
+if [[ ${mode,,} == "backup" ]]; then
+    echo -e "Do you want to backup ${Cyan}All${Off} packages? [y/n]"
+    read -r answer
+    #echo ""
+    if [[ ${answer,,} == "y" ]]; then
+        all="yes"
+        echo -e "You selected ${Cyan}All${Off}\n"
     fi
+elif [[ ${mode,,} == "restore" ]]; then
+    echo -e "Do you want to restore ${Cyan}All${Off} backed up packages? [y/n]"
+    read -r answer
+    #echo ""
+    if [[ ${answer,,} == "y" ]]; then
+        all="yes"
+        echo -e "You selected ${Cyan}All${Off}\n"
+    fi
+fi
+
+if [[ $all != "yes" ]]; then
+    if [[ ${mode,,} != "restore" ]]; then
+        # Select package to move or backup
+
+        if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
+            echo -e "[Installed package list]"
+            for ((i=1; i<=${#package_infos_sorted[@]}; i++)); do
+                info="${package_infos_sorted[i-1]}"
+                before_pipe="${info%%|*}"
+                after_pipe="${info#*|}"
+                package_infos_show+=("$before_pipe  $after_pipe")
+            done
+        fi
+
+        if [[ ${#package_infos_show[@]} -gt 0 ]]; then
+            PS3="Select the package to ${mode,,}: "
+            select m in "${package_infos_show[@]}"; do
+                case "$m" in
+                    /volume*)
+                        # Parse selected element of array
+                        package_volume="$(echo "$m" | awk '{print $1}')"
+                        pkg_name=${m#"$package_volume  "}
+                        pkg="${package_names[${pkg_name}]}"
+                        break
+                        ;;
+                    *)
+                        echo "Invalid choice! $m"
+                        ;;
+                esac
+            done
+        else
+            echo "No movable packages found!" && exit 1
+        fi
+
+        echo -e "You selected ${Cyan}${pkg_name}${Off} in ${Cyan}${package_volume}${Off}\n"
+        target=$(readlink "/var/packages/${pkg}/target")
+        linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
+
+    elif [[ ${mode,,} == "restore" ]]; then
+        # Select package to backup
+
+        # Select package to restore
+        if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
+            echo -e "[Restorable package list]"
+            PS3="Select the package to restore: "
+            select pkg_name in "${package_infos_sorted[@]}"; do
+                if [[ $pkg_name ]]; then
+                    pkg="${package_names[${pkg_name}]}"
+                    if [[ -d $pkg ]]; then
+                        echo -e "You selected ${Cyan}${pkg_name}${Off}\n"
+                        break
+                    else
+                        ding
+                        echo -e "Line ${LINENO}: ${Error}ERROR${Off} $pkg_name not found!"
+                        exit 1
+                    fi
+                else
+                    echo "Invalid choice!"
+                fi
+            done
+
+            # Check if package is installed
+            check_pkg_installed "$pkg" "$pkg_name"
+        else
+            ding
+            echo -e "Line ${LINENO}: ${Error}ERROR${Off} No package backups found!"
+            exit 1
+        fi
+    fi
+fi
+
+if [[ $all != "yes" ]]; then
+    unset package_names
+    declare -A package_names
+    package_names["${pkg_name:?}"]="${pkg:?}"
 fi
 
 
@@ -1346,7 +1373,7 @@ if [[ ${mode,,} == "move" ]]; then
                     break
                 else
                     ding
-                    echo -e "${Error}ERROR${Off} $targetvol not found!"
+                    echo -e "Line ${LINENO}: ${Error}ERROR${Off} $targetvol not found!"
                     exit 1
                 fi
             else
@@ -1358,19 +1385,31 @@ if [[ ${mode,,} == "move" ]]; then
         echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
     else
         ding
-        echo -e "${Error}ERROR${Off} Only 1 volume found!"
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} Only 1 volume found!"
         exit 1
     fi
 elif [[ ${mode,,} == "backup" ]]; then
     targetvol="/$(echo "${backuppath:?}" | cut -d"/" -f2)"
-    echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
+    if [[ $all != "yes" ]]; then
+        echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
+    fi
 elif [[ ${mode,,} == "restore" ]]; then
-    targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
-    echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
+    if [[ $all != "yes" ]]; then
+        targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
+        echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
+    fi
 fi
 
 # Check user is ready
-if [[ ${mode,,} == "backup" ]]; then
+if [[ $all == "yes" ]]; then
+    echo -e "${Red}WARNING All packages installed on volumes will be stopped until the"
+    echo -e "${mode} of all packages has finished which could take long while.${Off}"
+    if [[ ${mode,,} == "backup" ]]; then
+        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} packages to ${Cyan}${backuppath}${Off}? [y/n]"
+    else
+        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} backed up packages? [y/n]"
+    fi
+elif [[ ${mode,,} == "backup" ]]; then
     echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${backuppath}${Off}? [y/n]"
 else
     echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
@@ -1382,241 +1421,206 @@ if [[ ${answer,,} != y ]]; then
 fi
 
 
-if [[ ${mode,,} == "backup" ]] || [[ ${mode,,} == "restore" ]]; then
-    bkpath="${backuppath}/syno_app_mover/$pkg"
-fi
-
-
 #------------------------------------------------------------------------------
-# Check installed package version and backup version
+# Stop the package or packages
 
-# Get package version
-if [[ ${mode,,} != "move" ]]; then
-    pkgversion=$(synogetkeyvalue "/var/packages/$pkg/INFO" version)
-fi
+# Get list of running packages to start later
+declare -A running_pkgs
 
-# Get backup package version
-if [[ ${mode,,} == "restore" ]]; then
-    pkgbackupversion=$(synogetkeyvalue "$bkpath/INFO" version)
-    if [[ $pkgversion ]] && [[ $pkgbackupversion ]]; then
-        if [[ $pkgversion != "$pkgbackupversion" ]]; then
+# Loop through package_names associative array
+for pkg_name in "${!package_names[@]}"; do
+    pkg="${package_names["$pkg_name"]}"
+    if package_status "$pkg"; then
+        running_pkgs+=(["$pkg_name"]="$pkg")
+    fi
+done
+
+stop_packages(){ 
+    # Check package is running
+    if package_status "$pkg"; then
+
+        # Stop package
+        if package_status "$pkg"; then
+            package_stop "$pkg" "$pkg_name"
+            #echo ""
+        fi
+
+        # Check package stopped
+        if package_status "$pkg"; then
             ding
-            echo -e "${Yellow}Backup and installed package versions don't match!${Off}"
-            echo "  Backed up version: $pkgbackupversion"
-            echo "  Installed version: $pkgversion"
-            echo "Do you want to continue restoring ${pkg_name}? [y/n]"
-            read -r reply
-            if [[ ${reply,,} != "y" ]]; then
-                exit
-            else
-                echo ""
+            echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to stop ${pkg_name}!"
+            if [[ $fix != "yes" ]]; then  # bypass exit
+                exit 1
             fi
+        else
+            did_stop_pkg="yes"
         fi
-    fi
-fi
 
-
-#------------------------------------------------------------------------------
-# Create package folder if mode is backup
-
-if [[ ${mode,,} == "backup" ]]; then
-    if [[ ! -d "$bkpath" ]]; then
-        if ! mkdir -p "${bkpath:?}"; then
-            ding
-            echo -e "${Error}ERROR${Off} Failed to create directory!"
-            exit 1
+        if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
+            # Stop containerd-shim
+            killall containerd-shim >/dev/null 2>&1
         fi
-    fi
-
-#    # Create package version file
-#    synosetkeyvalue "$bkpath/INFO" version "$pkgversion"
-
-    # Backup package's INFO file
-    cp -p "/var/packages/$pkg/INFO" "$bkpath/INFO"
-fi
-
-
-#------------------------------------------------------------------------------
-# Move the package
-
-# Check package is running
-if package_status "$pkg"; then
-
-    # Get list of dependent packages
-    dependents=($(synopkg list --name --depend-on "$pkg"))
-
-    # Stop dependent packages
-    dependent_pkgs_stop
-
-    # Stop package
-    if package_status "$pkg"; then
-        package_stop "$pkg" "$pkg_name"
-        echo ""
-    fi
-
-    # Check package stopped
-    if package_status "$pkg"; then
-        ding
-        echo -e "${Error}ERROR${Off} Failed to stop ${pkg_name}!"
-        if [[ $fix != "yes" ]]; then  # bypass exit
-            exit 1
-        fi
-    fi
-
-    if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
-        # Stop containerd-shim
-        killall containerd-shim >/dev/null
-    fi
-else
-    skip_start="yes"
-fi
-
-
-target=$(readlink "/var/packages/${pkg}/target")
-#sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
-sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
-
-# Move package
-if [[ $pkg =~ ActiveBackup* ]]; then 
-    # Can't uninstall package which has dependers
-
-#    # Backup @ActiveBackup folder
-#    # $1 is folder to backup (@ActiveBackup etc) 
-#    # $2 is volume (/volume1 etc)
-#    backup_dir "@${pkg:?}" "${sourcevol:?}"
-#
-#    if [[ ${mode,,} == "move" ]]; then
-#        # Uninstall and reinstall package
-#        package_uninstall "$pkg"
-#        sleep 2
-#
-#        # Check if package uninstalled
-#        synopkg status "${pkg}" >/dev/null
-#        if [[ $? != "255" ]]; then
-#            echo -e "${Error}ERROR${Off} ${Cyan}${pkg_name}${Off} didn't uninstall!"
-#            exit
-#        fi
-#
-#        package_install "$pkg" "$targetvol"
-#        #wait_status "$pkg" start
-#
-#        # Check if package installed
-#        if ! synopkg status "${pkg}" >/dev/null; then
-#            ding
-#            echo -e "${Error}ERROR${Off} ${Cyan}${pkg_name}${Off} didn't install!"
-#            exit
-#        fi
-#
-#        # Stop package
-#        package_stop "$pkg" "$pkg_name"
-#        skip_start=""
-#
-#        # Delete @ActiveBackup on target volume
-#        if [[ -d "${targetvol:?}/@${pkg:?}" ]]; then
-#            #rm -r --preserve-root "${targetvol:?}/@${pkg:?}" &
-#            #pid=$!
-#            #string="Deleting new ${Cyan}$pkg${Off} settings and database"
-#            #progbar $pid "$string"
-#            #wait "$pid"
-#            #progstatus "$?" "$string"
-#            rm -r --preserve-root "${targetvol}/@${pkg}"
-#        fi
-#
-#        # Copy source @ActiveBackup_backup to target @ActiveBackup
-#        cp -prf "${sourcevol:?}/@${pkg:?}_backup" "${targetvol:?}/@${pkg:?}" &
-#        pid=$!
-#        string="Copying ${Cyan}$pkg${Off} settings and database to ${Cyan}$targetvol${Off}"
-#        progbar $pid "$string"
-#        wait "$pid"
-#        progstatus "$?" "$string"
 #    else
-        # Backup, or restore and edit symlinks
+#        skip_start="yes"
+    fi
+}
+
+# Stop packages
+# Loop through running_pkgs associative array
+for pkg_name in "${!running_pkgs[@]}"; do
+    pkg="${running_pkgs[$pkg_name]}"
+    stop_packages
+    #echo ""
+done
+if [[ $did_stop_pkg == "yes" ]]; then
+    echo ""
+fi
+
+
+#------------------------------------------------------------------------------
+# Move the package or packages
+
+prepare_backup_restore(){ 
+    # Set bkpath variable
+    if [[ ${mode,,} != "move" ]]; then
+        bkpath="${backuppath}/syno_app_mover/$pkg"
+    fi
+
+    # Set targetvol variable
+    if [[ ${mode,,} == "restore" ]] && [[ $all == "yes" ]]; then
+        targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
+    fi
+
+    # Check installed package version and backup version
+    # Get package version
+    if [[ ${mode,,} != "move" ]]; then
+        pkgversion=$(synogetkeyvalue "/var/packages/$pkg/INFO" version)
+    fi
+
+    # Get backup package version
+    if [[ ${mode,,} == "restore" ]]; then
+        pkgbackupversion=$(synogetkeyvalue "$bkpath/INFO" version)
+        if [[ $pkgversion ]] && [[ $pkgbackupversion ]]; then
+            check_pkg_versions_match "$pkgversion" "$pkgbackupversion"
+        fi
+    fi
+
+    # Create package folder if mode is backup
+    if [[ ${mode,,} == "backup" ]]; then
+        if [[ ! -d "$bkpath" ]]; then
+            if ! mkdir -p "${bkpath:?}"; then
+                ding
+                echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to create directory!"
+                exit 1
+            fi
+        fi
+
+        # Backup package's INFO file
+        cp -p "/var/packages/$pkg/INFO" "$bkpath/INFO"
+    fi
+}
+
+process_packages(){
+    target=$(readlink "/var/packages/${pkg}/target")
+    #sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
+    sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
+
+    # Move package
+    if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
+        # Move @docker if package is ContainerManager or Docker
+
+        # Check if @docker is on same volume as Docker package
+        if [[ -d "/${sourcevol}/@docker" ]]; then
+            # Check we have enough space
+            if ! check_space "/${sourcevol}/@docker" "${targetvol}"; then
+                exit
+            fi
+        fi
+
+        # Backup @docker
+        if [[ ${mode,,} != "backup" ]]; then
+            if [[ ${mode,,} == "move" ]]; then
+                dockerbakvol="$sourcevol"
+            elif [[ ${mode,,} == "restore" ]]; then
+                dockerbakvol="$targetvol"
+            fi
+            echo -e "Do you want to ${Yellow}backup${Off} the"\
+                "${Cyan}@docker${Off} folder on $dockerbakvol? [y/n]"
+            read -r answer
+            #echo ""
+            if [[ ${answer,,} == "y" ]]; then
+                # Check we have enough space
+                if ! check_space "/${sourcevol}/@docker" "${sourcevol}"; then
+                    exit
+                else
+                    backup_dir "@docker" "$dockerbakvol"
+                fi
+            fi
+        fi
+
+        # Move package and edit symlinks
         move_pkg "$pkg" "$targetvol"
-#    fi
 
-elif [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
-    # Move @docker if package is ContainerManager or Docker
+    elif [[ $pkg == "DownloadStation" ]]; then
+        # Move @download if package is DownloadStation
 
-    # Check if @docker is on same volume as Docker package
-    if [[ -d "/${sourcevol}/@docker" ]]; then
-        # Check we have enough space
-        if ! check_space "/${sourcevol}/@docker" "${targetvol}"; then
-            exit
-        fi
-    fi
-
-    # Backup @docker
-    if [[ ${mode,,} != "backup" ]]; then
-        if [[ ${mode,,} == "move" ]]; then
-            dockerbakvol="$sourcevol"
-        elif [[ ${mode,,} == "restore" ]]; then
-            dockerbakvol="$targetvol"
-        fi
-        echo -e "Do you want to ${Yellow}backup${Off} the"\
-            "${Cyan}@docker${Off} folder on $dockerbakvol? [y/n]"
-        read -r answer
-        echo ""
-        if [[ ${answer,,} == "y" ]]; then
+        # Check if @download is on same volume as DownloadStation package
+        if [[ -d "/${sourcevol}/@download" ]]; then
             # Check we have enough space
-            if ! check_space "/${sourcevol}/@docker" "${sourcevol}"; then
+            if ! check_space "/${sourcevol}/@download" "${targetvol}"; then
                 exit
-            else
-                backup_dir "@docker" "$dockerbakvol"
             fi
         fi
-    fi
 
-    # Move package and edit symlinks
-    move_pkg "$pkg" "$targetvol"
-
-elif [[ $pkg == "DownloadStation" ]]; then
-    # Move @download if package is DownloadStation
-
-    # Check if @download is on same volume as DownloadStation package
-    if [[ -d "/${sourcevol}/@download" ]]; then
-        # Check we have enough space
-        if ! check_space "/${sourcevol}/@download" "${targetvol}"; then
-            exit
-        fi
-    fi
-
-    # Backup @download
-    if [[ ${mode,,} != "backup" ]]; then
-        if [[ ${mode,,} == "move" ]]; then
-            downloadsbakvol="$sourcevol"
-        elif [[ ${mode,,} == "restore" ]]; then
-            downloadsbakvol="$targetvol"
-        fi
-        echo -e "Do you want to ${Yellow}backup${Off} the"\
-            "${Cyan}@download${Off} folder on $downloadsbakvol? [y/n]"
-        read -r answer
-        echo ""
-        if [[ ${answer,,} == "y" ]]; then
-            # Check we have enough space
-            if ! check_space "/${sourcevol}/@download" "${sourcevol}"; then
-                exit
-            else
-                backup_dir "@download" "$downloadsbakvol"
+        # Backup @download
+        if [[ ${mode,,} != "backup" ]]; then
+            if [[ ${mode,,} == "move" ]]; then
+                downloadsbakvol="$sourcevol"
+            elif [[ ${mode,,} == "restore" ]]; then
+                downloadsbakvol="$targetvol"
+            fi
+            echo -e "Do you want to ${Yellow}backup${Off} the"\
+                "${Cyan}@download${Off} folder on $downloadsbakvol? [y/n]"
+            read -r answer
+            #echo ""
+            if [[ ${answer,,} == "y" ]]; then
+                # Check we have enough space
+                if ! check_space "/${sourcevol}/@download" "${sourcevol}"; then
+                    exit
+                else
+                    backup_dir "@download" "$downloadsbakvol"
+                fi
             fi
         fi
+
+        # Move package and edit symlinks
+        move_pkg "$pkg" "$targetvol"
+
+    else
+        # Move package and edit symlinks
+        move_pkg "$pkg" "$targetvol"
     fi
+    echo ""
 
-    # Move package and edit symlinks
-    move_pkg "$pkg" "$targetvol"
+    # Move package's other folders
+    move_extras "$pkg" "$targetvol"
 
-else
-    # Move package and edit symlinks
-    move_pkg "$pkg" "$targetvol"
-fi
-echo ""
+    # Backup or restore package's web_packages folder
+    if [[ ${mode,,} != "move" ]]; then
+        web_packages "${pkg,,}"
+    fi
+}
 
-# Move package's other folders
-move_extras "$pkg" "$targetvol"
 
-# Backup or restore package's web_packages folder
-if [[ ${mode,,} != "move" ]]; then
-    web_packages "${pkg,,}"
-fi
+# Loop through package_names associative array
+for pkg_name in "${!package_names[@]}"; do
+    #echo "$pkg_name  :  ${package_names[$pkg_name]}"  # debug
+    pkg="${package_names[$pkg_name]}"
+    if [[ ${mode,,} != "move" ]]; then
+        prepare_backup_restore
+    fi
+    process_packages
+done 
 
 
 #------------------------------------------------------------------------------
@@ -1693,16 +1697,32 @@ fi
 #------------------------------------------------------------------------------
 # Show how to export and import package's database if dependent on MariaDB10
 
-info="/var/packages/${pkg}/INFO"
-if synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null; then
+# Loop through package_names associative array
+for pkg_name in "${!package_names[@]}"; do
+    #echo "$pkg_name  :  ${package_names[$pkg_name]}"  # debug
+    pkg="${package_names[$pkg_name]}"
+    if [[ ${mode,,} != "move" ]]; then
+        info="/var/packages/${pkg}/INFO"
+        if synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null
+        then
+           mariadb_list+=("${pkg_name}")
+           mariadb_show="yes"
+        fi
+    fi
+done 
+
+
+#info="/var/packages/${pkg}/INFO"
+#if synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null; then
+if [[ $mariadb_show == "yes" ]]; then
     if [[ ${mode,,} == "backup" ]]; then
         # Show how to export package's database
-        echo -e "If you want to backup the $pkg_name database"
+        echo -e "If you want to ${Yellow}backup${Off} the database of"\
+            "${Cyan}${mariadb_list[*]}${Off} do the following:"
         echo "  If you don't have phpMyAdmin installed:"
         echo "    1. Install phpMyAdmin."
         echo "    2. Open phpMyAdmin"
-        echo "    3. Open phpMyAdmin"
-        echo "    4. Log in with user root and your MariaDB10 password."
+        echo "    3. Log in with user root and your MariaDB10 password."
         echo "  Once you are logged in to phpMyAdmin:"
         echo "    1. Click on the package name on the left."
         echo "    2. Click on the Export tab at the top."
@@ -1710,12 +1730,12 @@ if synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null; the
         echo -e "    4. Save the export to a safe location.\n"
     elif [[ ${mode,,} == "restore" ]]; then
         # Show how to import package's exported database
-        echo -e "If you want to backup the $pkg_name database"
+        echo -e "If you want to ${Yellow}restore${Off} the database of"\
+            "${Cyan}${mariadb_list[*]}${Off} do the following:"
         echo "  If you don't have phpMyAdmin installed:"
         echo "    1. Install phpMyAdmin."
         echo "    2. Open phpMyAdmin"
-        echo "    3. Open phpMyAdmin"
-        echo "    4. Log in with user root and your MariaDB10 password."
+        echo "    3. Log in with user root and your MariaDB10 password."
         echo "  Once you are logged in to phpMyAdmin:"
         echo "    1. Click on the package name on the left."
         echo "    2. Click on the Import tab at the top."
@@ -1728,36 +1748,49 @@ fi
 #------------------------------------------------------------------------------
 # Start package and dependent packages
 
-if [[ $skip_start != "yes" ]]; then
-    if [[ ${mode,,} == "backup" ]]; then
-        answer="y"
-    else
-        echo -e "Do you want to start ${Cyan}$pkg_name${Off} now? [y/n]"
-        read -r answer
-        echo ""
-    fi
-    if [[ ${answer,,} == "y" ]]; then
-        # Start package
-        package_start "$pkg" "$pkg_name"
-        echo ""
-
-        # Check package started
-        if ! package_status "$pkg"; then
-            ding
-            echo -e "${Error}ERROR${Off} Failed to start ${pkg_name}!"
-            exit 1
+start_packages(){ 
+#    if [[ $skip_start != "yes" ]]; then
+        if [[ ${mode,,} == "backup" ]]; then
+            answer="y"
+        elif [[ $all == "yes" ]]; then
+            answer="y"
+        else
+            echo -e "Do you want to start ${Cyan}$pkg_name${Off} now? [y/n]"
+            read -r answer
+            echo ""
         fi
+        if [[ ${answer,,} == "y" ]]; then
+            # Start package
+            package_start "$pkg" "$pkg_name"
+            #echo ""
 
-        # Start dependent packages
-        dependent_pkgs_start
-    fi
+            # Check package started
+            if ! package_status "$pkg"; then
+                ding
+                echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to start ${pkg_name}!"
+                exit 1
+            fi
+        fi
+#    fi
+}
+
+# Loop through running_pkgs associative array
+for pkg_name in "${!running_pkgs[@]}"; do
+    pkg="${running_pkgs[$pkg_name]}"
+    start_packages
+done
+echo ""
+
+
+if [[ $all == "yes" ]]; then
+    echo -e "Finished ${action,,} all packages\n"
+else
+    echo -e "Finished ${action,,} $pkg_name\n"
 fi
-
-echo -e "Finished ${action,,} $pkg_name\n"
 
 
 #------------------------------------------------------------------------------
-# Suggest change location of shared folder(s)
+# Suggest change location of shared folder(s) if package moved
 
 suggest_change_location(){ 
     # Suggest moving CloudSync database if package is CloudSync
