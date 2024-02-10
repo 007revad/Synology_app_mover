@@ -32,7 +32,10 @@ v3.0.19
 - Bug fix for packages with no "display" value in their INFO file.
 
 v3.0.18
-
+- Bug fix for `@download` named `@downloads`
+- Now checks if there's enough space to move `@docker`
+- Now checks if there's enough space to move `@download`
+- Now asks if you want to backup `@download`
 
 v3.0.17
 
