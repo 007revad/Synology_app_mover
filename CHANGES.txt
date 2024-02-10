@@ -27,7 +27,9 @@ v3.0.20
 - Fix dependent typos (dependant).
 
 v3.0.19
-
+- Added warning that moving `@docker` and `@download` can take a long time.
+- Added check to stop script if package variable is empty.
+- Bug fix for packages with no "display" value in their INFO file.
 
 v3.0.18
 
