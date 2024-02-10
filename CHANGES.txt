@@ -19,7 +19,7 @@ v3.0.22
 - Fixed blank dependent package names if their INFO file has no displayname set.
 
 v3.0.21
-
+- Added how to export/import database for packages that use MariaDB.
 
 v3.0.20
 
