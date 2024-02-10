@@ -2,7 +2,6 @@ v3.0.xx final release notes
 - Added backup and restore modes.
   - Includes syno_app_mover.conf file to set the backup location.
   - Skips packages that are development tools with no data: Node.js, Perl, PHP, python3, SynoCli etc.
-Node.js, Perl, PHP, python3, SynoCli etc.
 - When backup or restore selected asks if you want to backup or restore all packages.
 - Changed so that cursor does not cover first letter when progress bar is showing.
 - Now shows package's display name.
