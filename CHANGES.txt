@@ -38,7 +38,7 @@ v3.0.18
 - Now asks if you want to backup `@download`
 
 v3.0.17
-
+- Added 5 minute timeout to stopping, and starting, packages.
 
 v3.0.16
 
