@@ -41,7 +41,9 @@ v3.0.17
 - Added 5 minute timeout to stopping, and starting, packages.
 
 v3.0.16
-
+- Now shows package's display name.
+- Bug fix for not processing Synology Calendar's `@calendar` folder.
+- Bug fix for not processing Download Station's `@downloads` folder.
 
 v3.0.15
 
