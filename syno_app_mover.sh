@@ -22,9 +22,10 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
+# DONE Improved speed of getting list of packages (saved 1.5 seconds).
+#
 # DONE Now shows how long the script took.
 # DONE Bug fix for `@synologydrive` and not `@SynologyDrive`.
-#
 #
 # DONE For backup and restore skip packages that are development tools with no data.
 #  Node.js, Perl, PHP, python3, SynoCli etc.
@@ -77,7 +78,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.26"
+scriptver="v3.0.27"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1229,20 +1230,22 @@ if [[ ${mode,,} != "restore" ]]; then
 
     cdir /var/packages
     while read -r link target; do
-        package="$(printf %s "$link" | cut -d'/' -f2 )"
-        package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
-        package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+        if [[ $(basename -- "$link") == "target" ]]; then
+            package="$(printf %s "$link" | cut -d'/' -f2 )"
+            package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
+            package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
 
-        # Skip packages that are dev tools with no data
-        if ! skip_dev_tools "$package"; then
-            if [[ -z "$package_name" ]]; then
-                package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
-            fi
-            if [[ ! ${package_infos[*]} =~ "${package_volume}|${package_name:?}" ]]; then
-                package_infos+=("${package_volume}|${package_name}")
-            fi
-            if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
-                package_names["${package_name}"]="${package}"
+            # Skip packages that are dev tools with no data
+            if ! skip_dev_tools "$package"; then
+                if [[ -z "$package_name" ]]; then
+                    package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
+                fi
+                if [[ ! ${package_infos[*]} =~ "${package_volume}|${package_name:?}" ]]; then
+                    package_infos+=("${package_volume}|${package_name}")
+                fi
+                if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
+                    package_names["${package_name}"]="${package}"
+                fi
             fi
         fi
     done < <(find . -maxdepth 2 -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
