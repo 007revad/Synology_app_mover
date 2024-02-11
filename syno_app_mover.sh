@@ -22,9 +22,12 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
+# DONE Now shows how long the script took.
+# DONE Bug fix for `@synologydrive` and not `@SynologyDrive`.
+#
+#
 # DONE For backup and restore skip packages that are development tools with no data.
 #  Node.js, Perl, PHP, python3, SynoCli etc.
-#
 #
 # DONE Add "All" packages choice for backup and restore modes.
 #  Stop all packages that are on volumes (and their dependencies).
@@ -74,7 +77,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.25"
+scriptver="v3.0.26"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1015,7 +1018,7 @@ move_extras(){
             echo ""
             ;;
         SynologyDrive)
-            move_dir "@SynologyDrive" extras
+            move_dir "@synologydrive" extras
             move_dir "@SynologyDriveShareSync" extras
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SynologyDrive/etc/sharesync/daemon.conf
@@ -1447,6 +1450,9 @@ if [[ ${answer,,} != y ]]; then
     exit
 fi
 
+# Reset shell's SECONDS var to later show how long the script took
+SECONDS=0
+
 
 #------------------------------------------------------------------------------
 # Stop the package or packages
@@ -1813,6 +1819,18 @@ if [[ $all == "yes" ]]; then
     echo -e "Finished ${action,,} all packages\n"
 else
     echo -e "Finished ${action,,} $pkg_name\n"
+fi
+
+# Show how long the script took
+end="$SECONDS"
+if [[ $end -ge 3600 ]]; then
+    #printf 'Duration: %dh %dm %ss\n\n' $((end/3600)) $((end%3600/60)) $((end%60))
+    printf 'Duration: %dh %dm\n\n' $((end/3600)) $((end%3600/60))
+elif [[ $end -ge 60 ]]; then
+    echo -e "Duration: $((end/60))m $((end%60))s\n"
+    #echo -e "Duration: $((end/60)) minutes\n"
+else
+    echo -e "Duration: ${end} seconds\n"
 fi
 
 
