@@ -5,6 +5,7 @@ v3.0.xx final release notes
 - When backup or restore selected asks if you want to backup or restore all packages.
 - Changed so that cursor does not cover first letter when progress bar is showing.
 - Now shows package's display name.
+- Now shows how long the script took.
 - Now automatically selects the target volume if there are only 2 volumes.
 - Now only starts package if the script stopped it.
 - Added 5 minute timeout to stopping, and starting, packages.
