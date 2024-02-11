@@ -22,6 +22,10 @@ v3.0.xx final release notes
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
+v3.0.26 Beta
+- Now shows how long the script took.
+- Bug fix for `@SynologyDrive` instead of `@synologydrive`.
+
 v3.0.25 Beta
 - Backup and Restore modes now skip packages that are development tools with no data.
   - Node.js, Perl, PHP, python3, SynoCli etc.
