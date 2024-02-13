@@ -17,7 +17,7 @@
 # Check exit status of package uninstall and install
 
 
-scriptver="v2.0.6"
+scriptver="v2.0.7"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -749,7 +749,7 @@ move_extras(){
             #file=/var/packages/SynologyDrive/etc/db-path.conf
             #if [[ -f "$file" ]]; then
                 #echo "db-vol=$2" > "$file"
-                move_dir "@SynologyDrive"
+                move_dir "@synologydrive"
                 move_dir "@SynologyDriveShareSync"
                 echo ""
             #fi
