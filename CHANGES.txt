@@ -24,7 +24,7 @@ v3.0.xx final release notes
 
 
 v3.0.28 Beta
-- Minimised the time each package is stopped during backup/restore, while still only stopping and starting each package only once.
+- Minimised the time each package is stopped during backup/restore.
   -  First stops, backs up or restores and starts each package that other packages are dependent on.
   -  Then stops (if running), backs up or restores and starts each package that is dependent on other packages.
   -  Finally stops, backs up or restores and starts each package that has no dependencies.
