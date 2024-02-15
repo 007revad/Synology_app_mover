@@ -23,6 +23,17 @@ v3.0.xx final release notes
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
+v3.0.28 Beta
+- Minimised the time each package is stopped during backup/restore, while still only stopping and starting each package only once.
+  -  First stops, backs up or restores and starts each package that other packages are dependent on.
+  -  Then stops (if running), backs up or restores and starts each package that is dependent on other packages.
+  -  Finally stops, backs up or restores and starts each package that has no dependencies.
+- Restore mode now only lists packages that are not development tools with no settings or data.
+
+v3.0.27 Beta
+- Improved speed of getting list of packages to be 6 times faster.
+  - Saves 1 second for every 20 packages installed.
+
 v3.0.26 Beta
 - Now shows how long the script took.
 - Bug fix for `@SynologyDrive` instead of `@synologydrive`.
