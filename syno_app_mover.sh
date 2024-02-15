@@ -22,7 +22,16 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Improved speed of getting list of packages (saved 1.5 seconds).
+# DONE Minimised the time each package is stopped during backup/restore, while still only stopping and starting each package only once.
+#  First stops, backs up or restores and starts each package that other packages are dependent on.
+#  Then stops (if running), backs up or restores and starts each package that is dependent on other packages.
+#  Finally stops, backs up or restores and starts each package that has no dependencies.
+#
+# DONE Restore mode now only lists packages that are not utilities with no settings or data.
+#
+#
+# DONE Improved speed of getting list of packages to be 6 times faster.
+#  Saves 1 second for every 20 packages installed.
 #
 # DONE Now shows how long the script took.
 # DONE Bug fix for `@synologydrive` and not `@SynologyDrive`.
@@ -78,7 +87,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.27"
+scriptver="v3.0.28"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -521,7 +530,7 @@ backup_dir(){
         progbar "$pid" "$string"
         wait "$pid"
         progstatus "$?" "$string"
-        echo ""
+        #echo ""
     fi
 }
 
@@ -877,7 +886,6 @@ move_extras(){
         ActiveBackup)
             move_dir "@ActiveBackup" extras
             # /var/packages/ActiveBackup/target/log/
-#            if [[ ${mode,,} == "move" ]]; then
             if [[ ${mode,,} != "backup" ]]; then
                 if readlink /var/packages/ActiveBackup/target/log | grep "$1" >/dev/null; then
                     rm /var/packages/ActiveBackup/target/log
@@ -888,15 +896,15 @@ move_extras(){
                     echo "{\"conf_repo_volume_path\":\"$2\"}" > "$file"
                 fi
             fi
-            echo ""
+            #echo ""
             ;;
         ActiveBackup-GSuite)
             move_dir "@ActiveBackup-GSuite" extras
-            echo ""
+            #echo ""
             ;;
         ActiveBackup-Office365)
             move_dir "@ActiveBackup-Office365" extras
-            echo ""
+            #echo ""
             ;;
         Chat)
             if [[ ${mode,,} == "move" ]]; then
@@ -915,7 +923,7 @@ move_extras(){
             ;;
         Calendar)
             move_dir "@calendar" extras
-            echo ""
+            #echo ""
             ;;
         ContainerManager|Docker)
             echo -e "${Red}WARNING $action @docker could take a long time${Off}"
@@ -937,12 +945,12 @@ move_extras(){
                     ln -s "${2:?}/@docker" "/var/packages/${pkg:?}/target/docker"
                 fi
             fi
-            echo ""
+            #echo ""
             ;;
         DownloadStation)
             echo -e "${Red}WARNING $action @download could take a long time${Off}"
             move_dir "@download" extras
-            echo ""
+            #echo ""
             ;;
         GlacierBackup)
             move_dir "@GlacierBackup" extras
@@ -952,18 +960,18 @@ move_extras(){
                     echo "cache_volume=$2" > "$file"
                 fi
             fi
-            echo ""
+            #echo ""
             ;;
         MailPlus-Server)
             move_dir "@maillog" extras
             move_dir "@MailPlus-Server" extras
-            echo ""
+            #echo ""
             ;;
         MailServer)
             move_dir "@maillog" extras
             move_dir "@MailScanner" extras
             move_dir "@clamav" extras
-            echo ""
+            #echo ""
             ;;
         Node.js_v*)
             if [[ ${mode,,} != "backup" ]]; then
@@ -987,7 +995,7 @@ move_extras(){
                     echo "db-vol=${2:?}" > "$file"
                 fi
             fi
-            echo ""
+            #echo ""
             ;;
         SurveillanceStation)
             move_dir "@ssbackup" extras
@@ -1002,7 +1010,7 @@ move_extras(){
                     chown -h SurveillanceStation:SurveillanceStation "$file"
                 fi
             fi
-            echo ""
+            #echo ""
             ;;
         synocli*)
             #move_dir "@$1"
@@ -1016,7 +1024,7 @@ move_extras(){
                     synosetkeyvalue "$file" volume "${2:?}/@SynologyApplicationService"
                 fi
             fi
-            echo ""
+            #echo ""
             ;;
         SynologyDrive)
             move_dir "@synologydrive" extras
@@ -1041,17 +1049,17 @@ move_extras(){
                     synosetkeyvalue "$file" volume "${2:?}"
                 fi
             fi
-            echo ""
+            #echo ""
             ;;
         WebDAVServer)
             move_dir "@webdav" extras
-            echo ""
+            #echo ""
             ;;
         Virtualization)
             move_dir "@GuestImage" extras
             move_dir "@Repository" extras
             # VMM creates /volume#/vdsm_repo.conf so no need to move it
-            echo ""
+            #echo ""
             ;;
         *)
             return
@@ -1076,7 +1084,7 @@ web_packages(){
                     progbar "$pid" "$string"
                     wait "$pid"
                     progstatus "$?" "$string"
-                    echo ""
+                    #echo ""
                 else
                     ding
                     echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to create directory!"
@@ -1091,7 +1099,7 @@ web_packages(){
                     progbar "$pid" "$string"
                     wait "$pid"
                     progstatus "$?" "$string"
-                    echo ""
+                    #echo ""
                 fi
             fi
         fi
@@ -1140,6 +1148,9 @@ skip_dev_tools(){
     if [[ ${mode,,} == "backup" ]]; then
         skip1="$(synogetkeyvalue "/var/packages/${package}/INFO" startable)"
         skip2="$(synogetkeyvalue "/var/packages/${package}/INFO" ctl_stop)"
+    elif [[ ${mode,,} == "restore" ]]; then
+        skip1="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" startable)"
+        skip2="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" ctl_stop)"
     fi
     if [[ $skip1 == "no" ]] || [[ $skip2 == "no" ]]; then
         return 0
@@ -1224,6 +1235,7 @@ fi
 # Select package
 
 declare -A package_names
+declare -A package_names_rev
 package_infos=( )
 if [[ ${mode,,} != "restore" ]]; then
     # Add non-system packages to array
@@ -1234,22 +1246,24 @@ if [[ ${mode,,} != "restore" ]]; then
             package="$(printf %s "$link" | cut -d'/' -f2 )"
             package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
             package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+            if [[ -z "$package_name" ]]; then
+                package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
+            fi
 
             # Skip packages that are dev tools with no data
             if ! skip_dev_tools "$package"; then
-                if [[ -z "$package_name" ]]; then
-                    package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
-                fi
                 if [[ ! ${package_infos[*]} =~ "${package_volume}|${package_name:?}" ]]; then
                     package_infos+=("${package_volume}|${package_name}")
                 fi
                 if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
                     package_names["${package_name}"]="${package}"
                 fi
+                if [[ ! ${package_names_rev[*]} =~ "${package_name:?}" ]]; then
+                    package_names_rev["${package}"]="${package_name}"
+                fi
             fi
         fi
     done < <(find . -maxdepth 2 -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
-
 elif [[ ${mode,,} == "restore" ]]; then
     # Add list of backed up packages to array
 
@@ -1257,18 +1271,21 @@ elif [[ ${mode,,} == "restore" ]]; then
     for package in *; do
         if [[ -d "$package" ]] && [[ $package != "@eaDir" ]]; then
             if [[ ${package:0:1} != "-" ]]; then
+                package_name="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
+                if [[ -z "$package_name" ]]; then
+                    package_name="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" package)"
+                fi
 
                 # Skip packages that are dev tools with no data
                 if ! skip_dev_tools "$package"; then
-                    package_name="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
-                    if [[ -z "$package_name" ]]; then
-                        package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
-                    fi
                     if [[ ! ${package_infos[*]} =~ "${package_name:?}" ]]; then
                         package_infos+=("${package_name}")
                     fi
                     if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
-                        package_names["${package_name:?}"]="${package:?}"
+                        package_names["${package_name}"]="${package}"
+                    fi
+                    if [[ ! ${package_names_rev[*]} =~ "${package_name:?}" ]]; then
+                        package_names_rev["${package}"]="${package_name}"
                     fi
                 fi
             fi
@@ -1435,8 +1452,8 @@ fi
 
 # Check user is ready
 if [[ $all == "yes" ]]; then
-    echo -e "${Red}WARNING All packages installed on volumes will be stopped until the"
-    echo -e "${mode} of all packages has finished which could take long while.${Off}"
+    #echo -e "${Red}WARNING Packages with dependencies may be stopped until the"
+    #echo -e "${mode} of all packages has finished which could take long while.${Off}"
     if [[ ${mode,,} == "backup" ]]; then
         echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} packages to ${Cyan}${backuppath}${Off}? [y/n]"
     else
@@ -1458,18 +1475,64 @@ SECONDS=0
 
 
 #------------------------------------------------------------------------------
-# Stop the package or packages
-
-# Get list of running packages to start later
-declare -A running_pkgs
+# Get list of running packages sorted by
+# with dependents, with dependencies then others.
 
 # Loop through package_names associative array
 for pkg_name in "${!package_names[@]}"; do
     pkg="${package_names["$pkg_name"]}"
     if package_status "$pkg"; then
-        running_pkgs+=(["$pkg_name"]="$pkg")
+
+        # Get list of running packages with dependents
+        has_dependtents=()
+        has_dependtents+=($(synopkg list --name --depend-on "$pkg"))
+        if [[ ${#has_dependtents[@]} -gt "0" ]]; then
+            # Add to list of running packages with dependents
+            running_pkgs_with_deps+=("$pkg")
+        else
+            # Get list of running packages with dependencies
+            has_deps=""
+            info="/var/packages/${pkg}/INFO"
+            has_deps=$(synogetkeyvalue "$info" install_dep_packages)
+            if [[ -n "$has_deps" ]]; then
+                # Add to list of running packages with dependencies
+                running_dep_pkgs+=("$pkg")
+            else
+                # Add to list of other running packages
+                running_pkgs_no_dep+=("$pkg")
+            fi
+        fi
     fi
 done
+
+# Sort array
+IFS=$'\n' running_pkgs_with_deps_sorted=($(sort -u <<<"${running_pkgs_with_deps[*]}")); unset IFS
+
+# Sort array
+IFS=$'\n' running_dep_pkgs_sorted=($(sort -u <<<"${running_dep_pkgs[*]}")); unset IFS
+
+# Sort array
+IFS=$'\n' running_pkgs_no_dep_sorted=($(sort <<<"${running_pkgs_no_dep[*]}")); unset IFS
+
+
+# Add running packages with dependents to running_pkgs_sorted
+for v in "${!running_pkgs_with_deps_sorted[@]}"; do
+    running_pkgs_sorted+=("${running_pkgs_with_deps_sorted["$v"]}")
+done
+
+# Append running packages with dependencies to running_pkgs_sorted
+for v in "${!running_dep_pkgs_sorted[@]}"; do
+    running_pkgs_sorted+=("${running_dep_pkgs_sorted["$v"]}")
+done
+
+# Append other packages to running_pkgs_sorted
+for v in "${!running_pkgs_no_dep_sorted[@]}"; do
+    running_pkgs_sorted+=("${running_pkgs_no_dep_sorted["$v"]}")
+done
+
+
+#------------------------------------------------------------------------------
+# Stop the package or packages
 
 stop_packages(){ 
     # Check package is running
@@ -1488,8 +1551,8 @@ stop_packages(){
             if [[ $fix != "yes" ]]; then  # bypass exit
                 exit 1
             fi
-        else
-            did_stop_pkg="yes"
+#        else
+#            did_stop_pkg="yes"
         fi
 
         if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
@@ -1500,17 +1563,6 @@ stop_packages(){
 #        skip_start="yes"
     fi
 }
-
-# Stop packages
-# Loop through running_pkgs associative array
-for pkg_name in "${!running_pkgs[@]}"; do
-    pkg="${running_pkgs[$pkg_name]}"
-    stop_packages
-    #echo ""
-done
-if [[ $did_stop_pkg == "yes" ]]; then
-    echo ""
-fi
 
 
 #------------------------------------------------------------------------------
@@ -1636,7 +1688,7 @@ process_packages(){
         # Move package and edit symlinks
         move_pkg "$pkg" "$targetvol"
     fi
-    echo ""
+    #echo ""
 
     # Move package's other folders
     move_extras "$pkg" "$targetvol"
@@ -1647,16 +1699,55 @@ process_packages(){
     fi
 }
 
+start_packages(){ 
+#    if [[ $skip_start != "yes" ]]; then
+        # Only start package if not already running
+        if ! package_status "$pkg"; then
 
-# Loop through package_names associative array
-for pkg_name in "${!package_names[@]}"; do
-    #echo "$pkg_name  :  ${package_names[$pkg_name]}"  # debug
-    pkg="${package_names[$pkg_name]}"
+            if [[ ${mode,,} == "backup" ]]; then
+                answer="y"
+            elif [[ $all == "yes" ]]; then
+                answer="y"
+            else
+                echo -e "\nDo you want to start ${Cyan}$pkg_name${Off} now? [y/n]"
+                read -r answer
+                #echo ""
+            fi
+
+            if [[ ${answer,,} == "y" ]]; then
+                # Start package
+                package_start "$pkg" "$pkg_name"
+                #echo ""
+
+                # Check package started
+                if ! package_status "$pkg"; then
+                    ding
+                    echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to start ${pkg_name}!"
+                    exit 1
+                fi
+            fi
+        fi
+#    fi
+}
+
+# Loop through running_pkgs_sorted array
+for pkg in "${running_pkgs_sorted[@]}"; do
+    pkg_name="${package_names_rev["$pkg"]}"
     if [[ ${mode,,} != "move" ]]; then
         prepare_backup_restore
+        if [[ ${running_pkgs_sorted[*]} =~ "${pkg}" ]]; then
+            stop_packages
+        fi
+    else
+        stop_packages
     fi
     process_packages
-done 
+
+    if [[ ${running_pkgs_sorted[*]} =~ "${pkg}" ]]; then
+        start_packages
+        echo ""
+    fi
+done
 
 
 #------------------------------------------------------------------------------
@@ -1731,88 +1822,11 @@ fi
 
 
 #------------------------------------------------------------------------------
-# Show how to export and import package's database if dependent on MariaDB10
+# Start package and dependent packages that aren't running
 
-# Loop through package_names associative array
-for pkg_name in "${!package_names[@]}"; do
-    #echo "$pkg_name  :  ${package_names[$pkg_name]}"  # debug
-    pkg="${package_names[$pkg_name]}"
-    if [[ ${mode,,} != "move" ]]; then
-        info="/var/packages/${pkg}/INFO"
-        if synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null
-        then
-           mariadb_list+=("${pkg_name}")
-           mariadb_show="yes"
-        fi
-    fi
-done 
-
-
-#info="/var/packages/${pkg}/INFO"
-#if synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null; then
-if [[ $mariadb_show == "yes" ]]; then
-    if [[ ${mode,,} == "backup" ]]; then
-        # Show how to export package's database
-        echo -e "If you want to ${Yellow}backup${Off} the database of"\
-            "${Cyan}${mariadb_list[*]}${Off} do the following:"
-        echo "  If you don't have phpMyAdmin installed:"
-        echo "    1. Install phpMyAdmin."
-        echo "    2. Open phpMyAdmin"
-        echo "    3. Log in with user root and your MariaDB10 password."
-        echo "  Once you are logged in to phpMyAdmin:"
-        echo "    1. Click on the package name on the left."
-        echo "    2. Click on the Export tab at the top."
-        echo "    3. Click on the Export button."
-        echo -e "    4. Save the export to a safe location.\n"
-    elif [[ ${mode,,} == "restore" ]]; then
-        # Show how to import package's exported database
-        echo -e "If you want to ${Yellow}restore${Off} the database of"\
-            "${Cyan}${mariadb_list[*]}${Off} do the following:"
-        echo "  If you don't have phpMyAdmin installed:"
-        echo "    1. Install phpMyAdmin."
-        echo "    2. Open phpMyAdmin"
-        echo "    3. Log in with user root and your MariaDB10 password."
-        echo "  Once you are logged in to phpMyAdmin:"
-        echo "    1. Click on the package name on the left."
-        echo "    2. Click on the Import tab at the top."
-        echo "    3. Click on the 'Choose file' button."
-        echo -e "    4. Browse to your exported .sql file and import it.\n"
-    fi
-fi
-
-
-#------------------------------------------------------------------------------
-# Start package and dependent packages
-
-start_packages(){ 
-#    if [[ $skip_start != "yes" ]]; then
-        if [[ ${mode,,} == "backup" ]]; then
-            answer="y"
-        elif [[ $all == "yes" ]]; then
-            answer="y"
-        else
-            echo -e "Do you want to start ${Cyan}$pkg_name${Off} now? [y/n]"
-            read -r answer
-            echo ""
-        fi
-        if [[ ${answer,,} == "y" ]]; then
-            # Start package
-            package_start "$pkg" "$pkg_name"
-            #echo ""
-
-            # Check package started
-            if ! package_status "$pkg"; then
-                ding
-                echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to start ${pkg_name}!"
-                exit 1
-            fi
-        fi
-#    fi
-}
-
-# Loop through running_pkgs associative array
-for pkg_name in "${!running_pkgs[@]}"; do
-    pkg="${running_pkgs[$pkg_name]}"
+# Loop through running_pkgs_sorted array
+for pkg in "${running_pkgs_sorted[@]}"; do
+    pkg_name="${package_names_rev["$pkg"]}"
     start_packages
 done
 echo ""
@@ -1834,6 +1848,54 @@ elif [[ $end -ge 60 ]]; then
     #echo -e "Duration: $((end/60)) minutes\n"
 else
     echo -e "Duration: ${end} seconds\n"
+fi
+
+
+#------------------------------------------------------------------------------
+# Show how to export and import package's database if dependent on MariaDB10
+
+# Loop through package_names associative array
+for pkg_name in "${!package_names[@]}"; do
+    #echo "$pkg_name  :  ${package_names[$pkg_name]}"  # debug
+    pkg="${package_names[$pkg_name]}"
+    if [[ ${mode,,} != "move" ]]; then
+        info="/var/packages/${pkg}/INFO"
+        if synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null
+        then
+           mariadb_list+=("${pkg_name}")
+           mariadb_show="yes"
+        fi
+    fi
+done 
+
+if [[ $mariadb_show == "yes" ]]; then
+    if [[ ${mode,,} == "backup" ]]; then
+        # Show how to export package's database
+        echo -e "If you want to ${Yellow}backup${Off} the database of"\
+            "${Cyan}${mariadb_list[*]}${Off} do the following:"
+        echo "  If you don't have phpMyAdmin installed:"
+        echo "    1. Install phpMyAdmin."
+        echo "    2. Open phpMyAdmin"
+        echo "    3. Log in with user root and your MariaDB password."
+        echo "  Once you are logged in to phpMyAdmin:"
+        echo "    1. Click on the package name on the left."
+        echo "    2. Click on the Export tab at the top."
+        echo "    3. Click on the Export button."
+        echo -e "    4. Save the export to a safe location.\n"
+    elif [[ ${mode,,} == "restore" ]]; then
+        # Show how to import package's exported database
+        echo -e "If you want to ${Yellow}restore${Off} the database of"\
+            "${Cyan}${mariadb_list[*]}${Off} do the following:"
+        echo "  If you don't have phpMyAdmin installed:"
+        echo "    1. Install phpMyAdmin."
+        echo "    2. Open phpMyAdmin"
+        echo "    3. Log in with user root and your MariaDB password."
+        echo "  Once you are logged in to phpMyAdmin:"
+        echo "    1. Click on the package name on the left."
+        echo "    2. Click on the Import tab at the top."
+        echo "    3. Click on the 'Choose file' button."
+        echo -e "    4. Browse to your exported .sql file and import it.\n"
+    fi
 fi
 
 
