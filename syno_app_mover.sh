@@ -22,13 +22,15 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
+# DONE edited "move share" instructions to include enabling data checksums.
+#
+#
 # DONE Minimised the time each package is stopped during backup/restore, while still only stopping and starting each package only once.
 #  First stops, backs up or restores and starts each package that other packages are dependent on.
 #  Then stops (if running), backs up or restores and starts each package that is dependent on other packages.
 #  Finally stops, backs up or restores and starts each package that has no dependencies.
 #
 # DONE Restore mode now only lists packages that are not utilities with no settings or data.
-#
 #
 # DONE Improved speed of getting list of packages to be 6 times faster.
 #  Saves 1 second for every 20 packages installed.
@@ -87,7 +89,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.28"
+scriptver="v3.0.29"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -774,10 +776,13 @@ show_move_share(){
     echo "  While $1 is stopped:"
     echo "  1. Go to 'Control Panel > Shared Folders'."
     echo "  2. Select your $2 shared folder and click Edit."
-    echo "  3. Change Location to $targetvol and click Save."
-    echo "    - If $1 has more shared folders repeat steps 2 and 3."
-    #echo -e "  4. After step 3 has finished start $1 from Package Center.\n"
-    echo -e "  4. After step 3 has finished start $1 \n"
+    echo "  3. Change Location to $targetvol"
+    echo "  4. Click on Advanced and check that 'Enable data checksums' is selected."
+    echo "    - 'Enable data checksums' is only available if moving to a Btrfs volume."
+    echo "  5. Click Save."
+    echo "    - If $1 has more shared folders repeat steps 2 to 5."
+    #echo -e "  6. After step 5 has finished start $1 from Package Center.\n"
+    echo -e "  6. After step 5 has finished start $1 \n"
 }
 
 copy_dir(){ 
