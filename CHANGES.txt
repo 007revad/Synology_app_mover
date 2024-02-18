@@ -23,6 +23,9 @@ v3.0.xx final release notes
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
+v3.0.30 Beta
+- Bug fix for moving Media Server and Plex Media Server when Media Server was selected.
+
 v3.0.29 Beta
 - Changed "move share" instructions to include enabling data checksums.
 
