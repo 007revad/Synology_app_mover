@@ -22,8 +22,10 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE edited "move share" instructions to include enabling data checksums.
+# DONE Bug fix for moving Media Server and Plex Media Server when Plex Media Server was selected.
 #
+#
+# DONE edited "move share" instructions to include enabling data checksums.
 #
 # DONE Minimised the time each package is stopped during backup/restore, while still only stopping and starting each package only once.
 #  First stops, backs up or restores and starts each package that other packages are dependent on.
@@ -89,7 +91,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.29"
+scriptver="v3.0.30"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -693,7 +695,8 @@ move_pkg(){
             if [[ "${applist[*]}" =~ "$appdir" ]]; then
                 appdirs_tmp+=("$appdir")
             fi
-        done < <(find . -name "@app*" -exec basename \{} \;)
+#        done < <(find . -name "@app*" -exec basename \{} \;)
+        done < <(find . -name -regex '/'"@app*"'$' -exec basename \{} \;)
 
         # Sort array
         IFS=$'\n' appdirs=($(sort <<<"${appdirs_tmp[*]}")); unset IFS
@@ -708,7 +711,8 @@ move_pkg(){
         cdir /var/packages
         while read -r link source; do
             app_paths_tmp+=("$source")
-        done < <(find . -maxdepth 2 -type l -ls | grep "$1"'$' | awk '{print $(NF-2), $NF}')
+#        done < <(find . -maxdepth 2 -type l -ls | grep "$1"'$' | awk '{print $(NF-2), $NF}')
+        done < <(find . -maxdepth 2 -type l -ls | grep '/'"$1"'$' | awk '{print $(NF-2), $NF}')
 
         # Sort array
         IFS=$'\n' app_paths=($(sort <<<"${app_paths_tmp[*]}")); unset IFS
@@ -1257,13 +1261,13 @@ if [[ ${mode,,} != "restore" ]]; then
 
             # Skip packages that are dev tools with no data
             if ! skip_dev_tools "$package"; then
-                if [[ ! ${package_infos[*]} =~ "${package_volume}|${package_name:?}" ]]; then
+                if [[ ! ${package_infos[*]} =~ ^"${package_volume}|${package_name:?}"$ ]]; then
                     package_infos+=("${package_volume}|${package_name}")
                 fi
-                if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
+                if [[ ! ${package_names[*]} =~ ^"${package:?}"$ ]]; then
                     package_names["${package_name}"]="${package}"
                 fi
-                if [[ ! ${package_names_rev[*]} =~ "${package_name:?}" ]]; then
+                if [[ ! ${package_names_rev[*]} =~ ^"${package_name:?}"$ ]]; then
                     package_names_rev["${package}"]="${package_name}"
                 fi
             fi
@@ -1283,13 +1287,13 @@ elif [[ ${mode,,} == "restore" ]]; then
 
                 # Skip packages that are dev tools with no data
                 if ! skip_dev_tools "$package"; then
-                    if [[ ! ${package_infos[*]} =~ "${package_name:?}" ]]; then
+                    if [[ ! ${package_infos[*]} =~ ^"${package_name:?}"$ ]]; then
                         package_infos+=("${package_name}")
                     fi
-                    if [[ ! ${package_names[*]} =~ "${package:?}" ]]; then
+                    if [[ ! ${package_names[*]} =~ ^"${package:?}"$ ]]; then
                         package_names["${package_name}"]="${package}"
                     fi
-                    if [[ ! ${package_names_rev[*]} =~ "${package_name:?}" ]]; then
+                    if [[ ! ${package_names_rev[*]} =~ ^"${package_name:?}"$ ]]; then
                         package_names_rev["${package}"]="${package_name}"
                     fi
                 fi
@@ -1736,11 +1740,11 @@ start_packages(){
 }
 
 # Loop through running_pkgs_sorted array
-for pkg in "${running_pkgs_sorted[@]}"; do
+for pkg in "${running_pkgs_sorted[@]}"; do  ####################################
     pkg_name="${package_names_rev["$pkg"]}"
     if [[ ${mode,,} != "move" ]]; then
         prepare_backup_restore
-        if [[ ${running_pkgs_sorted[*]} =~ "${pkg}" ]]; then
+        if [[ ${running_pkgs_sorted[*]} =~ ^"${pkg}"$ ]]; then
             stop_packages
         fi
     else
@@ -1748,7 +1752,7 @@ for pkg in "${running_pkgs_sorted[@]}"; do
     fi
     process_packages
 
-    if [[ ${running_pkgs_sorted[*]} =~ "${pkg}" ]]; then
+    if [[ ${running_pkgs_sorted[*]} =~ ^"${pkg}"$ ]]; then
         start_packages
         echo ""
     fi
