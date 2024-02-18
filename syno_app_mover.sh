@@ -22,7 +22,7 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Bug fix for moving Media Server and Plex Media Server when Plex Media Server was selected.
+# DONE Bug fix for moving Media Server and Plex Media Server when Media Server was selected.
 #
 #
 # DONE edited "move share" instructions to include enabling data checksums.
