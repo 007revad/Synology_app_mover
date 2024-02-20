@@ -22,8 +22,10 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Bug fix for moving Media Server and Plex Media Server when Media Server was selected.
+# DONE Bug fix for not backing up packages that aren't running.
 #
+#
+# DONE Bug fix for moving Media Server and Plex Media Server when Media Server was selected.
 #
 # DONE edited "move share" instructions to include enabling data checksums.
 #
@@ -91,7 +93,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.30"
+scriptver="v3.0.31"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -153,11 +155,11 @@ model=$(cat /proc/sys/kernel/syno_hw_version)
 echo "$script $scriptver"
 
 # Get DSM full version
-productversion=$(get_key_value /etc.defaults/VERSION productversion)
-buildphase=$(get_key_value /etc.defaults/VERSION buildphase)
-buildnumber=$(get_key_value /etc.defaults/VERSION buildnumber)
-smallfixnumber=$(get_key_value /etc.defaults/VERSION smallfixnumber)
-majorversion=$(get_key_value /etc.defaults/VERSION majorversion)
+productversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION productversion)
+buildphase=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION buildphase)
+buildnumber=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION buildnumber)
+smallfixnumber=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION smallfixnumber)
+majorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
 
 # Show DSM full version and model
 if [[ $buildphase == GM ]]; then buildphase=""; fi
@@ -392,7 +394,7 @@ progstatus(){
 package_status(){ 
     # $1 is package name
     local code
-    synopkg status "${1}" >/dev/null
+    /usr/syno/bin/synopkg status "${1}" >/dev/null
     code="$?"  # 0 = started, 17 = stopped, 255 = not_installed, 150 = broken
     if [[ $code == "0" ]]; then
         #echo "$1 is started"  # debug
@@ -438,7 +440,7 @@ wait_status(){
 package_stop(){ 
     # $1 is package name
     # $2 is package display name
-    timeout 5.0m synopkg stop "$1" >/dev/null &
+    timeout 5.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
     pid=$!
     string="Stopping ${Cyan}${2}${Off}"
     progbar "$pid" "$string"
@@ -453,7 +455,7 @@ package_stop(){
 package_start(){ 
     # $1 is package name
     # $2 is package display name
-    timeout 5.0m synopkg start "$1" >/dev/null &
+    timeout 5.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
     pid=$!
     string="Starting ${Cyan}${2}${Off}"
     progbar "$pid" "$string"
@@ -467,7 +469,7 @@ package_start(){
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
 package_uninstall(){ 
     # $1 is package name
-    synopkg uninstall "$1" >/dev/null &
+    /usr/syno/bin/synopkg uninstall "$1" >/dev/null &
     pid=$!
     string="Uninstalling ${Cyan}${1}${Off}"
     progbar "$pid" "$string"
@@ -479,7 +481,7 @@ package_uninstall(){
 package_install(){ 
     # $1 is package name
     # $2 is /volume2 etc
-    synopkg install_from_server "$1" "$2" >/dev/null &
+    /usr/syno/bin/synopkg install_from_server "$1" "$2" >/dev/null &
     pid=$!
     string="Installing ${Cyan}${1}${Off} on ${Cyan}$2${Off}"
     progbar "$pid" "$string"
@@ -695,7 +697,6 @@ move_pkg(){
             if [[ "${applist[*]}" =~ "$appdir" ]]; then
                 appdirs_tmp+=("$appdir")
             fi
-#        done < <(find . -name "@app*" -exec basename \{} \;)
         done < <(find . -name -regex '/'"@app*"'$' -exec basename \{} \;)
 
         # Sort array
@@ -711,7 +712,6 @@ move_pkg(){
         cdir /var/packages
         while read -r link source; do
             app_paths_tmp+=("$source")
-#        done < <(find . -maxdepth 2 -type l -ls | grep "$1"'$' | awk '{print $(NF-2), $NF}')
         done < <(find . -maxdepth 2 -type l -ls | grep '/'"$1"'$' | awk '{print $(NF-2), $NF}')
 
         # Sort array
@@ -785,7 +785,6 @@ show_move_share(){
     echo "    - 'Enable data checksums' is only available if moving to a Btrfs volume."
     echo "  5. Click Save."
     echo "    - If $1 has more shared folders repeat steps 2 to 5."
-    #echo -e "  6. After step 5 has finished start $1 from Package Center.\n"
     echo -e "  6. After step 5 has finished start $1 \n"
 }
 
@@ -938,7 +937,7 @@ move_extras(){
             echo -e "${Red}WARNING $action @docker could take a long time${Off}"
             move_dir "@docker" extras
             if [[ ${mode,,} != "backup" ]]; then
-                dsm="$(get_key_value /etc.defaults/VERSION majorversion)"
+                dsm="$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)"
                 if [[ $dsm -gt 6 ]]; then
                     # /var/packages/ContainerManager/var/docker/ --> /volume1/@docker
                     # /var/packages/Docker/var/docker/ --> /volume1/@docker
@@ -1012,7 +1011,7 @@ move_extras(){
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SurveillanceStation/etc/settings.conf
                 if [[ -f "$file" ]]; then
-                    synosetkeyvalue "$file" active_volume "${2:?}"
+                    /usr/syno/bin/synosetkeyvalue "$file" active_volume "${2:?}"
                     file=/var/packages/SurveillanceStation/target/@surveillance
                     rm "$file"
                     ln -s "${2:?}/@surveillance" /var/packages/SurveillanceStation/target
@@ -1030,7 +1029,7 @@ move_extras(){
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SynologyApplicationService/etc/settings.conf
                 if [[ -f "$file" ]]; then
-                    synosetkeyvalue "$file" volume "${2:?}/@SynologyApplicationService"
+                    /usr/syno/bin/synosetkeyvalue "$file" volume "${2:?}/@SynologyApplicationService"
                 fi
             fi
             #echo ""
@@ -1049,13 +1048,13 @@ move_extras(){
                 if [[ -f "$file" ]]; then
                     value="$(synogetkeyvalue "$file" system_db_path)"
                     if [[ -n $value ]]; then
-                        synosetkeyvalue "$file" system_db_path "${value/${sourcevol}/$(basename "${2:?}")}"
+                        /usr/syno/bin/synosetkeyvalue "$file" system_db_path "${value/${sourcevol}/$(basename "${2:?}")}"
                     fi
                 fi
 
                 file=/var/packages/SynologyDrive/etc/sharesync/service.conf
                 if [[ -f "$file" ]]; then
-                    synosetkeyvalue "$file" volume "${2:?}"
+                    /usr/syno/bin/synosetkeyvalue "$file" volume "${2:?}"
                 fi
             fi
             #echo ""
@@ -1078,7 +1077,7 @@ move_extras(){
 
 web_packages(){ 
     # $1 if pkg in lower case
-    web_pkg_path=$(synoshare --get-real-path web_packages)
+    web_pkg_path=$(/usr/syno/sbin/synoshare --get-real-path web_packages)
     if [[ -d "$web_pkg_path" ]]; then
         if [[ -n "${pkg:?}" ]] && [[ -d "$web_pkg_path/${pkg,,}" ]]; then
             if [[ ${mode,,} == "backup" ]]; then
@@ -1119,7 +1118,7 @@ check_pkg_installed(){
     # Check if package is installed
     # $1 is package
     # $2 is package name
-    synopkg status "${1:?}" >/dev/null
+    /usr/syno/bin/synopkg status "${1:?}" >/dev/null
     if [[ $? == "255" ]]; then
         echo -e "${Cyan}${2}${Off} is not installed!"
         echo -e "Install ${Cyan}${2}${Off} then try Restore again"
@@ -1155,11 +1154,11 @@ skip_dev_tools(){
     local skip1
     local skip2
     if [[ ${mode,,} == "backup" ]]; then
-        skip1="$(synogetkeyvalue "/var/packages/${package}/INFO" startable)"
-        skip2="$(synogetkeyvalue "/var/packages/${package}/INFO" ctl_stop)"
+        skip1="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" startable)"
+        skip2="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" ctl_stop)"
     elif [[ ${mode,,} == "restore" ]]; then
-        skip1="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" startable)"
-        skip2="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" ctl_stop)"
+        skip1="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" startable)"
+        skip2="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" ctl_stop)"
     fi
     if [[ $skip1 == "no" ]] || [[ $skip2 == "no" ]]; then
         return 0
@@ -1222,7 +1221,7 @@ if [[ ${mode,,} != "move" ]]; then
     fi
 
     # Get and validate backup path
-    backuppath="$(synogetkeyvalue "$conffile" backuppath)"
+    backuppath="$(/usr/syno/bin/synogetkeyvalue "$conffile" backuppath)"
     if [[ -z "$backuppath" ]]; then
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} backuppath missing from ${conffile}!"
@@ -1247,55 +1246,41 @@ declare -A package_names
 declare -A package_names_rev
 package_infos=( )
 if [[ ${mode,,} != "restore" ]]; then
-    # Add non-system packages to array
 
+    # Add non-system packages to array
     cdir /var/packages
     while read -r link target; do
-        if [[ $(basename -- "$link") == "target" ]]; then
-            package="$(printf %s "$link" | cut -d'/' -f2 )"
-            package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
-            package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
-            if [[ -z "$package_name" ]]; then
-                package_name="$(synogetkeyvalue "/var/packages/${package}/INFO" package)"
-            fi
-
-            # Skip packages that are dev tools with no data
-            if ! skip_dev_tools "$package"; then
-                if [[ ! ${package_infos[*]} =~ ^"${package_volume}|${package_name:?}"$ ]]; then
-                    package_infos+=("${package_volume}|${package_name}")
-                fi
-                if [[ ! ${package_names[*]} =~ ^"${package:?}"$ ]]; then
-                    package_names["${package_name}"]="${package}"
-                fi
-                if [[ ! ${package_names_rev[*]} =~ ^"${package_name:?}"$ ]]; then
-                    package_names_rev["${package}"]="${package_name}"
-                fi
-            fi
+        package="$(printf %s "$link" | cut -d'/' -f2 )"
+        package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
+        package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+        if [[ -z "$package_name" ]]; then
+            package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
         fi
-    done < <(find . -maxdepth 2 -type l -ls | grep volume | awk '{print $(NF-2), $NF}')
-elif [[ ${mode,,} == "restore" ]]; then
-    # Add list of backed up packages to array
 
+        # Skip packages that are dev tools with no data
+        if ! skip_dev_tools "$package"; then
+            package_infos+=("${package_volume}|${package_name}")
+            package_names["${package_name}"]="${package}"
+            package_names_rev["${package}"]="${package_name}"
+        fi
+    done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | awk '{print $(NF-2), $NF}')
+elif [[ ${mode,,} == "restore" ]]; then
+
+    # Add list of backed up packages to array
     cdir "${backuppath}/syno_app_mover"
     for package in *; do
         if [[ -d "$package" ]] && [[ $package != "@eaDir" ]]; then
             if [[ ${package:0:1} != "-" ]]; then
-                package_name="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
+                package_name="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
                 if [[ -z "$package_name" ]]; then
-                    package_name="$(synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" package)"
+                    package_name="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" package)"
                 fi
 
                 # Skip packages that are dev tools with no data
                 if ! skip_dev_tools "$package"; then
-                    if [[ ! ${package_infos[*]} =~ ^"${package_name:?}"$ ]]; then
-                        package_infos+=("${package_name}")
-                    fi
-                    if [[ ! ${package_names[*]} =~ ^"${package:?}"$ ]]; then
-                        package_names["${package_name}"]="${package}"
-                    fi
-                    if [[ ! ${package_names_rev[*]} =~ ^"${package_name:?}"$ ]]; then
-                        package_names_rev["${package}"]="${package_name}"
-                    fi
+                    package_infos+=("${package_name}")
+                    package_names["${package_name}"]="${package}"
+                    package_names_rev["${package}"]="${package_name}"
                 fi
             fi
         fi
@@ -1484,59 +1469,75 @@ SECONDS=0
 
 
 #------------------------------------------------------------------------------
-# Get list of running packages sorted by
-# with dependents, with dependencies then others.
+# Get list of packages sorted by with dependents, with dependencies then others
 
 # Loop through package_names associative array
 for pkg_name in "${!package_names[@]}"; do
     pkg="${package_names["$pkg_name"]}"
-    if package_status "$pkg"; then
 
-        # Get list of running packages with dependents
-        has_dependtents=()
-        has_dependtents+=($(synopkg list --name --depend-on "$pkg"))
-        if [[ ${#has_dependtents[@]} -gt "0" ]]; then
-            # Add to list of running packages with dependents
-            running_pkgs_with_deps+=("$pkg")
+    # Get list of packages with dependents
+    has_dependtents=()
+    has_dependtents+=($(/usr/syno/bin/synopkg list --name --depend-on "$pkg"))
+    if [[ ${#has_dependtents[@]} -gt "0" ]]; then
+        # Add to list of running packages with dependents
+        pkgs_with_deps+=("$pkg")
+    else
+
+        # Get list of packages with dependencies
+        has_deps=""
+        info="/var/packages/${pkg}/INFO"
+        has_deps=$(/usr/syno/bin/synogetkeyvalue "$info" install_dep_packages)
+        if [[ -n "$has_deps" ]]; then
+            # Add to list of packages with dependencies
+            dep_pkgs+=("$pkg")
         else
-            # Get list of running packages with dependencies
-            has_deps=""
-            info="/var/packages/${pkg}/INFO"
-            has_deps=$(synogetkeyvalue "$info" install_dep_packages)
-            if [[ -n "$has_deps" ]]; then
-                # Add to list of running packages with dependencies
-                running_dep_pkgs+=("$pkg")
-            else
-                # Add to list of other running packages
-                running_pkgs_no_dep+=("$pkg")
-            fi
+
+            # Add to list of other packages
+            pkgs_no_dep+=("$pkg")
         fi
     fi
 done
 
 # Sort array
-IFS=$'\n' running_pkgs_with_deps_sorted=($(sort -u <<<"${running_pkgs_with_deps[*]}")); unset IFS
+IFS=$'\n' pkgs_with_deps_sorted=($(sort -u <<<"${pkgs_with_deps[*]}")); unset IFS
 
 # Sort array
-IFS=$'\n' running_dep_pkgs_sorted=($(sort -u <<<"${running_dep_pkgs[*]}")); unset IFS
+IFS=$'\n' dep_pkgs_sorted=($(sort -u <<<"${dep_pkgs[*]}")); unset IFS
 
 # Sort array
-IFS=$'\n' running_pkgs_no_dep_sorted=($(sort <<<"${running_pkgs_no_dep[*]}")); unset IFS
+IFS=$'\n' pkgs_no_dep_sorted=($(sort -u <<<"${pkgs_no_dep[*]}")); unset IFS
 
 
-# Add running packages with dependents to running_pkgs_sorted
-for v in "${!running_pkgs_with_deps_sorted[@]}"; do
-    running_pkgs_sorted+=("${running_pkgs_with_deps_sorted["$v"]}")
+# Add packages with dependents to pkgs_sorted
+for v in "${!pkgs_with_deps_sorted[@]}"; do
+    pkgs_sorted+=("${pkgs_with_deps_sorted["$v"]}")
 done
 
-# Append running packages with dependencies to running_pkgs_sorted
-for v in "${!running_dep_pkgs_sorted[@]}"; do
-    running_pkgs_sorted+=("${running_dep_pkgs_sorted["$v"]}")
+# Append packages with dependencies to pkgs_sorted
+for v in "${!dep_pkgs_sorted[@]}"; do
+    pkgs_sorted+=("${dep_pkgs_sorted["$v"]}")
 done
 
-# Append other packages to running_pkgs_sorted
-for v in "${!running_pkgs_no_dep_sorted[@]}"; do
-    running_pkgs_sorted+=("${running_pkgs_no_dep_sorted["$v"]}")
+# Append other packages to pkgs_sorted
+for v in "${!pkgs_no_dep_sorted[@]}"; do
+    pkgs_sorted+=("${pkgs_no_dep_sorted["$v"]}")
+done
+
+# Free some memory
+unset pkgs_with_deps
+unset dep_pkgs
+unset pkgs_no_dep
+unset pkgs_with_deps_sorted
+unset dep_pkgs_sorted
+unset pkgs_no_dep_sorted
+
+
+# Get list of running packages from array sorted by
+# with dependents, with dependencies then others
+for pkg in "${pkgs_sorted[@]}"; do
+    if [[ -f "/var/packages/${pkg}/enabled" ]]; then
+        running_pkgs_sorted+=( "$pkg" )
+    fi
 done
 
 
@@ -1591,12 +1592,12 @@ prepare_backup_restore(){
     # Check installed package version and backup version
     # Get package version
     if [[ ${mode,,} != "move" ]]; then
-        pkgversion=$(synogetkeyvalue "/var/packages/$pkg/INFO" version)
+        pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
     fi
 
     # Get backup package version
     if [[ ${mode,,} == "restore" ]]; then
-        pkgbackupversion=$(synogetkeyvalue "$bkpath/INFO" version)
+        pkgbackupversion=$(/usr/syno/bin/synogetkeyvalue "$bkpath/INFO" version)
         if [[ $pkgversion ]] && [[ $pkgbackupversion ]]; then
             check_pkg_versions_match "$pkgversion" "$pkgbackupversion"
         fi
@@ -1733,29 +1734,37 @@ start_packages(){
                     ding
                     echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to start ${pkg_name}!"
                     exit 1
+                else
+                    did_start_pkg="yes"
                 fi
+            else
+                no_start_pkg="yes"
             fi
         fi
 #    fi
 }
 
-# Loop through running_pkgs_sorted array
-for pkg in "${running_pkgs_sorted[@]}"; do  ####################################
+# Loop through pkgs_sorted array and process package
+for pkg in "${pkgs_sorted[@]}"; do
     pkg_name="${package_names_rev["$pkg"]}"
     if [[ ${mode,,} != "move" ]]; then
         prepare_backup_restore
-        if [[ ${running_pkgs_sorted[*]} =~ ^"${pkg}"$ ]]; then
-            stop_packages
-        fi
+        stop_packages
     else
         stop_packages
     fi
-    process_packages
 
-    if [[ ${running_pkgs_sorted[*]} =~ ^"${pkg}"$ ]]; then
-        start_packages
-        echo ""
+    if [[ ${1,,} == "--test" ]] || [[ ${1,,} == "test" ]]; then
+        echo "process_packages"
+    else
+        process_packages
     fi
+
+    if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
+        start_packages
+        #echo ""
+    fi
+    echo ""
 done
 
 
@@ -1803,7 +1812,7 @@ suggest_move_share(){
                 show_move_share "Minim Server" MinimServer
                 ;;
             Plex*Media*Server)
-                dsm="$(get_key_value /etc.defaults/VERSION majorversion)"
+                dsm="$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)"
                 if [[ $dsm -lt 7 ]]; then
                     show_move_share "Plex Media Server" Plex
                 else
@@ -1833,12 +1842,17 @@ fi
 #------------------------------------------------------------------------------
 # Start package and dependent packages that aren't running
 
-# Loop through running_pkgs_sorted array
-for pkg in "${running_pkgs_sorted[@]}"; do
-    pkg_name="${package_names_rev["$pkg"]}"
-    start_packages
-done
-echo ""
+# Loop through pkgs_sorted array
+if [[ $no_start_pkg != "yes" ]]; then
+    did_start_pkg=""
+    for pkg in "${running_pkgs_sorted[@]}"; do
+        pkg_name="${package_names_rev["$pkg"]}"
+        start_packages
+    done
+    if [[ $did_start_pkg == "yes" ]]; then
+        echo ""
+    fi
+fi
 
 
 if [[ $all == "yes" ]]; then
@@ -1869,7 +1883,7 @@ for pkg_name in "${!package_names[@]}"; do
     pkg="${package_names[$pkg_name]}"
     if [[ ${mode,,} != "move" ]]; then
         info="/var/packages/${pkg}/INFO"
-        if synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null
+        if /usr/syno/bin/synogetkeyvalue "$info" install_dep_packages | grep 'MariaDB' >/dev/null
         then
            mariadb_list+=("${pkg_name}")
            mariadb_show="yes"
@@ -1926,7 +1940,7 @@ suggest_change_location(){
     if [[ $pkg == DownloadStation ]]; then
         # Show how to move DownloadStation database and temp files
         #file="/var/packages/DownloadStation/etc/db-path.conf"
-        #value="$(synogetkeyvalue "$file" db-vol)"
+        #value="$(/usr/syno/bin/synogetkeyvalue "$file" db-vol)"
         #if [[ $value != "$targetvol" ]]; then
             echo -e "If you want to move the DownloadStation database & temp files to $targetvol"
             echo "  1. Open 'DownloadStation'."
@@ -1952,7 +1966,7 @@ suggest_change_location(){
     if [[ $pkg == SynologyDrive ]]; then
         # Show how to move Drive database
         file="/var/packages/SynologyDrive/etc/db-path.conf"
-        value="$(synogetkeyvalue "$file" db-vol)"
+        value="$(/usr/syno/bin/synogetkeyvalue "$file" db-vol)"
         if [[ $value != "$targetvol" ]]; then
             echo -e "If you want to move the Synology Drive database to $targetvol"
             echo "  1. Open 'Synology Drive Admin Console'."
