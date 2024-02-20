@@ -25,6 +25,7 @@ v3.0.xx final release notes
 
 v3.0.31 Beta
 - Fixed bug where packages that are stopped are not processed.
+- Improved speed of getting list of running packages.
 - Hard coded /usr/syno/bin and /usr/syno/sbin for Synology commands to prevent PATH issues.
 
 v3.0.30 Beta
