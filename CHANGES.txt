@@ -25,6 +25,7 @@ v3.0.xx final release notes
 
 v3.0.31 Beta
 - Fixed bug where packages that are stopped are not processed.
+- Hard coded /usr/syno/bin and /usr/syno/sbin for Synology commands to prevent PATH issues.
 
 v3.0.30 Beta
 - Bug fix for moving Media Server and Plex Media Server when Media Server was selected.
