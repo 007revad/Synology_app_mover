@@ -26,6 +26,7 @@ v3.0.xx final release notes
 v3.0.33 Beta
  - Added DSM 7.1 and 6 compatibility for package status.
  - Bug fix for DSM 6 getting volume of shared folder.
+ - DSM 6 is still WIP.
 
 v3.0.32 Beta
 - Bug fix for when package has spaces in the folder name (Plex Media Center).
