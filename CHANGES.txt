@@ -23,6 +23,9 @@ v3.0.xx final release notes
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
+v3.0.32 Beta
+- Bug fix for when package has spaces in the folder name (Plex Media Center).
+
 v3.0.31 Beta
 - Fixed bug where packages that are stopped are not processed.
 - Improved speed of getting list of running packages.
