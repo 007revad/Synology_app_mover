@@ -22,8 +22,10 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Bug fix for not backing up packages that aren't running.
+# DONE Bug fix for when package has spaces in the folder name (Plex Media Center).
 #
+#
+# DONE Bug fix for not backing up packages that aren't running.
 #
 # DONE Bug fix for moving Media Server and Plex Media Server when Media Server was selected.
 #
@@ -93,7 +95,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.31"
+scriptver="v3.0.32"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1249,7 +1251,8 @@ if [[ ${mode,,} != "restore" ]]; then
 
     # Add non-system packages to array
     cdir /var/packages
-    while read -r link target; do
+    #while read -r link target; do
+    while read link target; do  # Ignore shellcheck SC2162
         package="$(printf %s "$link" | cut -d'/' -f2 )"
         package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
         package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
@@ -1263,7 +1266,8 @@ if [[ ${mode,,} != "restore" ]]; then
             package_names["${package_name}"]="${package}"
             package_names_rev["${package}"]="${package_name}"
         fi
-    done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | awk '{print $(NF-2), $NF}')
+    #done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | awk '{print $(NF-2), $NF}')
+    done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | cut -d'.' -f2- | sed 's/ ->//')
 elif [[ ${mode,,} == "restore" ]]; then
 
     # Add list of backed up packages to array
