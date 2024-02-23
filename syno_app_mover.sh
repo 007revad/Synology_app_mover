@@ -22,8 +22,10 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Bug fix for when package has spaces in the folder name (Plex Media Center).
+# DONE Added DSM 7.1 and 6 compatibility for package status.
 #
+#
+# DONE Bug fix for when package has spaces in the folder name (Plex Media Center).
 #
 # DONE Bug fix for not backing up packages that aren't running.
 #
@@ -95,7 +97,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.32"
+scriptver="v3.0.33"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -162,6 +164,7 @@ buildphase=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION buildphase)
 buildnumber=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION buildnumber)
 smallfixnumber=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION smallfixnumber)
 majorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
+minorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION minorversion)
 
 # Show DSM full version and model
 if [[ $buildphase == GM ]]; then buildphase=""; fi
@@ -393,25 +396,47 @@ progstatus(){
     #echo "return: $1"  # debug
 }
 
+# shellcheck disable=SC2143
 package_status(){ 
     # $1 is package name
     local code
-    /usr/syno/bin/synopkg status "${1}" >/dev/null
-    code="$?"  # 0 = started, 17 = stopped, 255 = not_installed, 150 = broken
-    if [[ $code == "0" ]]; then
-        #echo "$1 is started"  # debug
-        return 0
-    elif [[ $code == "17" ]]; then
-        #echo "$1 is stopped"  # debug
-        return 1
-    elif [[ $code == "255" ]]; then
-        #echo "$1 is not installed"  # debug
-        return 255
-    elif [[ $code == "150" ]]; then
-        #echo "$1 is broken"  # debug
-        return 150
+    local response
+    if [[ $majorversion -gt "6" ]] && [[ $minorversion -gt "1" ]]; then
+        # DSM 7.2 or later
+        /usr/syno/bin/synopkg status "${1}" >/dev/null
+        code="$?"  # 0 = started, 17 = stopped, 255 = not_installed, 150 = broken
+        if [[ $code == "0" ]]; then
+            #echo "$1 is started"  # debug
+            return 0
+            #return
+        elif [[ $code == "17" ]]; then
+            #echo "$1 is stopped"  # debug
+            return 1
+        elif [[ $code == "255" ]]; then
+            #echo "$1 is not installed"  # debug
+            return 255
+        elif [[ $code == "150" ]]; then
+            #echo "$1 is broken"  # debug
+            return 150
+        else
+            return "$code"
+        fi
     else
-        return "$code"
+        # DSM 7.1 or earlier
+        response=$(/usr/syno/bin/synopkg status "${1}")
+        if [[ $(grep -i "package is started" <<< "$response") ]]; then
+            #echo "$1 is started"  # debug
+            return 0
+        elif [[ $(grep -i "package is stopped" <<< "$response") ]]; then
+            #echo "$1 is stopped"  # debug
+            return 1
+        elif [[ $(grep -i "No such package" <<< "$response") ]]; then
+            #echo "$1 is not installed"  # debug
+            return 255
+        elif [[ $(grep -i "package is broken" <<< "$response") ]]; then
+            #echo "$1 is broken"  # debug
+            return 150
+        fi
     fi
 }
 
@@ -695,6 +720,7 @@ move_pkg(){
     if [[ ${mode,,} == "restore" ]]; then
         cdir "$bkpath"
         sourcevol=$(echo "$bkpath" | cut -d "/" -f2)  # var is used later in script
+        # shellcheck disable=SC1083
         while IFS=  read -r appdir; do
             if [[ "${applist[*]}" =~ "$appdir" ]]; then
                 appdirs_tmp+=("$appdir")
@@ -1079,7 +1105,11 @@ move_extras(){
 
 web_packages(){ 
     # $1 if pkg in lower case
-    web_pkg_path=$(/usr/syno/sbin/synoshare --get-real-path web_packages)
+    if [[ $majorversion -gt "6" ]]; then
+        web_pkg_path=$(/usr/syno/sbin/synoshare --get-real-path web_packages)
+    else
+        web_pkg_path=$(/usr/syno/sbin/synoshare --getmap web_packages | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
+    fi
     if [[ -d "$web_pkg_path" ]]; then
         if [[ -n "${pkg:?}" ]] && [[ -d "$web_pkg_path/${pkg,,}" ]]; then
             if [[ ${mode,,} == "backup" ]]; then
@@ -1252,7 +1282,8 @@ if [[ ${mode,,} != "restore" ]]; then
     # Add non-system packages to array
     cdir /var/packages
     #while read -r link target; do
-    while read link target; do  # Ignore shellcheck SC2162
+    # shellcheck disable=SC2162
+    while read link target; do
         package="$(printf %s "$link" | cut -d'/' -f2 )"
         package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
         package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
@@ -1764,6 +1795,7 @@ for pkg in "${pkgs_sorted[@]}"; do
         process_packages
     fi
 
+    # shellcheck disable=SC2143
     if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
         start_packages
         #echo ""
