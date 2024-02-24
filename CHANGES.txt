@@ -35,7 +35,7 @@ v3.0.33 Beta
  - DSM 6 is still WIP.
 
 v3.0.32 Beta
-- Bug fix for when package has spaces in the folder name (Plex Media Center).
+- Bug fix for when package has spaces in the folder name (Plex Media Center in DSM 6).
 
 v3.0.31 Beta
 - Fixed bug where packages that are stopped are not processed.
