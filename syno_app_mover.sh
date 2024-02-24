@@ -22,8 +22,10 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Fixed restore mode which was broken in 3.0.30.
+# DONE Added support for backup and restore in DSM 6.
 #
+#
+# DONE Fixed restore mode which was broken in 3.0.30.
 #
 # DONE Added DSM 7.1 and 6 compatibility for package status.
 # DONE Bug fix for DSM 6 getting volume of shared folder.
@@ -100,7 +102,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.34"
+scriptver="v3.0.35"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -741,9 +743,10 @@ move_pkg(){
         fi
     else
         cdir /var/packages
-        while read -r link source; do
+        # shellcheck disable=SC2162
+        while read link source; do
             app_paths_tmp+=("$source")
-        done < <(find . -maxdepth 2 -type l -ls | grep '/'"$1"'$' | awk '{print $(NF-2), $NF}')
+        done < <(find . -maxdepth 2 -type l -ls | grep '/'"${1// /\\\\ }"'$' | cut -d'.' -f2- | sed 's/ ->//')
 
         # Sort array
         IFS=$'\n' app_paths=($(sort <<<"${app_paths_tmp[*]}")); unset IFS
@@ -752,13 +755,20 @@ move_pkg(){
             for source in "${app_paths[@]}"; do
                 appdir=$(echo "$source" | cut -d "/" -f3)
                 sourcevol=$(echo "$source" | cut -d "/" -f2)  # var is used later in script
-                create_dir "/${sourcevol:?}/${appdir:?}" "${destination:?}/${appdir:?}"
-                move_pkg_do "$1" "$2"
-                if [[ ${mode,,} == "move" ]]; then
-                    edit_symlinks "$pkg" "$destination"
+                if [[ "${applist[*]}" =~ "$appdir" ]]; then
+                    create_dir "/${sourcevol:?}/${appdir:?}" "${destination:?}/${appdir:?}"
+                    move_pkg_do "$1" "$2"
+                    if [[ ${mode,,} == "move" ]]; then
+                        edit_symlinks "$pkg" "$destination"
+                    fi
                 fi
             done
         fi
+    fi
+
+    # Backup or restore DSM 6 /usr/syno/etc/packages/$pkg/
+    if [[ $majorversion -lt "7" ]]; then
+        copy_dir_dsm6 "$1" "$2"
     fi
 }
 
@@ -819,12 +829,50 @@ show_move_share(){
     echo -e "  6. After step 5 has finished start $1 \n"
 }
 
+copy_dir_dsm6(){ 
+    # Backup or restore DSM 6 /usr/syno/etc/packages/$pkg/
+
+    # $1 is package name
+    # $2 is destination volume
+    local pack
+    local packshow
+    local extras
+    pack="/${pkg:?}"
+    packshow="${pkg:?}"
+    if [[ ${mode,,} == "backup" ]]; then
+        if [[ ! -d "${bkpath:?}/etc" ]]; then
+            mkdir -m 700 "${bkpath:?}/etc"
+        fi
+
+        #if ! is_empty "/usr/syno/etc/packages/${1:?}"; then
+            # If string is too long progbar gets messed up
+            cp -prf "/usr/syno/etc/packages/${1:?}" "${bkpath:?}/etc" &
+            pid=$!
+            string="${action} /usr/syno/etc/packages/${Cyan}${1}${Off}"
+            progbar "$pid" "$string"
+            wait "$pid"
+            progstatus "$?" "$string"
+        #fi
+    elif [[ ${mode,,} == "restore" ]]; then
+        #if [[ -d "${bkpath}/$1" ]]; then
+            # If string is too long progbar gets messed up
+            cp -prf "${bkpath:?}/etc/${1:?}" "/usr/syno/etc/packages" &
+            pid=$!
+            string="${action} $1 to /usr/syno/etc/packages"
+            progbar "$pid" "$string"
+            wait "$pid"
+            progstatus "$?" "$string"
+        #fi
+    fi
+}
+
 copy_dir(){ 
     # Used by package backup and restore
 
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
     local pack
+    local packshow
     local extras
     if [[ $2 == "extras" ]]; then
         #pack=""
@@ -968,8 +1016,7 @@ move_extras(){
             echo -e "${Red}WARNING $action @docker could take a long time${Off}"
             move_dir "@docker" extras
             if [[ ${mode,,} != "backup" ]]; then
-                dsm="$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)"
-                if [[ $dsm -gt 6 ]]; then
+                if [[ $majorversion -gt "6" ]]; then
                     # /var/packages/ContainerManager/var/docker/ --> /volume1/@docker
                     # /var/packages/Docker/var/docker/ --> /volume1/@docker
                     if [[ -L "/var/packages/${pkg:?}/var/docker" ]]; then
@@ -1851,11 +1898,10 @@ suggest_move_share(){
                 show_move_share "Minim Server" MinimServer
                 ;;
             Plex*Media*Server)
-                dsm="$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)"
-                if [[ $dsm -lt 7 ]]; then
-                    show_move_share "Plex Media Server" Plex
-                else
+                if [[ $majorversion -gt "6" ]]; then
                     show_move_share "Plex Media Server" PlexMediaServer
+                else
+                    show_move_share "Plex Media Server" Plex
                 fi
                 ;;
             SurveillanceStation)
