@@ -22,8 +22,11 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Skip processing app if it failed to stop.
+# DONE Added skip backup if last backup was less than n minutes ago.
+#        - Set skip_minutes in syno_app_mover.conf
 #
+#
+# DONE Skip processing app if it failed to stop.
 #
 # DONE Added support for backup and restore in DSM 6.
 #
@@ -104,7 +107,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.36"
+scriptver="v3.0.37"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1871,29 +1874,59 @@ start_packages(){
 #    fi
 }
 
+check_last_backup_time(){ 
+    # $1 is pkg
+    if [[ ${mode,,} == "backup" ]]; then
+        #now=$(date +%s)
+        if [[ -f "${backuppath}/syno_app_mover/$1/lastbackup" ]]; then
+            last_backup_time=$(cat "${backuppath}/syno_app_mover/$1/lastbackup")
+            skip_minutes=$(/usr/syno/bin/synogetkeyvalue "$conffile" skip_minutes)
+            if [[ $skip_minutes -gt "0" ]]; then
+                skip_secs=$((skip_minutes *60))
+                #if $(($(date +%s) +$skip_secs)) -gt 
+                if [[ $((last_backup_time +skip_secs)) -gt $(date +%s) ]]; then
+                    return 1
+                fi
+            fi
+        fi
+    fi
+}
+
 # Loop through pkgs_sorted array and process package
 for pkg in "${pkgs_sorted[@]}"; do
     pkg_name="${package_names_rev["$pkg"]}"
-    if [[ ${mode,,} != "move" ]]; then
-        prepare_backup_restore
-        stop_packages
-    else
-        stop_packages
-    fi
 
-    if [[ ${1,,} == "--test" ]] || [[ ${1,,} == "test" ]]; then
-        echo "process_packages"
-    else
-        if [[ $did_stop_pkg == "yes" ]]; then
-            process_packages
+    if check_last_backup_time "$pkg"; then
+    
+        if [[ ${mode,,} != "move" ]]; then
+            prepare_backup_restore
+            stop_packages
+        else
+            stop_packages
         fi
+
+        if [[ ${1,,} == "--test" ]] || [[ ${1,,} == "test" ]]; then
+            echo "process_packages"
+        else
+            if [[ $did_stop_pkg == "yes" ]]; then
+                process_packages
+                if [[ ${mode,,} == "backup" ]] && [[ $backup_failed != "yes" ]]; then
+                    # Save last backup time
+                    echo -n "$(date +%s)" > "${backuppath}/syno_app_mover/$pkg/lastbackup"
+                fi
+            fi
+        fi
+
+        # shellcheck disable=SC2143
+        if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
+            start_packages
+            #echo ""
+        fi
+
+    else
+        echo "Skipping $pkg_name as it was backed up less than $skip_minutes minutes ago"
     fi
 
-    # shellcheck disable=SC2143
-    if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
-        start_packages
-        #echo ""
-    fi
     echo ""
 done
 
