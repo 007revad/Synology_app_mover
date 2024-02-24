@@ -23,6 +23,9 @@ v3.0.xx final release notes
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
+v3.0.35
+- Added support for backup and restore in DSM 6.
+
 v3.0.34
 - Bug fix for restore mode which was broken in 3.0.30.
 
