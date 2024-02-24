@@ -22,8 +22,11 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Added DSM 7.1 and 6 compatibility for package status.
+# DONE Fixed restore mode which was broken in 3.0.30.
 #
+#
+# DONE Added DSM 7.1 and 6 compatibility for package status.
+# DONE Bug fix for DSM 6 getting volume of shared folder.
 #
 # DONE Bug fix for when package has spaces in the folder name (Plex Media Center).
 #
@@ -97,7 +100,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.33"
+scriptver="v3.0.34"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -725,7 +728,7 @@ move_pkg(){
             if [[ "${applist[*]}" =~ "$appdir" ]]; then
                 appdirs_tmp+=("$appdir")
             fi
-        done < <(find . -name -regex '/'"@app*"'$' -exec basename \{} \;)
+        done < <(find . -name "@app*" -exec basename \{} \;)
 
         # Sort array
         IFS=$'\n' appdirs=($(sort <<<"${appdirs_tmp[*]}")); unset IFS
