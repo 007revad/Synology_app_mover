@@ -23,6 +23,9 @@ v3.0.xx final release notes
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
+v3.0.36
+- Skip processing app if it failed to stop.
+
 v3.0.35
 - Added support for backup and restore in DSM 6.
 
