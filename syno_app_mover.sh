@@ -22,8 +22,10 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
-# DONE Added support for backup and restore in DSM 6.
+# DONE Skip processing app if it failed to stop.
 #
+#
+# DONE Added support for backup and restore in DSM 6.
 #
 # DONE Fixed restore mode which was broken in 3.0.30.
 #
@@ -102,7 +104,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.35"
+scriptver="v3.0.36"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -122,6 +124,7 @@ Error='\e[41m'      # ${Error}
 Off='\e[0m'         # ${Off}
 
 ding(){ 
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     printf \\a
 }
 
@@ -132,6 +135,10 @@ args=("$@")
 if [[ $1 == "--debug" ]] || [[ $1 == "-d" ]]; then
     set -x
     export PS4='`[[ $? == 0 ]] || echo "\e[1;31;40m($?)\e[m\n "`LINE $LINENO '
+fi
+
+if [[ $1 == "--trace" ]] || [[ $1 == "-t" ]]; then
+    trace="yes"
 fi
 
 if [[ ${1,,} == "--fix" ]]; then
@@ -388,6 +395,7 @@ progbar(){
 progstatus(){ 
     # $1 is return status of process
     # $2 is string to echo
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ $1 == "0" ]]; then
         echo -e "$2            "
     else
@@ -404,6 +412,7 @@ progstatus(){
 # shellcheck disable=SC2143
 package_status(){ 
     # $1 is package name
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     local code
     local response
     if [[ $majorversion -gt "6" ]] && [[ $minorversion -gt "1" ]]; then
@@ -449,6 +458,7 @@ wait_status(){
     # Wait for package to finish stopping or starting
     # $1 is package
     # $2 is start or stop
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     local num
     if [[ $2 == "start" ]]; then
         state="0"
@@ -472,6 +482,7 @@ wait_status(){
 package_stop(){ 
     # $1 is package name
     # $2 is package display name
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     timeout 5.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
     pid=$!
     string="Stopping ${Cyan}${2}${Off}"
@@ -487,6 +498,7 @@ package_stop(){
 package_start(){ 
     # $1 is package name
     # $2 is package display name
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     timeout 5.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
     pid=$!
     string="Starting ${Cyan}${2}${Off}"
@@ -501,6 +513,7 @@ package_start(){
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
 package_uninstall(){ 
     # $1 is package name
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     /usr/syno/bin/synopkg uninstall "$1" >/dev/null &
     pid=$!
     string="Uninstalling ${Cyan}${1}${Off}"
@@ -513,6 +526,7 @@ package_uninstall(){
 package_install(){ 
     # $1 is package name
     # $2 is /volume2 etc
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     /usr/syno/bin/synopkg install_from_server "$1" "$2" >/dev/null &
     pid=$!
     string="Installing ${Cyan}${1}${Off} on ${Cyan}$2${Off}"
@@ -523,6 +537,7 @@ package_install(){
 
 is_empty(){ 
     # $1 is /path/folder
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ -d $1 ]]; then
         local contents
         contents=$(find "$1" -maxdepth 1 -printf '.')
@@ -535,6 +550,7 @@ is_empty(){
 backup_dir(){ 
     # $1 is folder to backup (@docker etc) 
     # $2 is volume (/volume1 etc)
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     local perms
     if [[ -d "$2/$1" ]]; then
 
@@ -574,6 +590,7 @@ backup_dir(){
 
 cdir(){ 
     # $1 is path to cd to
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if ! cd "$1"; then
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} cd to $1 failed!"
@@ -584,6 +601,7 @@ cdir(){
 create_dir(){ 
     # $1 is source /path/folder
     # $2 is target /path/folder
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
     # Create target folder with source folder's permissions
     if [[ ! -d "$2" ]]; then
@@ -600,6 +618,7 @@ create_dir(){
 move_pkg_do(){ 
     # $1 is package name
     # $2 is destination volume or path
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
     # Move package's @app directories
     if [[ ${mode,,} == "move" ]]; then
@@ -658,6 +677,7 @@ move_pkg_do(){
 edit_symlinks(){ 
     # $1 is package name
     # $2 is destination volume
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
     # Edit /var/packages symlinks
     case "$appdir" in
@@ -702,6 +722,7 @@ edit_symlinks(){
 move_pkg(){ 
     # $1 is package name
     # $2 is destination volume
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     local appdir
     local perms
     local destination
@@ -774,6 +795,7 @@ move_pkg(){
 
 folder_size(){ 
     # $1 is folder to check size of
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     need=""    # var is used later in script
     needed=""  # var is used later in script
     if [[ -d "$1" ]]; then
@@ -786,6 +808,7 @@ folder_size(){
 
 vol_free_space(){ 
     # $1 is volume to check free space
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     free=""  # var is used later in script
     if [[ -d "$1" ]]; then
         # Get amount of free space on $1 volume
@@ -796,6 +819,7 @@ vol_free_space(){
 check_space(){ 
     # $1 is /path/folder
     # $2 is source volume or target volume
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
     # Get size of @docker folder
     folder_size "$1"
@@ -817,6 +841,7 @@ check_space(){
 show_move_share(){ 
     # $1 is package name
     # $2 is share name
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     echo -e "\nIf you want to move your $2 shared folder to $targetvol"
     echo "  While $1 is stopped:"
     echo "  1. Go to 'Control Panel > Shared Folders'."
@@ -831,6 +856,7 @@ show_move_share(){
 
 copy_dir_dsm6(){ 
     # Backup or restore DSM 6 /usr/syno/etc/packages/$pkg/
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
     # $1 is package name
     # $2 is destination volume
@@ -868,6 +894,7 @@ copy_dir_dsm6(){
 
 copy_dir(){ 
     # Used by package backup and restore
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
@@ -927,6 +954,7 @@ copy_dir(){
 move_dir(){ 
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ ${mode,,} == "move" ]]; then
         if [[ ! -d "/${targetvol:?}/${1:?}" ]]; then
             mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
@@ -966,6 +994,7 @@ move_dir(){
 move_extras(){ 
     # $1 is package name
     # $2 is destination /volume
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     local file
     local value
     # Change /volume1 to /volume2 etc
@@ -1155,6 +1184,7 @@ move_extras(){
 
 web_packages(){ 
     # $1 if pkg in lower case
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ $majorversion -gt "6" ]]; then
         web_pkg_path=$(/usr/syno/sbin/synoshare --get-real-path web_packages)
     else
@@ -1198,6 +1228,8 @@ web_packages(){
 
 check_pkg_installed(){ 
     # Check if package is installed
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+
     # $1 is package
     # $2 is package name
     /usr/syno/bin/synopkg status "${1:?}" >/dev/null
@@ -1216,6 +1248,7 @@ check_pkg_installed(){
 check_pkg_versions_match(){ 
     # $1 is installed package version
     # $2 is backed up package version
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ $1 != "$2" ]]; then
         ding
         echo -e "${Yellow}Backup and installed package versions don't match!${Off}"
@@ -1233,6 +1266,7 @@ check_pkg_versions_match(){
 
 skip_dev_tools(){ 
     # $1 is $pkg
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     local skip1
     local skip2
     if [[ ${mode,,} == "backup" ]]; then
@@ -1631,6 +1665,7 @@ done
 
 stop_packages(){ 
     # Check package is running
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if package_status "$pkg"; then
 
         # Stop package
@@ -1643,11 +1678,11 @@ stop_packages(){
         if package_status "$pkg"; then
             ding
             echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to stop ${pkg_name}!"
-            if [[ $fix != "yes" ]]; then  # bypass exit
+            if [[ $all != "yes" ]] || [[ $fix != "yes" ]]; then  # bypass exit
                 exit 1
             fi
-#        else
-#            did_stop_pkg="yes"
+        else
+            did_stop_pkg="yes"
         fi
 
         if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
@@ -1664,6 +1699,8 @@ stop_packages(){
 # Move the package or packages
 
 prepare_backup_restore(){ 
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+
     # Set bkpath variable
     if [[ ${mode,,} != "move" ]]; then
         bkpath="${backuppath}/syno_app_mover/$pkg"
@@ -1704,6 +1741,10 @@ prepare_backup_restore(){
 }
 
 process_packages(){
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+
+#trace=yes  # debug ##################################################
+
     target=$(readlink "/var/packages/${pkg}/target")
     #sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
     sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
@@ -1795,6 +1836,7 @@ process_packages(){
 }
 
 start_packages(){ 
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 #    if [[ $skip_start != "yes" ]]; then
         # Only start package if not already running
         if ! package_status "$pkg"; then
@@ -1842,7 +1884,9 @@ for pkg in "${pkgs_sorted[@]}"; do
     if [[ ${1,,} == "--test" ]] || [[ ${1,,} == "test" ]]; then
         echo "process_packages"
     else
-        process_packages
+        if [[ $did_stop_pkg == "yes" ]]; then
+            process_packages
+        fi
     fi
 
     # shellcheck disable=SC2143
