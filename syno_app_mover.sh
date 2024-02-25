@@ -22,9 +22,11 @@
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
 #
+# DONE Added check that the extra @ folders exist to prevent errors.
+#
+#
 # DONE Added skip backup if last backup was less than n minutes ago.
 #        - Set skip_minutes in syno_app_mover.conf
-#
 #
 # DONE Skip processing app if it failed to stop.
 #
@@ -107,7 +109,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.37"
+scriptver="v3.0.38"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -958,39 +960,43 @@ move_dir(){
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-    if [[ ${mode,,} == "move" ]]; then
-        if [[ ! -d "/${targetvol:?}/${1:?}" ]]; then
-            mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
-            pid=$!
-            string="${action} /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
-            progbar "$pid" "$string"
-            wait "$pid"
-            progstatus "$?" "$string"
-        elif ! is_empty "/${sourcevol:?}/${1:?}"; then
+    if [[ -d "/${sourcevol:?}/${1:?}" ]]; then
+        if [[ ${mode,,} == "move" ]]; then
+            if [[ ! -d "/${targetvol:?}/${1:?}" ]]; then
+                mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+                pid=$!
+                string="${action} /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
+                progbar "$pid" "$string"
+                wait "$pid"
+                progstatus "$?" "$string"
+            elif ! is_empty "/${sourcevol:?}/${1:?}"; then
 
-            # Copy source contents if target folder exists
-            cp -prf "/${sourcevol:?}/${1:?}" "${targetvol:?}" &
-            pid=$!
-            string="Copying /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
-            progbar "$pid" "$string"
-            wait "$pid"
-            progstatus "$?" "$string"
+                # Copy source contents if target folder exists
+                cp -prf "/${sourcevol:?}/${1:?}" "${targetvol:?}" &
+                pid=$!
+                string="Copying /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
+                progbar "$pid" "$string"
+                wait "$pid"
+                progstatus "$?" "$string"
 
-            # Delete source folder if empty
-#            if [[ $1 != "@docker" ]]; then
-                if is_empty "/${sourcevol:?}/${1:?}"; then
-                    rm -rf --preserve-root "/${sourcevol:?}/${1:?}" &
-                    pid=$!
-                    exitonerror="no"
-                    string="Removing /${sourcevol}/$1"
-                    progbar "$pid" "$string"
-                    wait "$pid"
-                    progstatus "$?" "$string"
+                # Delete source folder if empty
+#                if [[ $1 != "@docker" ]]; then
+                    if is_empty "/${sourcevol:?}/${1:?}"; then
+                        rm -rf --preserve-root "/${sourcevol:?}/${1:?}" &
+                        pid=$!
+                        exitonerror="no"
+                        string="Removing /${sourcevol}/$1"
+                        progbar "$pid" "$string"
+                        wait "$pid"
+                        progstatus "$?" "$string"
+                    fi
                 fi
-            fi
-#        fi
+#            fi
+        else
+            copy_dir "$1" "$2"
+        fi
     else
-        copy_dir "$1" "$2"
+        echo -e "No /${sourcevol}/$1 to ${mode,,}"
     fi
 }
 
