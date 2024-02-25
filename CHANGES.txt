@@ -23,6 +23,9 @@ v3.0.xx final release notes
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
+v3.0.38
+- Added check that the extra @ folders exist to prevent errors.
+
 v3.0.37
 - Added skipping backup if last backup was less than n minutes ago.
   - Set skip_minutes in syno_app_mover.conf
