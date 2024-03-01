@@ -21,9 +21,24 @@
 # Instead of moving large extra folders copy them to the target volume.
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
+# Add All option for moving All packages.
+#
+# Add ability to schedule a package or multiple packages.
+#   ./syno_app_mover.sh --auto ContainerManager
+#   ./syno_app_mover.sh --auto ContainerManager|Calendar|WebStation
+#
+#
+# DONE Added skip restore if last restore was less than n minutes ago.
+#        - Set skip_minutes in syno_app_mover.conf
+# DONE Skip exit on error and skip processing app if backup all or restore all selected.
+# DONE Changed to suggest changing volume location in app's settings for each app with volume settings when All selected.
+#   - Previously only showed how to edit volume location in app's settings for the last app processed.
+# DONE Changed to show how to move volume for each app with a volume when All selected.
+#   - Previously only showed how to move volume for the last app processed.
+# DONE Bug fix for showing @docker instead of @download if not enough space on target volume for @download.
+#
 #
 # DONE Added check that the extra @ folders exist to prevent errors.
-#
 #
 # DONE Added skip backup if last backup was less than n minutes ago.
 #        - Set skip_minutes in syno_app_mover.conf
@@ -109,7 +124,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.38"
+scriptver="v3.0.39"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -156,7 +171,7 @@ fi
 if [[ $( whoami ) != "root" ]]; then
     ding
     echo -e "${Error}ERROR${Off} This script must be run as sudo or root!"
-    exit 1
+    exit 1  # Not running as root
 fi
 
 # Check script is running on a Synology NAS
@@ -164,7 +179,7 @@ if ! /usr/bin/uname -a | grep -i synology >/dev/null; then
     echo "This script is NOT running on a Synology NAS!"
     echo "Copy the script to a folder on the Synology"
     echo "and run it from there."
-    exit 1
+    exit 1  # Not a Synology NAS
 fi
 
 # Get NAS model
@@ -400,14 +415,18 @@ progbar(){
 progstatus(){ 
     # $1 is return status of process
     # $2 is string to echo
-    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+    local tracestring
+    local pad
+    tracestring="${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+    pad=$(printf -- ' %.0s' {1..80})
+    [ "$trace" == "yes" ] && printf '%.*s' 80 "${tracestring}${pad}" && echo ""
     if [[ $1 == "0" ]]; then
         echo -e "$2            "
     else
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} $2 failed!"
         if [[ $exitonerror != "no" ]]; then
-            exit 1
+            exit 1  # Skip exit if exitonerror != no
         fi
     fi
     exitonerror=""
@@ -566,7 +585,11 @@ backup_dir(){
             if ! mkdir -m "$perms" "${2:?}/${1:?}_backup"; then
                 ding
                 echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to create directory!"
-                exit 1
+                process_error="yes"
+                if [[ $all != "yes" ]] || [[ $fix != "yes" ]]; then
+                    exit 1  # Skip exit if mode != all and fix != yes
+                fi
+                return 1
             fi
         fi
 
@@ -599,7 +622,11 @@ cdir(){
     if ! cd "$1"; then
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} cd to $1 failed!"
-        exit 1
+        process_error="yes"
+        if [[ $all != "yes" ]] || [[ $fix != "yes" ]]; then
+            exit 1  # Skip exit if mode != all and fix != yes
+        fi
+        return 1
     fi
 }
 
@@ -615,7 +642,11 @@ create_dir(){
         if ! mkdir -m "$perms" "${2:?}"; then
             ding
             echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to create directory!"
-            exit 1
+            process_error="yes"
+            if [[ $all != "yes" ]] || [[ $fix != "yes" ]]; then
+                exit 1  # Skip exit if mode != all and fix != yes
+            fi
+            return 1
         fi
     fi
 }
@@ -735,13 +766,10 @@ move_pkg(){
     local app_paths_tmp
     if [[ ${mode,,} == "backup" ]]; then
         destination="$bkpath"
-        #cdir /var/packages
     elif [[ ${mode,,} == "restore" ]]; then
         destination="$2"
-        #cdir "$bkpath"
     else
         destination="$2"
-        #cdir /var/packages
     fi    
     if [[ $majorversion -gt 6 ]]; then
         applist=( "@appconf" "@appdata" "@apphome" "@appshare" "@appstore" "@apptemp" )
@@ -749,7 +777,10 @@ move_pkg(){
         applist=( "@appstore" )
     fi
     if [[ ${mode,,} == "restore" ]]; then
-        cdir "$bkpath"
+        if ! cdir "$bkpath"; then
+            process_error="yes"
+            return 1
+        fi
         sourcevol=$(echo "$bkpath" | cut -d "/" -f2)  # var is used later in script
         # shellcheck disable=SC1083
         while IFS=  read -r appdir; do
@@ -768,7 +799,10 @@ move_pkg(){
             done
         fi
     else
-        cdir /var/packages
+        if ! cdir /var/packages; then
+            process_error="yes"
+            return 1
+        fi
         # shellcheck disable=SC2162
         while read link source; do
             app_paths_tmp+=("$source")
@@ -826,7 +860,7 @@ check_space(){
     # $2 is source volume or target volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
-    # Get size of @docker folder
+    # Get size of extra @ folder
     folder_size "$1"
 
     # Get amount of free space on target volume
@@ -835,7 +869,7 @@ check_space(){
     # Check we have enough space
     if [[ ! $free -gt $needed ]]; then
         echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,} "\
-            "/${sourcevol}/${Cyan}@docker${Off} to $targetvol"
+            "/${sourcevol}/${Cyan}$(basename -- "$1")${Off} to $targetvol"
         echo -e "Free: $((free /1048576)) GB  Needed: $((need /1048576)) GB\n"
         return 1
     else
@@ -1243,10 +1277,12 @@ check_pkg_installed(){
     # $2 is package name
     /usr/syno/bin/synopkg status "${1:?}" >/dev/null
     if [[ $? == "255" ]]; then
-        echo -e "${Cyan}${2}${Off} is not installed!"
+        ding
+        echo -e "${Error}ERROR${Off} ${Cyan}${2}${Off} is not installed!"
         echo -e "Install ${Cyan}${2}${Off} then try Restore again"
+        process_error="yes"
         if [[ $all != "yes" ]]; then
-            exit
+            exit 1  # Skip exit if mode is All
         fi
         return 1
     else
@@ -1266,7 +1302,7 @@ check_pkg_versions_match(){
         echo "Do you want to continue restoring ${pkg_name}? [y/n]"
         read -r reply
         if [[ ${reply,,} != "y" ]]; then
-            exit
+            exit  # Answered no
         else
             echo ""
         fi
@@ -1329,12 +1365,12 @@ if [[ ${mode,,} != "move" ]]; then
     if [[ ! -f "$conffile" ]]; then
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} $conffile not found!"
-        exit 1
+        exit 1  # Conf file not found
     fi
     if [[ ! -r "$conffile" ]]; then
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} $conffile not readable!"
-        exit 1
+        exit 1  # Conf file not readable
     fi
     # Fix line endings
     # grep can't detect Windows or Mac line endings 
@@ -1350,11 +1386,11 @@ if [[ ${mode,,} != "move" ]]; then
     if [[ -z "$backuppath" ]]; then
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} backuppath missing from ${conffile}!"
-        exit 1
+        exit 1  # Backup path missing in conf file
     elif [[ ! -d "$backuppath" ]]; then
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} Backup folder ${Cyan}$backuppath${Off} not found!"
-        exit 1
+        exit 1  # Backup folder not found
     fi
 fi
 if [[ ${mode,,} == "backup" ]]; then
@@ -1373,7 +1409,7 @@ package_infos=( )
 if [[ ${mode,,} != "restore" ]]; then
 
     # Add non-system packages to array
-    cdir /var/packages
+    cdir /var/packages || exit
     #while read -r link target; do
     # shellcheck disable=SC2162
     while read link target; do
@@ -1395,7 +1431,7 @@ if [[ ${mode,,} != "restore" ]]; then
 elif [[ ${mode,,} == "restore" ]]; then
 
     # Add list of backed up packages to array
-    cdir "${backuppath}/syno_app_mover"
+    cdir "${backuppath}/syno_app_mover" || exit
     for package in *; do
         if [[ -d "$package" ]] && [[ $package != "@eaDir" ]]; then
             if [[ ${package:0:1} != "-" ]]; then
@@ -1491,7 +1527,7 @@ if [[ $all != "yes" ]]; then
                     else
                         ding
                         echo -e "Line ${LINENO}: ${Error}ERROR${Off} $pkg_name not found!"
-                        exit 1
+                        exit 1  # Selected package not found
                     fi
                 else
                     echo "Invalid choice!"
@@ -1503,7 +1539,7 @@ if [[ $all != "yes" ]]; then
         else
             ding
             echo -e "Line ${LINENO}: ${Error}ERROR${Off} No package backups found!"
-            exit 1
+            exit 1  # No package backups found
         fi
     fi
 fi
@@ -1546,7 +1582,7 @@ if [[ ${mode,,} == "move" ]]; then
                 else
                     ding
                     echo -e "Line ${LINENO}: ${Error}ERROR${Off} $targetvol not found!"
-                    exit 1
+                    exit 1  # Target volume not found
                 fi
             else
                 echo "Invalid choice!"
@@ -1558,7 +1594,7 @@ if [[ ${mode,,} == "move" ]]; then
     else
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} Only 1 volume found!"
-        exit 1
+        exit 1  # Only 1 volume
     fi
 elif [[ ${mode,,} == "backup" ]]; then
     targetvol="/$(echo "${backuppath:?}" | cut -d"/" -f2)"
@@ -1589,7 +1625,7 @@ fi
 read -r answer
 echo ""
 if [[ ${answer,,} != y ]]; then
-    exit
+    exit  # Answered no
 fi
 
 # Reset shell's SECONDS var to later show how long the script took
@@ -1685,13 +1721,16 @@ stop_packages(){
 
         # Check package stopped
         if package_status "$pkg"; then
+            stop_pkg_fail="yes"
             ding
             echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to stop ${pkg_name}!"
-            if [[ $all != "yes" ]] || [[ $fix != "yes" ]]; then  # bypass exit
-                exit 1
+            process_error="yes"
+            if [[ $all != "yes" ]] || [[ $fix != "yes" ]]; then
+                exit 1  # Skip exit if mode != all and fix != yes
             fi
+            return 1
         else
-            did_stop_pkg="yes"
+            stop_pkg_fail=""
         fi
 
         if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
@@ -1700,6 +1739,41 @@ stop_packages(){
         fi
 #    else
 #        skip_start="yes"
+    fi
+}
+
+
+#------------------------------------------------------------------------------
+# Backup extra @folders
+
+backup_extras(){ 
+    # $1 is @folder (@docker or @downloads etc)
+    local extrabakvol
+    local answer
+    if [[ ${mode,,} != "backup" ]]; then
+        if [[ ${mode,,} == "move" ]]; then
+            extrabakvol="$sourcevol"
+        elif [[ ${mode,,} == "restore" ]]; then
+            extrabakvol="$targetvol"
+        fi
+        echo -e "Do you want to ${Yellow}backup${Off} the"\
+            "${Cyan}$1${Off} folder on $extrabakvol? [y/n]"
+        read -r answer
+        #echo ""
+        if [[ ${answer,,} == "y" ]]; then
+            # Check we have enough space
+            if ! check_space "/${sourcevol}/$1" "${sourcevol}"; then
+                ding
+                echo -e "${Error}ERROR${Off} Not enough space on $extrabakvol to backup ${Cyan}$1${Off}!"
+                echo "Do you want to continue ${action,,} ${pkg_name}? [y/n]"
+                read -r answer
+                if [[ ${answer,,} != "y" ]]; then
+                    exit  # Answered no
+                fi
+            else
+                backup_dir "$1" "$extrabakvol"
+            fi
+        fi
     fi
 }
 
@@ -1740,7 +1814,11 @@ prepare_backup_restore(){
             if ! mkdir -p "${bkpath:?}"; then
                 ding
                 echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to create directory!"
-                exit 1
+                process_error="yes"
+                if [[ $all != "yes" ]]; then
+                    exit 1  # Skip exit if mode is All
+                fi
+                return 1
             fi
         fi
 
@@ -1751,9 +1829,6 @@ prepare_backup_restore(){
 
 process_packages(){
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
-#trace=yes  # debug ##################################################
-
     target=$(readlink "/var/packages/${pkg}/target")
     #sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
     sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
@@ -1766,30 +1841,18 @@ process_packages(){
         if [[ -d "/${sourcevol}/@docker" ]]; then
             # Check we have enough space
             if ! check_space "/${sourcevol}/@docker" "${targetvol}"; then
-                exit
+                ding
+                echo -e "${Error}ERROR${Off} Not enough space on $targetvol to ${mode,,} ${Cyan}@download${Off}!"
+                process_error="yes"
+                if [[ $all != "yes" ]]; then
+                    exit 1  # Skip exit if mode is All
+                fi
+                return 1
             fi
         fi
 
         # Backup @docker
-        if [[ ${mode,,} != "backup" ]]; then
-            if [[ ${mode,,} == "move" ]]; then
-                dockerbakvol="$sourcevol"
-            elif [[ ${mode,,} == "restore" ]]; then
-                dockerbakvol="$targetvol"
-            fi
-            echo -e "Do you want to ${Yellow}backup${Off} the"\
-                "${Cyan}@docker${Off} folder on $dockerbakvol? [y/n]"
-            read -r answer
-            #echo ""
-            if [[ ${answer,,} == "y" ]]; then
-                # Check we have enough space
-                if ! check_space "/${sourcevol}/@docker" "${sourcevol}"; then
-                    exit
-                else
-                    backup_dir "@docker" "$dockerbakvol"
-                fi
-            fi
-        fi
+        backup_extras "@docker"
 
         # Move package and edit symlinks
         move_pkg "$pkg" "$targetvol"
@@ -1801,30 +1864,18 @@ process_packages(){
         if [[ -d "/${sourcevol}/@download" ]]; then
             # Check we have enough space
             if ! check_space "/${sourcevol}/@download" "${targetvol}"; then
-                exit
+                ding
+                echo -e "${Error}ERROR${Off} Not enough space on $targetvol to ${mode,,} ${Cyan}@download${Off}!"
+                process_error="yes"
+                if [[ $all != "yes" ]]; then
+                    exit 1  # Skip exit if mode is All
+                fi
+                return 1
             fi
         fi
 
         # Backup @download
-        if [[ ${mode,,} != "backup" ]]; then
-            if [[ ${mode,,} == "move" ]]; then
-                downloadsbakvol="$sourcevol"
-            elif [[ ${mode,,} == "restore" ]]; then
-                downloadsbakvol="$targetvol"
-            fi
-            echo -e "Do you want to ${Yellow}backup${Off} the"\
-                "${Cyan}@download${Off} folder on $downloadsbakvol? [y/n]"
-            read -r answer
-            #echo ""
-            if [[ ${answer,,} == "y" ]]; then
-                # Check we have enough space
-                if ! check_space "/${sourcevol}/@download" "${sourcevol}"; then
-                    exit
-                else
-                    backup_dir "@download" "$downloadsbakvol"
-                fi
-            fi
-        fi
+        backup_extras "@download"
 
         # Move package and edit symlinks
         move_pkg "$pkg" "$targetvol"
@@ -1869,7 +1920,10 @@ start_packages(){
                 if ! package_status "$pkg"; then
                     ding
                     echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to start ${pkg_name}!"
-                    exit 1
+                    process_error="yes"
+                    if [[ $all != "yes" ]]; then
+                        exit 1  # Skip exit if mode is All
+                    fi
                 else
                     did_start_pkg="yes"
                 fi
@@ -1880,17 +1934,17 @@ start_packages(){
 #    fi
 }
 
-check_last_backup_time(){ 
+check_last_process_time(){ 
     # $1 is pkg
-    if [[ ${mode,,} == "backup" ]]; then
+    if [[ ${mode,,} != "move" ]]; then
         #now=$(date +%s)
-        if [[ -f "${backuppath}/syno_app_mover/$1/lastbackup" ]]; then
-            last_backup_time=$(cat "${backuppath}/syno_app_mover/$1/lastbackup")
+        if [[ -f "${backuppath}/syno_app_mover/$1/last${mode,,}" ]]; then
+            last_process_time=$(cat "${backuppath}/syno_app_mover/$1/last${mode,,}")
             skip_minutes=$(/usr/syno/bin/synogetkeyvalue "$conffile" skip_minutes)
             if [[ $skip_minutes -gt "0" ]]; then
                 skip_secs=$((skip_minutes *60))
                 #if $(($(date +%s) +$skip_secs)) -gt 
-                if [[ $((last_backup_time +skip_secs)) -gt $(date +%s) ]]; then
+                if [[ $((last_process_time +skip_secs)) -gt $(date +%s) ]]; then
                     return 1
                 fi
             fi
@@ -1901,24 +1955,23 @@ check_last_backup_time(){
 # Loop through pkgs_sorted array and process package
 for pkg in "${pkgs_sorted[@]}"; do
     pkg_name="${package_names_rev["$pkg"]}"
+    process_error=""
 
-    if check_last_backup_time "$pkg"; then
-    
+    if check_last_process_time "$pkg"; then
         if [[ ${mode,,} != "move" ]]; then
             prepare_backup_restore
-            stop_packages
-        else
-            stop_packages
         fi
+        stop_packages
 
         if [[ ${1,,} == "--test" ]] || [[ ${1,,} == "test" ]]; then
             echo "process_packages"
         else
-            if [[ $did_stop_pkg == "yes" ]]; then
+            if [[ $stop_pkg_fail != "yes" ]]; then
                 process_packages
-                if [[ ${mode,,} == "backup" ]] && [[ $backup_failed != "yes" ]]; then
+                if [[ ${mode,,} != "move" ]] && [[ $process_error != "yes" ]]; then
                     # Save last backup time
-                    echo -n "$(date +%s)" > "${backuppath}/syno_app_mover/$pkg/lastbackup"
+                    echo -n "$(date +%s)" > "${backuppath}/syno_app_mover/$pkg/last${mode,,}"
+                    chmod 755 "${backuppath}/syno_app_mover/$pkg/last${mode,,}"
                 fi
             fi
         fi
@@ -1928,11 +1981,9 @@ for pkg in "${pkgs_sorted[@]}"; do
             start_packages
             #echo ""
         fi
-
     else
         echo "Skipping $pkg_name as it was backed up less than $skip_minutes minutes ago"
     fi
-
     echo ""
 done
 
@@ -2003,7 +2054,15 @@ suggest_move_share(){
 }
 
 if [[ ${mode,,} == "move" ]]; then
-    suggest_move_share
+    if [[ $all == "yes" ]]; then
+        # Loop through pkgs_sorted array and process package
+        for pkg in "${pkgs_sorted[@]}"; do
+            pkg_name="${package_names_rev["$pkg"]}"
+            suggest_move_share
+        done
+    else
+        suggest_move_share
+    fi
 fi
 
 
@@ -2164,7 +2223,15 @@ suggest_change_location(){
 }
 
 if [[ ${mode,,} == "move" ]]; then
-    suggest_change_location
+    if [[ $all == "yes" ]]; then
+        # Loop through pkgs_sorted array and process package
+        for pkg in "${pkgs_sorted[@]}"; do
+            pkg_name="${package_names_rev["$pkg"]}"
+            suggest_change_location
+        done
+    else
+        suggest_change_location
+    fi
 fi
 
 exit
