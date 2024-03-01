@@ -23,6 +23,16 @@ v3.0.xx final release notes
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
+v3.0.39
+- Added skip restore if last restore was less than n minutes ago.
+  - Set skip_minutes in syno_app_mover.conf
+- Skip exit on error and skip processing app if backup all or restore all selected.
+- Changed to suggest changing volume location in app's settings for each app with volume settings when All selected.
+  - Previously only showed how to edit volume location in app's settings for the last app processed.
+- Changed to show how to move volume for each app with a volume when All selected.
+  - Previously only showed how to move volume for the last app processed.
+- Bug fix for showing @docker instead of @download if not enough space on target volume for @download.
+
 v3.0.38
 - Added check that the extra @ folders exist to prevent errors.
 
