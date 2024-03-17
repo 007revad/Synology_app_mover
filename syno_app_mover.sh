@@ -143,7 +143,7 @@ Error='\e[41m'      # ${Error}
 #Warn='\e[47;31m'   # ${Warn}
 Off='\e[0m'         # ${Off}
 
-ding(){ 
+ding() { 
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     printf \\a
 }
@@ -239,7 +239,7 @@ echo "Running from: ${scriptpath}/$scriptfile"
 #echo "scriptver: $scriptver"  # debug
 
 
-cleanup_tmp(){ 
+cleanup_tmp() { 
     # Delete downloaded .tar.gz file
     if [[ -f "/tmp/$script-$shorttag.tar.gz" ]]; then
         if ! rm "/tmp/$script-$shorttag.tar.gz"; then
@@ -376,7 +376,7 @@ conffile="${scriptpath}/${scriptname}.conf"
 # Functions
 
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
-pause(){ 
+pause() { 
     # When debugging insert pause command where needed
     read -s -r -n 1 -p "Press any key to continue..."
     read -r -t 0.1 -s -e --  # Silently consume all input
@@ -385,7 +385,7 @@ pause(){
 }
 
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
-debug(){ 
+debug() { 
     if [[ $1 == "on" ]]; then
         set -x
         export PS4='`[[ $? == 0 ]] || echo "\e[1;31;40m($?)\e[m\n "`LINE $LINENO '
@@ -394,7 +394,7 @@ debug(){
     fi
 }
 
-progbar(){ 
+progbar() { 
     # $1 is pid of process
     # $2 is string to echo
     string="$2"
@@ -412,7 +412,7 @@ progbar(){
     done
 }
 
-progstatus(){ 
+progstatus() { 
     # $1 is return status of process
     # $2 is string to echo
     local tracestring
@@ -434,7 +434,7 @@ progstatus(){
 }
 
 # shellcheck disable=SC2143
-package_status(){ 
+package_status() { 
     # $1 is package name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     local code
@@ -478,7 +478,7 @@ package_status(){
     fi
 }
 
-wait_status(){ 
+wait_status() { 
     # Wait for package to finish stopping or starting
     # $1 is package
     # $2 is start or stop
@@ -503,7 +503,7 @@ wait_status(){
     fi
 }
 
-package_stop(){ 
+package_stop() { 
     # $1 is package name
     # $2 is package display name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -519,7 +519,7 @@ package_stop(){
     #sleep 1
 }
 
-package_start(){ 
+package_start() { 
     # $1 is package name
     # $2 is package display name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -535,7 +535,7 @@ package_start(){
 }
 
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
-package_uninstall(){ 
+package_uninstall() { 
     # $1 is package name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     /usr/syno/bin/synopkg uninstall "$1" >/dev/null &
@@ -547,7 +547,7 @@ package_uninstall(){
 }
 
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
-package_install(){ 
+package_install() { 
     # $1 is package name
     # $2 is /volume2 etc
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -559,7 +559,7 @@ package_install(){
     progstatus "$?" "$string"
 }
 
-is_empty(){ 
+is_empty() { 
     # $1 is /path/folder
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ -d $1 ]]; then
@@ -571,7 +571,7 @@ is_empty(){
     fi
 }
 
-backup_dir(){ 
+backup_dir() { 
     # $1 is folder to backup (@docker etc) 
     # $2 is volume (/volume1 etc)
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -616,7 +616,7 @@ backup_dir(){
     fi
 }
 
-cdir(){ 
+cdir() { 
     # $1 is path to cd to
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if ! cd "$1"; then
@@ -630,7 +630,7 @@ cdir(){
     fi
 }
 
-create_dir(){ 
+create_dir() { 
     # $1 is source /path/folder
     # $2 is target /path/folder
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -651,7 +651,7 @@ create_dir(){
     fi
 }
 
-move_pkg_do(){ 
+move_pkg_do() { 
     # $1 is package name
     # $2 is destination volume or path
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -755,7 +755,7 @@ edit_symlinks() {
     esac
 }
 
-move_pkg(){ 
+move_pkg() { 
     # $1 is package name
     # $2 is destination volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -832,7 +832,7 @@ move_pkg(){
     fi
 }
 
-folder_size(){ 
+folder_size() { 
     # $1 is folder to check size of
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     need=""    # var is used later in script
@@ -845,7 +845,7 @@ folder_size(){
     fi
 }
 
-vol_free_space(){ 
+vol_free_space() { 
     # $1 is volume to check free space
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     free=""  # var is used later in script
@@ -855,7 +855,7 @@ vol_free_space(){
     fi
 }
 
-check_space(){ 
+check_space() { 
     # $1 is /path/folder
     # $2 is source volume or target volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -877,7 +877,7 @@ check_space(){
     fi
 }
 
-show_move_share(){ 
+show_move_share() { 
     # $1 is package name
     # $2 is share name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -893,7 +893,7 @@ show_move_share(){
     echo -e "  6. After step 5 has finished start $1 \n"
 }
 
-copy_dir_dsm6(){ 
+copy_dir_dsm6() { 
     # Backup or restore DSM 6 /usr/syno/etc/packages/$pkg/
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
@@ -931,7 +931,7 @@ copy_dir_dsm6(){
     fi
 }
 
-copy_dir(){ 
+copy_dir() { 
     # Used by package backup and restore
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
@@ -990,7 +990,7 @@ copy_dir(){
     fi
 }
 
-move_dir(){ 
+move_dir() { 
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -1034,7 +1034,7 @@ move_dir(){
     fi
 }
 
-move_extras(){ 
+move_extras() { 
     # $1 is package name
     # $2 is destination /volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -1225,7 +1225,7 @@ move_extras(){
     esac
 }
 
-web_packages(){ 
+web_packages() { 
     # $1 if pkg in lower case
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ $majorversion -gt "6" ]]; then
@@ -1269,7 +1269,7 @@ web_packages(){
     fi
 }
 
-check_pkg_installed(){ 
+check_pkg_installed() { 
     # Check if package is installed
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
@@ -1290,7 +1290,7 @@ check_pkg_installed(){
     fi
 }
 
-check_pkg_versions_match(){ 
+check_pkg_versions_match() { 
     # $1 is installed package version
     # $2 is backed up package version
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -1309,7 +1309,7 @@ check_pkg_versions_match(){
     fi
 }
 
-skip_dev_tools(){ 
+skip_dev_tools() { 
     # $1 is $pkg
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     local skip1
@@ -1708,7 +1708,7 @@ done
 #------------------------------------------------------------------------------
 # Stop the package or packages
 
-stop_packages(){ 
+stop_packages() { 
     # Check package is running
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if package_status "$pkg"; then
@@ -1746,7 +1746,7 @@ stop_packages(){
 #------------------------------------------------------------------------------
 # Backup extra @folders
 
-backup_extras(){ 
+backup_extras() { 
     # $1 is @folder (@docker or @downloads etc)
     local extrabakvol
     local answer
@@ -1781,7 +1781,7 @@ backup_extras(){
 #------------------------------------------------------------------------------
 # Move the package or packages
 
-prepare_backup_restore(){ 
+prepare_backup_restore() { 
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
     # Set bkpath variable
@@ -1827,7 +1827,7 @@ prepare_backup_restore(){
     fi
 }
 
-process_packages(){
+process_packages() {
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     target=$(readlink "/var/packages/${pkg}/target")
     #sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
@@ -1895,7 +1895,7 @@ process_packages(){
     fi
 }
 
-start_packages(){ 
+start_packages() { 
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 #    if [[ $skip_start != "yes" ]]; then
         # Only start package if not already running
@@ -1934,7 +1934,7 @@ start_packages(){
 #    fi
 }
 
-check_last_process_time(){ 
+check_last_process_time() { 
     # $1 is pkg
     if [[ ${mode,,} != "move" ]]; then
         #now=$(date +%s)
@@ -1991,14 +1991,14 @@ done
 #------------------------------------------------------------------------------
 # Show how to move related shared folder(s)
 
-docker_volume_edit(){ 
+docker_volume_edit() { 
     # Remind user to edit container's volume setting
     echo "If you moved shared folders that your $pkg_name containers use"
     echo "as volumes you will need to edit your docker compose or .env files,"
     echo -e "or the container's settings, to point to the changed volume number.\n"
 }
 
-suggest_move_share(){ 
+suggest_move_share() { 
     # show_move_share <package-name> <share-name>
     if [[ ${mode,,} == "move" ]]; then
         case "$pkg" in
@@ -2152,7 +2152,7 @@ fi
 #------------------------------------------------------------------------------
 # Suggest change location of shared folder(s) if package moved
 
-suggest_change_location(){ 
+suggest_change_location() { 
     # Suggest moving CloudSync database if package is CloudSync
     if [[ $pkg == CloudSync ]]; then
         # Show how to move CloudSync database
