@@ -124,7 +124,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.39"
+scriptver="v3.0.40"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1762,7 +1762,7 @@ backup_extras(){
         #echo ""
         if [[ ${answer,,} == "y" ]]; then
             # Check we have enough space
-            if ! check_space "/${sourcevol}/$1" "${sourcevol}"; then
+            if ! check_space "/${sourcevol}/$1" "/${sourcevol}"; then
                 ding
                 echo -e "${Error}ERROR${Off} Not enough space on $extrabakvol to backup ${Cyan}$1${Off}!"
                 echo "Do you want to continue ${action,,} ${pkg_name}? [y/n]"
