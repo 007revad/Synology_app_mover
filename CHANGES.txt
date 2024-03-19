@@ -22,6 +22,12 @@ v3.0.xx final release notes
 - Added line number to error messages for easier debugging.
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
+v3.0.41
+- Bug fix for moving Hyper Backup. issue #35
+- Bug fix for moving Synology MailPlus Server. issue #20
+
+v3.0.40
+- Bug fix for not enough space when you chose to backup extra @folders (@docker, @downloads etc.). issue #36
 
 v3.0.39
 - Added skip restore if last restore was less than n minutes ago.
