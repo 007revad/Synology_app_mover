@@ -28,6 +28,9 @@
 #   ./syno_app_mover.sh --auto ContainerManager|Calendar|WebStation
 #
 #
+# https://docs.docker.com/config/pruning/
+#
+#
 # DONE Added skip restore if last restore was less than n minutes ago.
 #        - Set skip_minutes in syno_app_mover.conf
 # DONE Skip exit on error and skip processing app if backup all or restore all selected.
@@ -124,7 +127,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.40"
+scriptver="v3.0.41"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -880,17 +883,23 @@ check_space(){
 show_move_share(){ 
     # $1 is package name
     # $2 is share name
+    # $3 is stopped or running
+    # $4 is more or null
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     echo -e "\nIf you want to move your $2 shared folder to $targetvol"
-    echo "  While $1 is stopped:"
+    echo "  While ${Cyan}$1${Off} is ${Cyan}$3${Off}:"
     echo "  1. Go to 'Control Panel > Shared Folders'."
     echo "  2. Select your $2 shared folder and click Edit."
     echo "  3. Change Location to $targetvol"
     echo "  4. Click on Advanced and check that 'Enable data checksums' is selected."
     echo "    - 'Enable data checksums' is only available if moving to a Btrfs volume."
     echo "  5. Click Save."
-    echo "    - If $1 has more shared folders repeat steps 2 to 5."
-    echo -e "  6. After step 5 has finished start $1 \n"
+    if [[ $4 == "more" ]]; then
+        echo "    - If $1 has more shared folders repeat steps 2 to 5."
+    fi
+    if [[ $3 == "stopped" ]]; then
+        echo -e "  6. After step 5 has finished start $1 \n"
+    fi
 }
 
 copy_dir_dsm6(){ 
@@ -1046,7 +1055,7 @@ move_extras(){
             move_dir "@ActiveBackup" extras
             # /var/packages/ActiveBackup/target/log/
             if [[ ${mode,,} != "backup" ]]; then
-                if readlink /var/packages/ActiveBackup/target/log | grep "$1" >/dev/null; then
+                if readlink /var/packages/ActiveBackup/target/log | grep "${1:?}" >/dev/null; then
                     rm /var/packages/ActiveBackup/target/log
                     ln -s "${2:?}/@ActiveBackup/log" /var/packages/ActiveBackup/target/log
                 fi
@@ -1120,7 +1129,86 @@ move_extras(){
             fi
             #echo ""
             ;;
+        HyperBackup)
+            # Most of this section is not needed for moving HyperBackup.
+            # I left it here in case I can use it for some other package in future.
+
+            # Moving "@img_bkp_cache" and editing synobackup.conf
+            # to point the repos to the new location causes backup tasks
+            # to show as offline with no way to fix them or delete them!
+            #
+            # Thankfully HyperBackup recreates the data in @img_bkp_cache
+            # when the backup task is run, or a resync is done.
+
+#            file=/var/packages/HyperBackup/etc/synobackup.conf
+            # [repo_1]
+            # client_cache="/volume1/@img_bkp_cache/ClientCache_image_image_local.oJCDvd"
+#            if [[ -f "$file" ]]; then
+
+                # Get list of [repo_#] in $file
+#                readarray -t contents < "$file"
+#                for r in "${contents[@]}"; do
+#                    l=$(echo "$r" | grep -E "repo_[0-9]+")
+#                    if [[ -n "$l" ]]; then
+#                        l="${l/]/}" && l="${l/[/}"
+#                        repos+=("$l")
+#                    fi
+#                done
+
+                # Edit values with sourcevol to targetvol
+#                for section in "${repos[@]}"; do
+#                    value="$(/usr/syno/bin/get_section_key_value "$file" "$section" client_cache)"
+#                    #echo "$value"  # debug
+#                    if echo "$value" | grep "$sourcevol" >/dev/null; then
+#                        newvalue="${value/$sourcevol/$targetvol}"
+                        #echo "$newvalue"  # debug
+                        #echo ""  # debug
+                #        /usr/syno/bin/set_section_key_value "$file" "$section" client_cache "$newvalue"
+                        #echo "set_section_key_value $file $section client_cache $newvalue"  # debug
+                        #echo ""  # debug
+                        #echo ""  # debug
+#                    fi
+#                done
+#            fi
+
+            # Move @img_bkp folders
+            #if [[ -d "/${sourcevol}/@img_bkp_cache" ]] ||\
+            #    [[ -d "/${sourcevol}/@img_bkp_mount" ]]; then
+            #    backup_dir "@img_bkp_cache" "$sourcevol"
+            #    backup_dir "@img_bkp_mount" "$sourcevol"
+
+            #    move_dir "@img_bkp_cache"
+            #    move_dir "@img_bkp_mount"
+            #    echo ""
+            #fi
+            if [[ -d "/${sourcevol}/@img_bkp_cache" ]]; then
+                #backup_dir "@img_bkp_cache" "$sourcevol"
+                move_dir "@img_bkp_cache"
+                echo ""
+            fi
+            ;;
         MailPlus-Server)
+            # Moving MailPlus-Server does not update
+            # /var/packages/MailPlus-Server/etc/synopkg_conf/reg_volume
+            # I'm not sure if it matters?
+
+            if [[ ${mode,,} != "backup" ]]; then
+                # Edit symlink /var/spool/@MailPlus-Server -> /volume1/@MailPlus-Server
+                if ! readlink /var/spool/@MailPlus-Server | grep "${2:?}" >/dev/null; then
+                    rm /var/spool/@MailPlus-Server
+                    ln -s "${2:?}/@MailPlus-Server" /var/spool/@MailPlus-Server
+                    chown -h MailPlus-Server:MailPlus-Server /var/spool/@MailPlus-Server
+                fi
+                # Edit logfile /volume1/@maillog/rspamd_redis.log
+                # in /volume2/@MailPlus-Server/rspamd/redis/redis.conf
+                file="/$sourcevol/@MailPlus-Server/rspamd/redis/redis.conf"
+                if [[ -f "$file" ]]; then
+                    if grep "$sourcevol" "$file" >/dev/null; then
+                        sed -i 's|'"logfile /$sourcevol"'|'"logfile ${2:?}"'|g' "$file"
+                        chmod 600 "$file"
+                    fi
+                fi
+            fi
             move_dir "@maillog" extras
             move_dir "@MailPlus-Server" extras
             #echo ""
@@ -1133,7 +1221,7 @@ move_extras(){
             ;;
         Node.js_v*)
             if [[ ${mode,,} != "backup" ]]; then
-                if readlink /usr/local/bin/node | grep "$1" >/dev/null; then
+                if readlink /usr/local/bin/node | grep "${1:?}" >/dev/null; then
                     rm /usr/local/bin/node
                     ln -s "${2:?}/@appstore/${1:?}/usr/local/bin/node" /usr/local/bin/node
                 fi
@@ -1752,7 +1840,7 @@ backup_extras(){
     local answer
     if [[ ${mode,,} != "backup" ]]; then
         if [[ ${mode,,} == "move" ]]; then
-            extrabakvol="$sourcevol"
+            extrabakvol="/$sourcevol"
         elif [[ ${mode,,} == "restore" ]]; then
             extrabakvol="$targetvol"
         fi
@@ -2003,48 +2091,48 @@ suggest_move_share(){
     if [[ ${mode,,} == "move" ]]; then
         case "$pkg" in
             ActiveBackup)
-                show_move_share "Active Backup for Business" ActiveBackupforBusiness
+                show_move_share "Active Backup for Business" ActiveBackupforBusiness stopped
                 ;;
             AudioStation)
                 share_link=$(readlink /var/packages/AudioStation/shares/music)
                 if [[ $share_link == "/${sourcevol}/music" ]]; then
-                    show_move_share "Audio Station" music
+                    show_move_share "Audio Station" music stopped more
                 fi
                 ;;
             Chat)
-                show_move_share "Chat Server" chat
+                show_move_share "Chat Server" chat stopped
                 ;;
             CloudSync)
-                show_move_share "Cloud Sync" CloudSync
+                show_move_share "Cloud Sync" CloudSync stopped
                 ;;
             ContainerManager)
-                show_move_share "Container Manager" docker
+                show_move_share "Container Manager" docker stopped
                 docker_volume_edit
                 ;;
             Docker)
-                show_move_share "Docker" docker
+                show_move_share "Docker" docker stopped
                 docker_volume_edit
                 ;;
             MailPlus-Server)
-                show_move_share "MailPlus Server" MailPlus
+                show_move_share "MailPlus Server" MailPlus running
                 ;;
             MinimServer)
-                show_move_share "Minim Server" MinimServer
+                show_move_share "Minim Server" MinimServer stopped
                 ;;
             Plex*Media*Server)
                 if [[ $majorversion -gt "6" ]]; then
-                    show_move_share "Plex Media Server" PlexMediaServer
+                    show_move_share "Plex Media Server" PlexMediaServer stopped
                 else
-                    show_move_share "Plex Media Server" Plex
+                    show_move_share "Plex Media Server" Plex stopped
                 fi
                 ;;
             SurveillanceStation)
-                show_move_share "Surveillance Station" surveillance
+                show_move_share "Surveillance Station" surveillance stopped
                 ;;
             VideoStation)
                 share_link=$(readlink /var/packages/VideoStation/shares/video)
                 if [[ $share_link == "/${sourcevol}/video" ]]; then
-                    show_move_share "Video Station" video
+                    show_move_share "Video Station" video stopped more
                 fi
                 ;;
             *)  
