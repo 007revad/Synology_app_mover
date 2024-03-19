@@ -27,7 +27,7 @@ v3.0.41
 - Bug fix for moving Synology MailPlus Server. issue #20
 - Bug fix for backing up extra @folders (@docker, @downloads etc.).
 - Improved instructions for moving shared folders.
-- To do: Fix moving Container Manaager. issue #34
+- To do: Fix moving Container Manager. issue #34
 
 v3.0.40
 - Bug fix for not enough space when you chose to backup extra @folders (@docker, @downloads etc.). issue #36
