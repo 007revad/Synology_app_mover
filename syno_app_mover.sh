@@ -127,7 +127,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.41"
+scriptver="v3.0.42"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -418,9 +418,10 @@ progbar(){
 progstatus(){ 
     # $1 is return status of process
     # $2 is string to echo
+    # $3 line number function was called from
     local tracestring
     local pad
-    tracestring="${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+    tracestring="${FUNCNAME[0]} called from ${FUNCNAME[1]} $3"
     pad=$(printf -- ' %.0s' {1..80})
     [ "$trace" == "yes" ] && printf '%.*s' 80 "${tracestring}${pad}" && echo ""
     if [[ $1 == "0" ]]; then
@@ -428,6 +429,7 @@ progstatus(){
     else
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} $2 failed!"
+        echo "$tracestring"
         if [[ $exitonerror != "no" ]]; then
             exit 1  # Skip exit if exitonerror != no
         fi
@@ -515,7 +517,7 @@ package_stop(){
     string="Stopping ${Cyan}${2}${Off}"
     progbar "$pid" "$string"
     wait "$pid"
-    progstatus "$?" "$string"
+    progstatus "$?" "$string" "line ${LINENO}"
 
     # Allow package processes to finish stopping
     wait_status "$1" stop
@@ -531,7 +533,7 @@ package_start(){
     string="Starting ${Cyan}${2}${Off}"
     progbar "$pid" "$string"
     wait "$pid"
-    progstatus "$?" "$string"
+    progstatus "$?" "$string" "line ${LINENO}"
 
     # Allow package processes to finish starting
     wait_status "$1" start
@@ -546,7 +548,7 @@ package_uninstall(){
     string="Uninstalling ${Cyan}${1}${Off}"
     progbar "$pid" "$string"
     wait "$pid"
-    progstatus "$?" "$string"
+    progstatus "$?" "$string" "line ${LINENO}"
 }
 
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
@@ -559,7 +561,7 @@ package_install(){
     string="Installing ${Cyan}${1}${Off} on ${Cyan}$2${Off}"
     progbar "$pid" "$string"
     wait "$pid"
-    progstatus "$?" "$string"
+    progstatus "$?" "$string" "line ${LINENO}"
 }
 
 is_empty(){ 
@@ -614,7 +616,7 @@ backup_dir(){
         string="Backing up $1 to ${Cyan}${1}_backup${Off}"
         progbar "$pid" "$string"
         wait "$pid"
-        progstatus "$?" "$string"
+        progstatus "$?" "$string" "line ${LINENO}"
         #echo ""
     fi
 }
@@ -677,7 +679,7 @@ move_pkg_do(){
             string="${action} $source to ${Cyan}$2${Off}"
             progbar "$pid" "$string"
             wait "$pid"
-            progstatus "$?" "$string"
+            progstatus "$?" "$string" "line ${LINENO}"
         else
 
             # Copy source contents if target folder exists
@@ -686,7 +688,7 @@ move_pkg_do(){
             string="Copying $source to ${Cyan}$2${Off}"
             progbar "$pid" "$string"
             wait "$pid"
-            progstatus "$?" "$string"
+            progstatus "$?" "$string" "line ${LINENO}"
 
             #rm -rf "${source:?}" &
             rm -r --preserve-root "${source:?}" &
@@ -695,7 +697,7 @@ move_pkg_do(){
             string="Removing $source"
             progbar "$pid" "$string"
             wait "$pid"
-            progstatus "$?" "$string"
+            progstatus "$?" "$string" "line ${LINENO}"
         fi
     else
 #        if ! is_empty "${destination:?}/${appdir:?}/${1:?}"; then
@@ -887,7 +889,7 @@ show_move_share(){
     # $4 is more or null
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     echo -e "\nIf you want to move your $2 shared folder to $targetvol"
-    echo "  While ${Cyan}$1${Off} is ${Cyan}$3${Off}:"
+    echo -e "  While ${Cyan}$1${Off} is ${Cyan}$3${Off}:"
     echo "  1. Go to 'Control Panel > Shared Folders'."
     echo "  2. Select your $2 shared folder and click Edit."
     echo "  3. Change Location to $targetvol"
@@ -925,7 +927,7 @@ copy_dir_dsm6(){
             string="${action} /usr/syno/etc/packages/${Cyan}${1}${Off}"
             progbar "$pid" "$string"
             wait "$pid"
-            progstatus "$?" "$string"
+            progstatus "$?" "$string" "line ${LINENO}"
         #fi
     elif [[ ${mode,,} == "restore" ]]; then
         #if [[ -d "${bkpath}/$1" ]]; then
@@ -935,7 +937,7 @@ copy_dir_dsm6(){
             string="${action} $1 to /usr/syno/etc/packages"
             progbar "$pid" "$string"
             wait "$pid"
-            progstatus "$?" "$string"
+            progstatus "$?" "$string" "line ${LINENO}"
         #fi
     fi
 }
@@ -971,7 +973,7 @@ copy_dir(){
                 string="${action} /${sourcevol}/${1}"
                 progbar "$pid" "$string"
                 wait "$pid"
-                progstatus "$?" "$string"
+                progstatus "$?" "$string" "line ${LINENO}"
             else
                 # If string is too long progbar gets messed up
                 cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}/${1:?}" &
@@ -979,7 +981,7 @@ copy_dir(){
                 string="${action} /${sourcevol}/${1}/${Cyan}$pkg${Off}"
                 progbar "$pid" "$string"
                 wait "$pid"
-                progstatus "$?" "$string"
+                progstatus "$?" "$string" "line ${LINENO}"
             fi
         #fi
     elif [[ ${mode,,} == "restore" ]]; then
@@ -994,7 +996,7 @@ copy_dir(){
             fi
             progbar "$pid" "$string"
             wait "$pid"
-            progstatus "$?" "$string"
+            progstatus "$?" "$string" "line ${LINENO}"
         #fi
     fi
 }
@@ -1011,7 +1013,7 @@ move_dir(){
                 string="${action} /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
                 progbar "$pid" "$string"
                 wait "$pid"
-                progstatus "$?" "$string"
+                progstatus "$?" "$string" "line ${LINENO}"
             elif ! is_empty "/${sourcevol:?}/${1:?}"; then
 
                 # Copy source contents if target folder exists
@@ -1020,7 +1022,7 @@ move_dir(){
                 string="Copying /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
                 progbar "$pid" "$string"
                 wait "$pid"
-                progstatus "$?" "$string"
+                progstatus "$?" "$string" "line ${LINENO}"
 
                 # Delete source folder if empty
 #                if [[ $1 != "@docker" ]]; then
@@ -1031,7 +1033,7 @@ move_dir(){
                         string="Removing /${sourcevol}/$1"
                         progbar "$pid" "$string"
                         wait "$pid"
-                        progstatus "$?" "$string"
+                        progstatus "$?" "$string" "line ${LINENO}"
                     fi
                 fi
 #            fi
@@ -1334,7 +1336,7 @@ web_packages(){
                     string="${action} $web_pkg_path/${pkg,,}"
                     progbar "$pid" "$string"
                     wait "$pid"
-                    progstatus "$?" "$string"
+                    progstatus "$?" "$string" "line ${LINENO}"
                     #echo ""
                 else
                     ding
@@ -1349,7 +1351,7 @@ web_packages(){
                     string="${action} $web_pkg_path/${pkg,,}"
                     progbar "$pid" "$string"
                     wait "$pid"
-                    progstatus "$?" "$string"
+                    progstatus "$?" "$string" "line ${LINENO}"
                     #echo ""
                 fi
             fi
@@ -1853,12 +1855,13 @@ backup_extras(){
             if ! check_space "/${sourcevol}/$1" "/${sourcevol}"; then
                 ding
                 echo -e "${Error}ERROR${Off} Not enough space on $extrabakvol to backup ${Cyan}$1${Off}!"
-                echo "Do you want to continue ${action,,} ${pkg_name}? [y/n]"
+                echo "Do you want to continue ${action,,} ${1}? [y/n]"
                 read -r answer
                 if [[ ${answer,,} != "y" ]]; then
                     exit  # Answered no
                 fi
             else
+                echo -e "${Red}WARNING Backing up $1 could take a long time${Off}"
                 backup_dir "$1" "$extrabakvol"
             fi
         fi
