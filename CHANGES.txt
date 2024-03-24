@@ -22,6 +22,9 @@ v3.0.xx final release notes
 - Added line number to error messages for easier debugging.
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
+v3.0.42
+- Added line number of calling function to error messages.
+
 v3.0.41
 - Bug fix for moving Hyper Backup. issue #35
 - Bug fix for moving Synology MailPlus Server. issue #20
