@@ -20,6 +20,8 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 ### Packages confirmed working
 
+**NOTE:** Some people have reported issues moving Container Manageer. Backup your docker compose files of portainer stacks.
+
 <details>
   <summary>Click here to see list</summary>
 
