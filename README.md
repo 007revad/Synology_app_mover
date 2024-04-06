@@ -84,7 +84,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Surveillance Station | SurveillanceStation | OK |
 | SynoCli Tools | synocli-"toolname" | OK |
 | Synology Application Service | SynologyApplicationService | OK |
-| Synology Calendar | Calendar | OK |
+| Synology Calendar | Calendar | OK - Move, Backup and Restore |
 | Synology Chat Server | Chat | OK |
 | Synology Contacts | Contacts | OK |
 | Synology Directory Server | DirectoryServerForWindowsDomain | OK |
