@@ -1,8 +1,14 @@
-v3.0.xx final release notes
+v3.0.45
 - Added backup and restore modes.
   - Includes syno_app_mover.conf file to set the backup location.
   - Skips packages that are development tools with no data: Node.js, Perl, PHP, python3, SynoCli etc.
+  - Restore mode warns if installed package version does not match backup package version.
+  - DSM 6 backup and restore still WIP.
 - When backup or restore selected asks if you want to backup or restore all packages.
+  - Added skip restore or backup if last restore or backup was less than n minutes ago.
+    - Set skip_minutes in syno_app_mover.conf
+- Suggests changing volume location in app's settings for each app with volume settings.
+- Shows how to move shared folder for each app with a shared folder.
 - Changed so that cursor does not cover first letter when progress bar is showing.
 - Now shows package's display name.
 - Now shows how long the script took.
@@ -20,7 +26,6 @@ v3.0.xx final release notes
 - Now copies files/folders with same permissions when copying `@docker` to `@docker_backup`.
 - Changed package selection to avoid invalid key presses.
 - Added line number to error messages for easier debugging.
-
 
 v3.0.44 Beta
 - Bug fix for moving Calendar.
