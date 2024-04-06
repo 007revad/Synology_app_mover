@@ -22,6 +22,11 @@ v3.0.xx final release notes
 - Added line number to error messages for easier debugging.
 - Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
+v3.0.44
+- Bug fix for moving Calendar.
+  - Was not editing /var/packages/Calendar/etc/share_link.json. Issue #39
+  - Was not moving @synocalendar if it existed. Issue #39
+
 v3.0.42
 - Added line number of calling function to error messages.
 
