@@ -15,7 +15,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 **NEW** Now includes [Backup and Restore modes](/images/backup.png).
 
-  - Supports DSM 7. Not tested with DSM 6.
+  - Supports DSM 7. Not fully tested with DSM 6.
 
 
 ### Packages confirmed working
