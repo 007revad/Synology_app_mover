@@ -13,6 +13,8 @@ You just select the package and the destination volume and the script will stop 
 
 Handy for moving packages to an SSD volume, or to another volume so you can delete the original volume.
 
+**NEW** Now includes [Backup and Restore modes](/images/backup.png).
+
   - Supports DSM 7. Not tested with DSM 6.
 
 
@@ -25,53 +27,55 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 | Package Center Name | DSM Name shown in script | Result |
 |---------------------|-------------|--------|
-| Active Backup for Business | ActiveBackup | OK |
+| Active Backup for Business | ActiveBackup | OK - Move, Backup and Restore |
 | Active Backup for Google Workspace | ActiveBackup-GSuite | OK |
 | Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | AntiVirus Essential | AntiVirus | OK |
 | Apache 2.4 | Apache2.4 | OK |
-| Audio Station | AudioStation | OK |	
+| Audio Station | AudioStation | OK - Move, Backup and Restore |	
 | Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
 | C2 Identity LDAP Server | C2IdentityLDAPAgent | OK - need a C2 account to fully test |
 | Central Management System | CMS | OK |
 | Cloud Sync | CloudSync | OK |
-| Container Manager | ContainerManager | OK |
+| Container Manager | ContainerManager | OK - Move, Backup and Restore |
 | DNS Server | DNSServer | OK |
+| Docker | Docker | OK - Move, Backup and Restore |
 | Document Viewer | DocumentViewer | OK |
 | Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
-| exFAT Access | exFAT-Free | OK |
+| exFAT Access | exFAT-Free | OK - Move, Backup and Restore |
 | git | git | OK |
 | Git | Git | OK |
 | Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
 | Hyper Backup | HyperBackup | OK |
 | Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server | DirectoryServer | OK |
-| LogAnalysis | LogAnalysis | OK |
+| LogAnalysis | LogAnalysis | OK - Move, Backup and Restore |
 | Log Center | Log Center | OK |
 | Mail Station | MailStation | OK |
 | MariaDB 10 | MariaDB10 | OK |
 | Media Server | MediaServer | OK |
-| MediaInfo | mediainfo | OK |
+| MediaInfo | mediainfo | OK - Move, Backup and Restore |
 | MinimServer | MinimServer | OK |
+| phpMyAdmin | phpMyAdmin | OK |
 | Node.js v14 | Node.js_v14 | OK |
 | Node.js v16 | Node.js_v16 | OK |
 | Node.js v18 | Node.js_v18 | OK |
 | Node.js v20 | Node.js_v20 | OK |
 | Note Station | NoteStation | OK |
 | PDF Viewer | PDFViewer | OK |
-| Perl | Perl | OK |
-| PHP 7.3 | PHP7.3 | OK |
-| PHP 7.4 | PHP7.4 | OK |
-| PHP 8.0 | PHP8.0 | OK |
-| PHP 8.1 | PHP8.1 | OK |
-| PHP 8.2 | PHP8.2 | OK |
+| Perl | Perl | OK - Move, Backup and Restore |
+| PHP 7.3 | PHP7.3 | OK - Move, Backup and Restore |
+| PHP 7.4 | PHP7.4 | OK - Move, Backup and Restore |
+| PHP 8.0 | PHP8.0 | OK - Move, Backup and Restore |
+| PHP 8.1 | PHP8.1 | OK - Move, Backup and Restore |
+| PHP 8.2 | PHP8.2 | OK - Move, Backup and Restore |
 | Plex Media Server | PlexMediaServer | OK |
 | Presto File Server | PrestoServer | OK |
 | Proxy Server | ProxyServer | OK |
-| Python 3.9 | Python3.9 | OK |
+| Python 3.9 | Python3.9 | OK - Move, Backup and Restore |
 | Radius Server | RadiusServer | OK |
 | SMI-S Provider | SynoSmisProvider | OK |
 | Snapshot Replication | SnapshotReplication | OK |
@@ -89,7 +93,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Synology MailPlus | MailPlus | OK |
 | Synology MailPlus Server | MailPlus-Server | Still Testing... |
 | Synology Office | Spreadsheet | OK |
-| Synology Photos | SynologyPhotos | OK |
+| Synology Photos | SynologyPhotos | OK - Move, Backup and Restore |
 | Tailscale | Tailscale | OK |
 | Text Editor | TextEditor | OK |
 | Universal Viewer | UniversalViewer | OK |
@@ -109,49 +113,39 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Package | Result |
 |---------|--------|
 | Archiware P5 |  |
-| BRAVIA Signage |  |
+| BRAVIA Signage | Won't install in Container Manager. It checks if Docker installed |
 | Data Deposit Box |  |
 | Domotz Network Monitoring |  |
 | ElephantDrive |  |
 | GoodSync |  |
 | IDrive |  |
+| Joomla |  |
 | KodiExplorer |  |
+| MediaWiki |  |
 | MEGAcmd |  |
 | NAKIVO Backup and Replication |  |
 | NAKIVO Transporter |  |
+| PACS |  |
 | Ragic Cloud DB |  |
 | Resilo Sync |  |
 | TeamViewer |  |
 | VirtualHere |  |
+| vtigerCRM |  |
+| Wordpress |  |
 
 </details>
-
-#### Packages that won't be tested
-
-<details>
-  <summary>Click here to see list</summary>
-
-These need MarioDB and they either fail to install or don't run properly!?!?
-
-**Note:** I will not test any package that needs MariaDB.
-
-| Package | Result |
-|---------|--------|
-| Joomla | Doesn't install |
-| MediaWiki | Doesn't install |
-| PACS |  Won't test |
-| phpMyAdmin | Won't test |
-| Wordpress | Won't test |
-| vtigerCRM | Installs but doesn't run |
-
-</details>
-
 
 ### Download the script
 
 1. Download the latest version _Source code (zip)_ from https://github.com/007revad/Synology_app_mover/releases
 2. Save the download zip file to a folder on the Synology.
 3. Unzip the zip file.
+
+### Set backup location
+
+If you want to use use the [backup and restore options](/images/backup.png) you need edit the included **syno_app_mover.conf** file to set the location to backup to.
+
+The **syno_app_mover.conf** file must be in the same foller as the **syno_app_mover.sh file**.
 
 ### To run the script
 
@@ -198,3 +192,11 @@ If the script won't run check the following:
 
 <p align="center">Moving Active Backup for Bussiness</p>
 <p align="center"><img src="/images/app6.png"></p>
+
+<br>
+
+<p align="center">Backing up Audio Station</p>
+<p align="center"><img src="/images/backup.png"></p>
+
+### Credits
+- wallacebrf for extensive beta testing of syno_app_mover v3.

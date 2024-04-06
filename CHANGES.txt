@@ -1,3 +1,196 @@
+v3.0.xx final release notes
+- Added backup and restore modes.
+  - Includes syno_app_mover.conf file to set the backup location.
+  - Skips packages that are development tools with no data: Node.js, Perl, PHP, python3, SynoCli etc.
+- When backup or restore selected asks if you want to backup or restore all packages.
+- Changed so that cursor does not cover first letter when progress bar is showing.
+- Now shows package's display name.
+- Now shows how long the script took.
+- Now automatically selects the target volume if there are only 2 volumes.
+- Now only starts package if the script stopped it.
+- Added 5 minute timeout to stopping, and starting, packages.
+- Added warning that moving @docker and @download can take a long time.
+- Now checks if there's enough space to move @docker
+- Now checks if there's enough space to move @download
+- Now asks if you want to backup @download
+- Added reminder to edit docker volume settings if user moved shared folders that docker uses.
+- Added how to export/import database for packages that use MariaDB.
+- Now checks package status after uninstalling or installing package.
+- Now confirms that folder was created when creating a folder.
+- Now copies files/folders with same permissions when copying `@docker` to `@docker_backup`.
+- Changed package selection to avoid invalid key presses.
+- Added line number to error messages for easier debugging.
+- Bug fix when script updates itself and user ran the script from ./scriptname.sh
+
+v3.0.44
+- Bug fix for moving Calendar.
+  - Was not editing /var/packages/Calendar/etc/share_link.json. Issue #39
+  - Was not moving @synocalendar if it existed. Issue #39
+
+v3.0.42
+- Added line number of calling function to error messages.
+
+v3.0.41
+- Bug fix for moving Hyper Backup. issue #35
+- Bug fix for moving Synology MailPlus Server. issue #20
+- Bug fix for backing up extra @folders (@docker, @downloads etc.).
+- Improved instructions for moving shared folders.
+- To do: Fix moving Container Manager. issue #34
+
+v3.0.40
+- Bug fix for not enough space when you chose to backup extra @folders (@docker, @downloads etc.). issue #36
+
+v3.0.39
+- Added skip restore if last restore was less than n minutes ago.
+  - Set skip_minutes in syno_app_mover.conf
+- Skip exit on error and skip processing app if backup all or restore all selected.
+- Changed to suggest changing volume location in app's settings for each app with volume settings when All selected.
+  - Previously only showed how to edit volume location in app's settings for the last app processed.
+- Changed to show how to move volume for each app with a volume when All selected.
+  - Previously only showed how to move volume for the last app processed.
+- Bug fix for showing @docker instead of @download if not enough space on target volume for @download.
+
+v3.0.38
+- Added check that the extra @ folders exist to prevent errors.
+
+v3.0.37
+- Added skipping backup if last backup was less than n minutes ago.
+  - Set skip_minutes in syno_app_mover.conf
+
+v3.0.36
+- Skip processing app if it failed to stop.
+
+v3.0.35
+- Added support for backup and restore in DSM 6.
+
+v3.0.34
+- Bug fix for restore mode which was broken in 3.0.30.
+
+v3.0.33 Beta
+ - Added DSM 7.1 and 6 compatibility for package status.
+ - Bug fix for DSM 6 getting volume of shared folder.
+ - DSM 6 is still WIP.
+
+v3.0.32 Beta
+- Bug fix for when package has spaces in the folder name (Plex Media Center in DSM 6).
+
+v3.0.31 Beta
+- Fixed bug where packages that are stopped are not processed.
+- Improved speed of getting list of running packages.
+- Hard coded /usr/syno/bin and /usr/syno/sbin for Synology commands to prevent PATH issues.
+
+v3.0.30 Beta
+- Bug fix for moving Media Server and Plex Media Server when Media Server was selected.
+
+v3.0.29 Beta
+- Changed "move share" instructions to include enabling data checksums.
+
+v3.0.28 Beta
+- Minimised the time each package is stopped during backup/restore.
+  -  First stops, backs up or restores and starts each package that other packages are dependent on.
+  -  Then stops (if running), backs up or restores and starts each package that is dependent on packages in the first group.
+  -  Finally stops, backs up or restores and starts each package that has no dependencies.
+- Restore mode now only lists packages that are not development tools with no settings or data.
+
+v3.0.27 Beta
+- Improved speed of getting list of packages to be 6 times faster.
+  - Saves 1 second for every 20 packages installed.
+
+v3.0.26 Beta
+- Now shows how long the script took.
+- Bug fix for `@SynologyDrive` instead of `@synologydrive`.
+
+v3.0.25 Beta
+- Backup and Restore modes now skip packages that are development tools with no data.
+  - Node.js, Perl, PHP, python3, SynoCli etc.
+
+v3.0.24 Beta
+- Added "All" packages choice for backup and restore modes.
+  1. Stops all packages that are on volumes (and their dependencies).
+  2. Backs up or restores all packages from backups.
+  3. Starts all packages that were stopped (and their dependencies).
+- Now sorts packages for selection when restore mode selected.
+- `@docker` and `@download` warning now instead of "Moving" says:
+  - Moving, Backing up or Restoring depending on the mode selected.
+- Added line number to error messages for easier debugging.
+
+v3.0.23 Beta
+- Added reminder to edit docker volume settings if user moved shared folders that docker uses.
+
+v3.0.22 Beta
+- Fixed blank dependent package names if their INFO file has no displayname set.
+
+v3.0.21 Beta
+- Added how to export/import database for packages that use MariaDB.
+
+v3.0.20 Beta
+- Backup package's web_package folder if there is one.
+- Restore package's web_package folder if there is one.
+- Fix dependent typos (dependant).
+
+v3.0.19 Beta
+- Added warning that moving `@docker` and `@download` can take a long time.
+- Added check to stop script if package variable is empty.
+- Bug fix for packages with no "display" value in their INFO file.
+
+v3.0.18 Beta
+- Bug fix for `@download` named `@downloads`
+- Now checks if there's enough space to move `@docker`
+- Now checks if there's enough space to move `@download`
+- Now asks if you want to backup `@download`
+
+v3.0.17 Beta
+- Added 5 minute timeout to stopping, and starting, packages.
+
+v3.0.16 Beta
+- Now shows package's display name.
+- Bug fix for not processing Synology Calendar's `@calendar` folder.
+- Bug fix for not processing Download Station's `@downloads` folder.
+
+v3.0.15 Beta
+- Active Backup for Business now working.
+  - Now does not uninstall and reinstall Active Backup.
+- Bug fix for not editing the following packages' extra volume# settings when restoring:
+  - Glacier Backup
+  - Node.js
+  - Presto Server
+  - Surveillance Station
+  - Synology Application Service
+  - Synology Drive
+- Bug fix for always copying instead of moving when Move selected.
+
+v3.0.14 Beta
+- Bug fix for editing `@appdata` symlink
+
+v3.0.13 Beta
+- Added --preserve-root to rm -r commands
+
+v3.0.12 Beta
+- Bug fix for DSM 6 docker.
+- Bug fix for restore mode.
+
+v3.0.11 Beta
+- Bug fix.
+
+v3.0.10 Beta
+- Docker move, backup and restore now working.
+- Backup: Save package version during backup.
+- Restore: Warn if installed package version does not match backup package version.
+- Lots of improvements and bug fixes.
+- ActiveBackip still WIP.
+
+v3.0.9 Beta
+- Added backup and restore modes.
+  - Includes syno_app_mover.conf file to set the backup location.
+- Changed so that cursor does not cover first letter when progress bar is showing.
+- Now automatically selects the target volume if there are only 2 volumes.
+- Now only starts package if the script stopped it.
+- Now checks package status after uninstalling or installing package.
+- Now confirms that folder was created when creating a folder.
+- Now copies files/folders with same permissions when copying `@docker` to `@docker_backup`.
+- Changed package selection to avoid invalid key presses.
+- Bug fix when script updates itself and user ran the script from ./scriptname.sh
+
 v2.0.6
 - Confirmed working for 73 packages.
 - Updated to work correctly with the following packages that have extra folders or symlinks:
