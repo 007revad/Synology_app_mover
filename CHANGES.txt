@@ -26,6 +26,7 @@ v3.0.45
 - Now copies files/folders with same permissions when copying `@docker` to `@docker_backup`.
 - Changed package selection to avoid invalid key presses.
 - Added line number to error messages for easier debugging.
+- Bug fix for moving Calendar. Issue #39
 
 v3.0.44 Beta
 - Bug fix for moving Calendar.
