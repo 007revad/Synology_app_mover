@@ -31,6 +31,10 @@
 # https://docs.docker.com/config/pruning/
 #
 #
+# DONE Bug fix for not editing /var/packages/Calendar/etc/share_link.json. Issue #39
+# DONE Bug fix for not moving @synocalendar if it exists. Issue #39
+#
+#
 # DONE Added skip restore if last restore was less than n minutes ago.
 #        - Set skip_minutes in syno_app_mover.conf
 # DONE Skip exit on error and skip processing app if backup all or restore all selected.
@@ -39,7 +43,6 @@
 # DONE Changed to show how to move volume for each app with a volume when All selected.
 #   - Previously only showed how to move volume for the last app processed.
 # DONE Bug fix for showing @docker instead of @download if not enough space on target volume for @download.
-#
 #
 # DONE Added check that the extra @ folders exist to prevent errors.
 #
@@ -127,7 +130,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.42"
+scriptver="v3.0.44"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -443,43 +446,24 @@ package_status(){
     # $1 is package name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     local code
-    local response
-    if [[ $majorversion -gt "6" ]] && [[ $minorversion -gt "1" ]]; then
-        # DSM 7.2 or later
-        /usr/syno/bin/synopkg status "${1}" >/dev/null
-        code="$?"  # 0 = started, 17 = stopped, 255 = not_installed, 150 = broken
-        if [[ $code == "0" ]]; then
-            #echo "$1 is started"  # debug
-            return 0
-            #return
-        elif [[ $code == "17" ]]; then
-            #echo "$1 is stopped"  # debug
-            return 1
-        elif [[ $code == "255" ]]; then
-            #echo "$1 is not installed"  # debug
-            return 255
-        elif [[ $code == "150" ]]; then
-            #echo "$1 is broken"  # debug
-            return 150
-        else
-            return "$code"
-        fi
+    /usr/syno/bin/synopkg status "${1}" >/dev/null
+    code="$?"
+    # DSM 7.2       0 = started, 17 = stopped, 255 = not_installed, 150 = broken
+    # DSM 6 to 7.1  0 = started,  3 = stopped,   4 = not_installed, 150 = broken
+    if [[ $code == "0" ]]; then
+        #echo "$1 is started"  # debug
+        return 0
+    elif [[ $code == "17" ]] || [[ $code == "3" ]]; then
+        #echo "$1 is stopped"  # debug
+        return 1
+    elif [[ $code == "255" ]] || [[ $code == "4" ]]; then
+        #echo "$1 is not installed"  # debug
+        return 255
+    elif [[ $code == "150" ]]; then
+        #echo "$1 is broken"  # debug
+        return 150
     else
-        # DSM 7.1 or earlier
-        response=$(/usr/syno/bin/synopkg status "${1}")
-        if [[ $(grep -i "package is started" <<< "$response") ]]; then
-            #echo "$1 is started"  # debug
-            return 0
-        elif [[ $(grep -i "package is stopped" <<< "$response") ]]; then
-            #echo "$1 is stopped"  # debug
-            return 1
-        elif [[ $(grep -i "No such package" <<< "$response") ]]; then
-            #echo "$1 is not installed"  # debug
-            return 255
-        elif [[ $(grep -i "package is broken" <<< "$response") ]]; then
-            #echo "$1 is broken"  # debug
-            return 150
-        fi
+        return "$code"
     fi
 }
 
@@ -1093,6 +1077,18 @@ move_extras(){
             ;;
         Calendar)
             move_dir "@calendar" extras
+            if [[ -d "/@synocalendar" ]]; then
+                move_dir "$sourcevol/@synocalendar" extras
+            fi
+            file="/var/packages/Calendar/etc/share_link.json"
+            if [[ -f "$file" ]]; then
+                if grep "$sourcevol/@calendar/attach" "$file" >/dev/null; then
+                    instring="/$sourcevol/@calendar/attach"
+                    repstring="$2/@calendar/attach"
+                    sed -i 's|'"$instring"'|'"$repstring"'|g' "$file"
+                    chmod 600 "$file"
+                fi
+            fi
             #echo ""
             ;;
         ContainerManager|Docker)
