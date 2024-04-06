@@ -31,7 +31,7 @@ v3.0.45
 v3.0.44 Beta
 - Bug fix for moving Calendar.
   - Was not editing /var/packages/Calendar/etc/share_link.json. Issue #39
-  - Was not moving @synocalendar if it existed. Issue #39
+  - Was not moving `@synocalendar` if it existed. Issue #39
 
 v3.0.42 Beta
 - Added line number of calling function to error messages.
@@ -39,12 +39,12 @@ v3.0.42 Beta
 v3.0.41 Beta
 - Bug fix for moving Hyper Backup. issue #35
 - Bug fix for moving Synology MailPlus Server. issue #20
-- Bug fix for backing up extra @folders (@docker, @downloads etc.).
+- Bug fix for backing up extra `@folders` (`@docker`, `@downloads` etc.).
 - Improved instructions for moving shared folders.
 - To do: Fix moving Container Manager. issue #34
 
 v3.0.40 Beta
-- Bug fix for not enough space when you chose to backup extra @folders (@docker, @downloads etc.). issue #36
+- Bug fix for not enough space when you chose to backup extra `@folders` (`@docker`, `@downloads` etc.). issue #36
 
 v3.0.39 Beta
 - Added skip restore if last restore was less than n minutes ago.
@@ -54,10 +54,10 @@ v3.0.39 Beta
   - Previously only showed how to edit volume location in app's settings for the last app processed.
 - Changed to show how to move volume for each app with a volume when All selected.
   - Previously only showed how to move volume for the last app processed.
-- Bug fix for showing @docker instead of @download if not enough space on target volume for @download.
+- Bug fix for showing `@docker` instead of `@download` if not enough space on target volume for `@download`.
 
 v3.0.38 Beta
-- Added check that the extra @ folders exist to prevent errors.
+- Added check that the extra `@folders` exist to prevent errors.
 
 v3.0.37 Beta
 - Added skipping backup if last backup was less than n minutes ago.
