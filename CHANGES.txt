@@ -15,10 +15,10 @@ v3.0.45
 - Now automatically selects the target volume if there are only 2 volumes.
 - Now only starts package if the script stopped it.
 - Added 5 minute timeout to stopping, and starting, packages.
-- Added warning that moving @docker and @download can take a long time.
-- Now checks if there's enough space to move @docker
-- Now checks if there's enough space to move @download
-- Now asks if you want to backup @download
+- Added warning that moving `@docker` and `@download` can take a long time.
+- Now checks if there's enough space to move `@docker`
+- Now checks if there's enough space to move `@download`
+- Now asks if you want to backup `@download`
 - Added reminder to edit docker volume settings if user moved shared folders that docker uses.
 - Added how to export/import database for packages that use MariaDB.
 - Now checks package status after uninstalling or installing package.
