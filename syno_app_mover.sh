@@ -31,9 +31,12 @@
 # https://docs.docker.com/config/pruning/
 #
 #
+# DSM 6 to 7.1.1 bug fix where script incorrectly showed package failed to stop error. Issue #44
+# DSM 6 to 7.1.1 bug fix for not detecting when package was not installed (for Restore mode).
+#
+#
 # DONE Bug fix for not editing /var/packages/Calendar/etc/share_link.json. Issue #39
 # DONE Bug fix for not moving @synocalendar if it exists. Issue #39
-#
 #
 # DONE Added skip restore if last restore was less than n minutes ago.
 #        - Set skip_minutes in syno_app_mover.conf
@@ -130,7 +133,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.45"
+scriptver="v3.0.46"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -445,7 +448,7 @@ progstatus(){
 package_status(){ 
     # $1 is package name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-    local code
+#    local code
     /usr/syno/bin/synopkg status "${1}" >/dev/null
     code="$?"
     # DSM 7.2       0 = started, 17 = stopped, 255 = not_installed, 150 = broken
@@ -465,6 +468,14 @@ package_status(){
     else
         return "$code"
     fi
+}
+
+package_is_running(){ 
+    # $1 is package name
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+    /usr/syno/bin/synopkg is_onoff "${1}" >/dev/null
+    code="$?"
+    return "$code"
 }
 
 wait_status(){ 
@@ -1362,7 +1373,8 @@ check_pkg_installed(){
     # $1 is package
     # $2 is package name
     /usr/syno/bin/synopkg status "${1:?}" >/dev/null
-    if [[ $? == "255" ]]; then
+    code="$?"
+    if [[ $code == "255" ]] || [[ $code == "4" ]]; then
         ding
         echo -e "${Error}ERROR${Off} ${Cyan}${2}${Off} is not installed!"
         echo -e "Install ${Cyan}${2}${Off} then try Restore again"
@@ -1797,19 +1809,17 @@ done
 stop_packages(){ 
     # Check package is running
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-    if package_status "$pkg"; then
+    if package_is_running "$pkg"; then
 
         # Stop package
-        if package_status "$pkg"; then
-            package_stop "$pkg" "$pkg_name"
-            #echo ""
-        fi
+        package_stop "$pkg" "$pkg_name"
 
         # Check package stopped
-        if package_status "$pkg"; then
+        if package_is_running "$pkg"; then
             stop_pkg_fail="yes"
             ding
             echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to stop ${pkg_name}!"
+#            echo "${pkg_name} status $code"
             process_error="yes"
             if [[ $all != "yes" ]] || [[ $fix != "yes" ]]; then
                 exit 1  # Skip exit if mode != all and fix != yes
@@ -1986,7 +1996,7 @@ start_packages(){
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 #    if [[ $skip_start != "yes" ]]; then
         # Only start package if not already running
-        if ! package_status "$pkg"; then
+        if ! package_is_running "$pkg"; then
 
             if [[ ${mode,,} == "backup" ]]; then
                 answer="y"
@@ -2004,9 +2014,10 @@ start_packages(){
                 #echo ""
 
                 # Check package started
-                if ! package_status "$pkg"; then
+                if ! package_is_running "$pkg"; then
                     ding
                     echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to start ${pkg_name}!"
+#                    echo "${pkg_name} status $code"
                     process_error="yes"
                     if [[ $all != "yes" ]]; then
                         exit 1  # Skip exit if mode is All

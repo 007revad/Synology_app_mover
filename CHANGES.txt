@@ -1,3 +1,7 @@
+v3.0.46
+- DSM 6 to 7.1.1 bug fix where script incorrectly showed package failed to stop error. Issue #44
+- DSM 6 to 7.1.1 bug fix for not detecting when package was not installed (for Restore mode).
+
 v3.0.45
 - Added backup and restore modes.
   - Includes syno_app_mover.conf file to set the backup location.
