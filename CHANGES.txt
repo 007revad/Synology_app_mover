@@ -1,3 +1,6 @@
+v3.0.47
+- Added instructions on how to move photo shared folder if it exists.
+
 v3.0.46
 - DSM 6 to 7.1.1 bug fix where script incorrectly showed package failed to stop error. Issue #44
 - DSM 6 to 7.1.1 bug fix for not detecting when package was not installed (for Restore mode).
