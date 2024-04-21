@@ -133,7 +133,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.46"
+scriptver="v3.0.47"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -2138,6 +2138,14 @@ suggest_move_share(){
                 ;;
             SurveillanceStation)
                 show_move_share "Surveillance Station" surveillance stopped
+                ;;
+            SynologyPhotos)
+                share_link=$(readlink /var/services/photo)
+                if [[ -d "$share_link" ]]; then
+                    if [[ $share_link == "/${sourcevol}/photo" ]]; then
+                        show_move_share "Synology Photos" photo stopped
+                    fi
+                fi
                 ;;
             VideoStation)
                 share_link=$(readlink /var/packages/VideoStation/shares/video)
