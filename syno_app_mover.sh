@@ -133,7 +133,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.48"
+scriptver="v3.0.49"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1059,7 +1059,7 @@ move_extras(){
             move_dir "@ActiveBackup" extras
             # /var/packages/ActiveBackup/target/log/
             if [[ ${mode,,} != "backup" ]]; then
-                if readlink /var/packages/ActiveBackup/target/log | grep "${1:?}" >/dev/null; then
+                if ! readlink /var/packages/ActiveBackup/target/log | grep "${2:?}" >/dev/null; then
                     rm /var/packages/ActiveBackup/target/log
                     ln -s "${2:?}/@ActiveBackup/log" /var/packages/ActiveBackup/target/log
                 fi
@@ -1311,7 +1311,7 @@ move_extras(){
                     /usr/syno/bin/synosetkeyvalue "$file" volume "${2:?}"
                 fi
 
-                if readlink /var/packages/SynologyDrive/etc/repo | grep "${1:?}" >/dev/null; then
+                if ! readlink /var/packages/SynologyDrive/etc/repo | grep "${2:?}" >/dev/null; then
                     rm /var/packages/SynologyDrive/etc/repo
                     ln -s "${2:?}/@synologydrive/@sync" /var/packages/SynologyDrive/etc/repo
                 fi
