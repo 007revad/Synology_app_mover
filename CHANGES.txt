@@ -1,4 +1,4 @@
-v3.0.48
+v3.0.49
 - Bug fix for Synology Drive stil using `@synologydrive` on the original volume. Issue #55
 - Now deletes `@eaDir` folders to try to prevent `mv: cannot remove '/volume#/@<folder>': Operation not permitted`. Issue #54
 
