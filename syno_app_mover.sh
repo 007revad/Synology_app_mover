@@ -133,7 +133,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.47"
+scriptver="v3.0.48"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1000,6 +1000,13 @@ move_dir(){
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+
+    # Delete @eaDir to prevent errors
+    # e.g. "mv: cannot remove '/volume1/@<folder>': Operation not permitted"
+    if [[ -d "/${sourcevol:?}/${1:?}/@eaDir" ]]; then
+        rm -rf "/${sourcevol:?}/${1:?}/@eaDir"
+    fi
+
     if [[ -d "/${sourcevol:?}/${1:?}" ]]; then
         if [[ ${mode,,} == "move" ]]; then
             if [[ ! -d "/${targetvol:?}/${1:?}" ]]; then
@@ -1302,6 +1309,11 @@ move_extras(){
                 file=/var/packages/SynologyDrive/etc/sharesync/service.conf
                 if [[ -f "$file" ]]; then
                     /usr/syno/bin/synosetkeyvalue "$file" volume "${2:?}"
+                fi
+
+                if readlink /var/packages/SynologyDrive/etc/repo | grep "${1:?}" >/dev/null; then
+                    rm /var/packages/SynologyDrive/etc/repo
+                    ln -s "${2:?}/@synologydrive/@sync" /var/packages/SynologyDrive/etc/repo
                 fi
             fi
             #echo ""
