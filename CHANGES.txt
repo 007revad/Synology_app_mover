@@ -1,7 +1,6 @@
 v3.0.50
 - Bug fix Container Manager and Docker where moving `@docker` would cause an error. 
 - Changed to not exit on error moving app's `@folders`.
-- Added warning that moving `@docker` could take a long time.
 - Bug fix for message showing `@download` if not enough space on target volume to move `@docker`.
 
 v3.0.49
