@@ -35,6 +35,9 @@
 # DSM 6 to 7.1.1 bug fix for not detecting when package was not installed (for Restore mode).
 #
 #
+#
+# DONE Bug fix for moving @docker
+#
 # DONE Bug fix for not editing /var/packages/Calendar/etc/share_link.json. Issue #39
 # DONE Bug fix for not moving @synocalendar if it exists. Issue #39
 #
@@ -133,7 +136,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.49"
+scriptver="v3.0.50"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -705,7 +708,7 @@ move_pkg_do(){
             #progbar "$pid" "$string"
             #wait "$pid"
             #progstatus "$?" "$string"
-            move_dir "$appdir"
+            exitonerror="no" && move_dir "$appdir"
 #        fi
     fi
 }
@@ -1010,7 +1013,14 @@ move_dir(){
     if [[ -d "/${sourcevol:?}/${1:?}" ]]; then
         if [[ ${mode,,} == "move" ]]; then
             if [[ ! -d "/${targetvol:?}/${1:?}" ]]; then
-                mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+                if [[ $1 == "@docker" ]]; then
+                    # Create @docker folder on target volume
+                    create_dir "/${sourcevol:?}/${1:?}" "${destination:?}/${1:?}"
+                    # Move contents of @docker to @docker on target volume
+                    mv -f "/${sourcevol:?}/${1:?}"/* "${destination:?}/${1:?}" &
+                else
+                    mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+                fi
                 pid=$!
                 string="${action} /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
                 progbar "$pid" "$string"
@@ -1056,7 +1066,7 @@ move_extras(){
     # Change /volume1 to /volume2 etc
     case "$1" in
         ActiveBackup)
-            move_dir "@ActiveBackup" extras
+            exitonerror="no" && move_dir "@ActiveBackup" extras
             # /var/packages/ActiveBackup/target/log/
             if [[ ${mode,,} != "backup" ]]; then
                 if ! readlink /var/packages/ActiveBackup/target/log | grep "${2:?}" >/dev/null; then
@@ -1071,11 +1081,11 @@ move_extras(){
             #echo ""
             ;;
         ActiveBackup-GSuite)
-            move_dir "@ActiveBackup-GSuite" extras
+            exitonerror="no" && move_dir "@ActiveBackup-GSuite" extras
             #echo ""
             ;;
         ActiveBackup-Office365)
-            move_dir "@ActiveBackup-Office365" extras
+            exitonerror="no" && move_dir "@ActiveBackup-Office365" extras
             #echo ""
             ;;
         Chat)
@@ -1094,9 +1104,9 @@ move_extras(){
             fi
             ;;
         Calendar)
-            move_dir "@calendar" extras
+            exitonerror="no" && move_dir "@calendar" extras
             if [[ -d "/@synocalendar" ]]; then
-                move_dir "$sourcevol/@synocalendar" extras
+                exitonerror="no" && move_dir "$sourcevol/@synocalendar" extras
             fi
             file="/var/packages/Calendar/etc/share_link.json"
             if [[ -f "$file" ]]; then
@@ -1110,8 +1120,8 @@ move_extras(){
             #echo ""
             ;;
         ContainerManager|Docker)
-            echo -e "${Red}WARNING $action @docker could take a long time${Off}"
-            move_dir "@docker" extras
+            # Edit symlink before moving @docker
+            # If edit after it does not get edited if move @docker errors
             if [[ ${mode,,} != "backup" ]]; then
                 if [[ $majorversion -gt "6" ]]; then
                     # /var/packages/ContainerManager/var/docker/ --> /volume1/@docker
@@ -1128,15 +1138,17 @@ move_extras(){
                     ln -s "${2:?}/@docker" "/var/packages/${pkg:?}/target/docker"
                 fi
             fi
+            echo -e "${Red}WARNING $action @docker could take a long time${Off}"
+            exitonerror="no" && move_dir "@docker" extras
             #echo ""
             ;;
         DownloadStation)
             echo -e "${Red}WARNING $action @download could take a long time${Off}"
-            move_dir "@download" extras
+            exitonerror="no" && move_dir "@download" extras
             #echo ""
             ;;
         GlacierBackup)
-            move_dir "@GlacierBackup" extras
+            exitonerror="no" && move_dir "@GlacierBackup" extras
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/GlacierBackup/etc/common.conf
                 if [[ -f "$file" ]]; then
@@ -1193,13 +1205,13 @@ move_extras(){
             #    backup_dir "@img_bkp_cache" "$sourcevol"
             #    backup_dir "@img_bkp_mount" "$sourcevol"
 
-            #    move_dir "@img_bkp_cache"
-            #    move_dir "@img_bkp_mount"
+            #    exitonerror="no" && move_dir "@img_bkp_cache"
+            #    exitonerror="no" && move_dir "@img_bkp_mount"
             #    echo ""
             #fi
             if [[ -d "/${sourcevol}/@img_bkp_cache" ]]; then
                 #backup_dir "@img_bkp_cache" "$sourcevol"
-                move_dir "@img_bkp_cache"
+                exitonerror="no" && move_dir "@img_bkp_cache"
                 echo ""
             fi
             ;;
@@ -1225,14 +1237,14 @@ move_extras(){
                     fi
                 fi
             fi
-            move_dir "@maillog" extras
-            move_dir "@MailPlus-Server" extras
+            exitonerror="no" && move_dir "@maillog" extras
+            exitonerror="no" && move_dir "@MailPlus-Server" extras
             #echo ""
             ;;
         MailServer)
-            move_dir "@maillog" extras
-            move_dir "@MailScanner" extras
-            move_dir "@clamav" extras
+            exitonerror="no" && move_dir "@maillog" extras
+            exitonerror="no" && move_dir "@MailScanner" extras
+            exitonerror="no" && move_dir "@clamav" extras
             #echo ""
             ;;
         Node.js_v*)
@@ -1250,7 +1262,7 @@ move_extras(){
             fi
             ;;
         PrestoServer)
-            move_dir "@presto" extras
+            exitonerror="no" && move_dir "@presto" extras
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/PrestoServer/etc/db-path.conf
                 if [[ -f "$file" ]]; then
@@ -1260,8 +1272,8 @@ move_extras(){
             #echo ""
             ;;
         SurveillanceStation)
-            move_dir "@ssbackup" extras
-            move_dir "@surveillance" extras
+            exitonerror="no" && move_dir "@ssbackup" extras
+            exitonerror="no" && move_dir "@surveillance" extras
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SurveillanceStation/etc/settings.conf
                 if [[ -f "$file" ]]; then
@@ -1275,11 +1287,11 @@ move_extras(){
             #echo ""
             ;;
         synocli*)
-            #move_dir "@$1"
+            #exitonerror="no" && move_dir "@$1"
             #echo ""
             ;;
         SynologyApplicationService)
-            move_dir "@SynologyApplicationService" extras
+            exitonerror="no" && move_dir "@SynologyApplicationService" extras
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SynologyApplicationService/etc/settings.conf
                 if [[ -f "$file" ]]; then
@@ -1289,8 +1301,8 @@ move_extras(){
             #echo ""
             ;;
         SynologyDrive)
-            move_dir "@synologydrive" extras
-            move_dir "@SynologyDriveShareSync" extras
+            exitonerror="no" && move_dir "@synologydrive" extras
+            exitonerror="no" && move_dir "@SynologyDriveShareSync" extras
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SynologyDrive/etc/sharesync/daemon.conf
                 if [[ -f "$file" ]]; then
@@ -1319,12 +1331,12 @@ move_extras(){
             #echo ""
             ;;
         WebDAVServer)
-            move_dir "@webdav" extras
+            exitonerror="no" && move_dir "@webdav" extras
             #echo ""
             ;;
         Virtualization)
-            move_dir "@GuestImage" extras
-            move_dir "@Repository" extras
+            exitonerror="no" && move_dir "@GuestImage" extras
+            exitonerror="no" && move_dir "@Repository" extras
             # VMM creates /volume#/vdsm_repo.conf so no need to move it
             #echo ""
             ;;
@@ -1864,6 +1876,8 @@ backup_extras(){
         elif [[ ${mode,,} == "restore" ]]; then
             extrabakvol="$targetvol"
         fi
+        echo -e "NOTE: A backup of ${Cyan}$1${Off} is required"\
+            "for recovery if the move fails."
         echo -e "Do you want to ${Yellow}backup${Off} the"\
             "${Cyan}$1${Off} folder on $extrabakvol? [y/n]"
         read -r answer
@@ -1951,7 +1965,7 @@ process_packages(){
             # Check we have enough space
             if ! check_space "/${sourcevol}/@docker" "${targetvol}"; then
                 ding
-                echo -e "${Error}ERROR${Off} Not enough space on $targetvol to ${mode,,} ${Cyan}@download${Off}!"
+                echo -e "${Error}ERROR${Off} Not enough space on $targetvol to ${mode,,} ${Cyan}@docker${Off}!"
                 process_error="yes"
                 if [[ $all != "yes" ]]; then
                     exit 1  # Skip exit if mode is All
