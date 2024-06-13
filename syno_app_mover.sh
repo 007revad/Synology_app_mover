@@ -35,13 +35,14 @@
 # DSM 6 to 7.1.1 bug fix for not detecting when package was not installed (for Restore mode).
 #
 #
-# DONE Bug fix for moving @docker
+# DONE Bug fix for moving `@img_bkp_cache`. Issue #54
+# DONE Bug fix for moving `@docker`. Issues #34 #38 #46
 #
 # DONE Bug fix for not editing /var/packages/Calendar/etc/share_link.json. Issue #39
 # DONE Bug fix for not moving @synocalendar if it exists. Issue #39
 #
 # DONE Added skip restore if last restore was less than n minutes ago.
-#        - Set skip_minutes in syno_app_mover.conf
+#   - Set skip_minutes in syno_app_mover.conf
 # DONE Skip exit on error and skip processing app if backup all or restore all selected.
 # DONE Changed to suggest changing volume location in app's settings for each app with volume settings when All selected.
 #   - Previously only showed how to edit volume location in app's settings for the last app processed.
@@ -52,7 +53,7 @@
 # DONE Added check that the extra @ folders exist to prevent errors.
 #
 # DONE Added skip backup if last backup was less than n minutes ago.
-#        - Set skip_minutes in syno_app_mover.conf
+#   - Set skip_minutes in syno_app_mover.conf
 #
 # DONE Skip processing app if it failed to stop.
 #
@@ -381,6 +382,14 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
 fi
 
 conffile="${scriptpath}/${scriptname}.conf"
+# Fix line endings
+# grep can't detect Windows or Mac line endings 
+#   but can detect if there's no Linux endings.
+if grep -rIl -m 1 $'\r' "$conffile" >/dev/null; then
+    # Does not contain Linux line endings
+    sed -i 's/\r\n/\n/g' "$conffile"  # Fix Windows line endings
+    sed -i 's/\r/\n/g' "$conffile"    # Fix Mac line endings
+fi
 
 
 #------------------------------------------------------------------------------
@@ -842,8 +851,14 @@ folder_size(){
     if [[ -d "$1" ]]; then
         # Get size of $1 folder
         need=$(du -s "$1" | awk '{ print $1 }')
-        # Add 50GB so we don't fill volume
-        needed=$((need +50000000))
+        # Add buffer GBs so we don't fill volume
+        buffer=$(/usr/syno/bin/synogetkeyvalue "$conffile" buffer)
+        if [[ $buffer -gt "0" ]]; then
+            buffer=$((buffer *1000000))
+        else
+            buffer=0
+        fi
+        needed=$((need +"$buffer"))
     fi
 }
 
@@ -870,9 +885,14 @@ check_space(){
 
     # Check we have enough space
     if [[ ! $free -gt $needed ]]; then
-        echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,} "\
+        echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,}"\
             "/${sourcevol}/${Cyan}$(basename -- "$1")${Off} to $targetvol"
-        echo -e "Free: $((free /1048576)) GB  Needed: $((need /1048576)) GB\n"
+        echo -en "Free: $((free /1048576)) GB  Needed: $((need /1048576)) GB"
+        if [[ $buffer -gt "0" ]]; then
+            echo -e " (plus $((buffer /1000000)) GB buffer)\n"
+        else
+            echo -e "\n"
+        fi
         return 1
     else
         return 0
@@ -1012,11 +1032,11 @@ move_dir(){
     if [[ -d "/${sourcevol:?}/${1:?}" ]]; then
         if [[ ${mode,,} == "move" ]]; then
             if [[ ! -d "/${targetvol:?}/${1:?}" ]]; then
-                if [[ $1 == "@docker" ]]; then
+                if [[ $1 == "@docker" ]] || [[ $1 == "@img_bkp_cache" ]]; then
                     # Create @docker folder on target volume
-                    create_dir "/${sourcevol:?}/${1:?}" "${destination:?}/${1:?}"
+                    create_dir "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}"
                     # Move contents of @docker to @docker on target volume
-                    mv -f "/${sourcevol:?}/${1:?}"/* "${destination:?}/${1:?}" &
+                    mv -f "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" &
                 else
                     mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
                 fi
@@ -1210,7 +1230,7 @@ move_extras(){
             #fi
             if [[ -d "/${sourcevol}/@img_bkp_cache" ]]; then
                 #backup_dir "@img_bkp_cache" "$sourcevol"
-                exitonerror="no" && move_dir "@img_bkp_cache"
+                exitonerror="no" && move_dir "@img_bkp_cache" extras
                 echo ""
             fi
             ;;
@@ -1492,14 +1512,6 @@ if [[ ${mode,,} != "move" ]]; then
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} $conffile not readable!"
         exit 1  # Conf file not readable
-    fi
-    # Fix line endings
-    # grep can't detect Windows or Mac line endings 
-    #   but can detect if there's no Linux endings.
-    if grep -rIl -m 1 $'\r' "$conffile" >/dev/null; then
-        # Does not contain Linux line endings
-        sed -i 's/\r\n/\n/g' "$conffile"  # Fix Windows line endings
-        sed -i 's/\r/\n/g' "$conffile"    # Fix Mac line endings
     fi
 
     # Get and validate backup path
