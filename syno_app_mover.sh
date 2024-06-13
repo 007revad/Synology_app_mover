@@ -35,7 +35,6 @@
 # DSM 6 to 7.1.1 bug fix for not detecting when package was not installed (for Restore mode).
 #
 #
-#
 # DONE Bug fix for moving @docker
 #
 # DONE Bug fix for not editing /var/packages/Calendar/etc/share_link.json. Issue #39
