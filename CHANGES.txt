@@ -1,6 +1,7 @@
 v3.0.50
 - Bug fix Container Manager and Docker where moving `@docker` would cause an error. 
 - Changed to not exit on error moving app's `@folders`.
+- Changed from hardcoded 50GB buffer to user configurable buffer (used when checking if there's enough space to move folder).
 - Bug fix for message showing `@download` if not enough space on target volume to move `@docker`.
 
 v3.0.49
