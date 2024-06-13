@@ -21,44 +21,44 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 ### Packages confirmed working
 
-**NOTE:** Some people have reported issues moving Container Manageer. Backup your docker compose files of portainer stacks.
+**NOTE:** Just in case, you should backup your docker compose files of portainer stacks.
 
 <details>
   <summary>Click here to see list</summary>
 
 | Package Center Name | Name shown in script | Result |
 |---------------------|-------------|--------|
-| Active Backup for Business | ActiveBackup | OK - Move, Backup and Restore |
+| Active Backup for Business | ActiveBackup | OK |
 | Active Backup for Google Workspace | ActiveBackup-GSuite | OK |
 | Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | AntiVirus Essential | AntiVirus | OK |
 | Apache 2.4 | Apache2.4 | OK |
-| Audio Station | AudioStation | OK - Move, Backup and Restore |	
+| Audio Station | AudioStation | OK 	
 | Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
-| C2 Identity LDAP Server | C2IdentityLDAPAgent | OK - need a C2 account to fully test |
+| C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
 | Central Management System | CMS | OK |
 | Cloud Sync | CloudSync | OK |
-| Container Manager | ContainerManager | OK - Move, Backup and Restore |
+| Container Manager | ContainerManager | OK |
 | DNS Server | DNSServer | OK |
-| Docker | Docker | OK - Move, Backup and Restore |
+| Docker | Docker | OK |
 | Document Viewer | DocumentViewer | OK |
 | Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
-| exFAT Access | exFAT-Free | OK - Move, Backup and Restore |
+| exFAT Access | exFAT-Free | OK |
 | git | git | OK |
 | Git | Git | OK |
 | Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
 | Hyper Backup | HyperBackup | OK |
 | Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server | DirectoryServer | OK |
-| LogAnalysis | LogAnalysis | OK - Move, Backup and Restore |
+| LogAnalysis | LogAnalysis | OK |
 | Log Center | Log Center | OK |
 | Mail Station | MailStation | OK |
 | MariaDB 10 | MariaDB10 | OK |
 | Media Server | MediaServer | OK |
-| MediaInfo | mediainfo | OK - Move, Backup and Restore |
+| MediaInfo | mediainfo | OK |
 | MinimServer | MinimServer | OK |
 | phpMyAdmin | phpMyAdmin | OK |
 | Node.js v14 | Node.js_v14 | OK |
@@ -67,16 +67,16 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Node.js v20 | Node.js_v20 | OK |
 | Note Station | NoteStation | OK |
 | PDF Viewer | PDFViewer | OK |
-| Perl | Perl | OK - Move, Backup and Restore |
-| PHP 7.3 | PHP7.3 | OK - Move, Backup and Restore |
-| PHP 7.4 | PHP7.4 | OK - Move, Backup and Restore |
-| PHP 8.0 | PHP8.0 | OK - Move, Backup and Restore |
-| PHP 8.1 | PHP8.1 | OK - Move, Backup and Restore |
-| PHP 8.2 | PHP8.2 | OK - Move, Backup and Restore |
+| Perl | Perl | OK |
+| PHP 7.3 | PHP7.3 | OK |
+| PHP 7.4 | PHP7.4 | OK |
+| PHP 8.0 | PHP8.0 | OK |
+| PHP 8.1 | PHP8.1 | OK |
+| PHP 8.2 | PHP8.2 | OK |
 | Plex Media Server | PlexMediaServer | OK |
 | Presto File Server | PrestoServer | OK |
 | Proxy Server | ProxyServer | OK |
-| Python 3.9 | Python3.9 | OK - Move, Backup and Restore |
+| Python 3.9 | Python3.9 | OK |
 | Radius Server | RadiusServer | OK |
 | SMI-S Provider | SynoSmisProvider | OK |
 | Snapshot Replication | SnapshotReplication | OK |
@@ -85,16 +85,16 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Surveillance Station | SurveillanceStation | OK |
 | SynoCli Tools | synocli-"toolname" | OK |
 | Synology Application Service | SynologyApplicationService | OK |
-| Synology Calendar | Calendar | OK - Move, Backup and Restore |
+| Synology Calendar | Calendar | OK |
 | Synology Chat Server | Chat | OK |
 | Synology Contacts | Contacts | OK |
 | Synology Directory Server | DirectoryServerForWindowsDomain | OK |
 | Synology Drive Server | SynologyDrive | OK |
 | Synology Mail Server | MailServer | OK |
 | Synology MailPlus | MailPlus | OK |
-| Synology MailPlus Server | MailPlus-Server | Still Testing... |
+| Synology MailPlus Server | MailPlus-Server | OK I think |
 | Synology Office | Spreadsheet | OK |
-| Synology Photos | SynologyPhotos | OK - Move, Backup and Restore |
+| Synology Photos | SynologyPhotos | OK |
 | Tailscale | Tailscale | OK |
 | Text Editor | TextEditor | OK |
 | Universal Viewer | UniversalViewer | OK |
@@ -114,7 +114,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Package | Result |
 |---------|--------|
 | Archiware P5 |  |
-| BRAVIA Signage | Won't install in Container Manager. It checks if Docker installed |
+| BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
 | Data Deposit Box |  |
 | Domotz Network Monitoring |  |
 | ElephantDrive |  |
