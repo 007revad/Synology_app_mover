@@ -1,3 +1,10 @@
+v3.0.50
+- Bug fix for Hyper backup where moving `@img_bkp_cache` could cause an error. Issue #54
+- Bug fix Container Manager and Docker where moving `@docker` could cause an error. Issues #34 #38 #46
+- Changed to not exit on error moving app's `@folders`.
+- Changed from hardcoded 50GB buffer to user configurable buffer (used when checking if there's enough space to move folder).
+- Bug fix for message showing `@download` if not enough space on target volume to move `@docker`.
+
 v3.0.49
 - Bug fix for Synology Drive still using `@synologydrive` on the original volume. Issue #55
 - Now deletes `@eaDir` folders to try to prevent `mv: cannot remove '/volume#/@<folder>': Operation not permitted`. Issue #54
