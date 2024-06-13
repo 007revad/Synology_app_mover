@@ -148,6 +148,28 @@ If you want to use use the [backup and restore options](/images/backup.png) you 
 
 The **syno_app_mover.conf** file must be in the same foller as the **syno_app_mover.sh file**.
 
+**Other options in syno_app_mover.conf**
+```YAML
+# buffer is used when checking if target volume has enough space
+# Add 50 GB buffer so we don't fill the target volume
+
+buffer=50
+
+# backuppath should be in the format of /volume/sharename/folder
+# For example:
+# backuppath="/volume1/backups"
+#
+# Note: The script will create a syno_app_mover folder in backuppath
+
+backuppath="/volume1/backups"
+
+# Skip backup if previous backup was done less than x minutes ago
+# Set to "0" to always backup
+# skip_minutes is in minutes
+
+skip_minutes=360
+```
+
 ### To run the script
 
 [How to enable SSH and login to DSM via SSH](https://kb.synology.com/en-global/DSM/tutorial/How_to_login_to_DSM_with_root_permission_via_SSH_Telnet)
