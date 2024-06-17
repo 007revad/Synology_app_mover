@@ -21,7 +21,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 ### Packages confirmed working
 
-**NOTE:** Just in case, you should backup your docker compose files of portainer stacks.
+**NOTE:** Just in case, you should backup your docker compose files or portainer stacks.
 
 <details>
   <summary>Click here to see list</summary>
