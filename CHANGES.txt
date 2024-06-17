@@ -1,3 +1,6 @@
+v3.0.51
+- Bug fix for checking free space on USB drives. Issue #63
+
 v3.0.50
 - Bug fix for Hyper backup where moving `@img_bkp_cache` could cause an error. Issue #54
 - Bug fix Container Manager and Docker where moving `@docker` could cause an error. Issues #34 #38 #46
