@@ -136,7 +136,7 @@
 # DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
 
 
-scriptver="v3.0.50"
+scriptver="v3.0.51"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -868,7 +868,8 @@ vol_free_space(){
     free=""  # var is used later in script
     if [[ -d "$1" ]]; then
         # Get amount of free space on $1 volume
-        free=$(df --output=avail "$1" | grep -A1 Avail | grep -v Avail)
+        #free=$(df --output=avail "$1" | grep -A1 Avail | grep -v Avail)  # dfs / for USB drives. # Issue #63
+        free=$(df | grep "$1" | awk '{print $4}')                 # dfs correctly for USB drives. # Issue #63
     fi
 }
 
