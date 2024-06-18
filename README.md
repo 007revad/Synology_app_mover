@@ -37,14 +37,14 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Apache 2.4 | Apache2.4 | OK |
 | <img src="/images/icons/AudioStation_64.png" width="20" height="20"> Audio Station | AudioStation | OK 	
 | Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
-| <img src="/images/icons/CMS_64.png" width="20" height="20"> C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
-| Central Management System | CMS | OK |
-| Cloud Sync | CloudSync | OK |
-| Container Manager | ContainerManager | OK |
+| C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
+| <img src="/images/icons/CMS_64.png" width="20" height="20"> Central Management System | CMS | OK |
+| <img src="/images/icons/CloudSync_64.png" width="20" height="20"> Cloud Sync | CloudSync | OK |
+| <img src="/images/icons/ContainerManager_64.png" width="20" height="20"> Container Manager | ContainerManager | OK |
 | DNS Server | DNSServer | OK |
 | Docker | Docker | OK |
 | Document Viewer | DocumentViewer | OK |
-| Download Station | DownloadStation | OK |
+| <img src="/images/icons/download_station_64.png" width="20" height="20"> Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
 | exFAT Access | exFAT-Free | OK |
 | git | git | OK |
