@@ -28,36 +28,36 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 | Package Center Name | System Name | Result |
 |---------------------|-------------|--------|
-| <img src="/images/icons/ActiveBackup_business_64.png" width="20" height="20"> Active Backup for Business | ActiveBackup | OK |
+| <img src="/images/icons/ActiveBackup_business_64.png" width="16" height="16"> Active Backup for Business | ActiveBackup | OK |
 | Active Backup for Google Workspace | ActiveBackup-GSuite | OK |
 | Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
-| <img src="/images/icons/anti_virus_64.png" width="20" height="20"> AntiVirus Essential | AntiVirus | OK |
+| <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
 | Apache 2.4 | Apache2.4 | OK |
-| <img src="/images/icons/AudioStation_64.png" width="20" height="20"> Audio Station | AudioStation | OK 	
+| <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK 	
 | Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
 | C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
-| <img src="/images/icons/CMS_64.png" width="20" height="20"> Central Management System | CMS | OK |
-| <img src="/images/icons/CloudSync_64.png" width="20" height="20"> Cloud Sync | CloudSync | OK |
-| <img src="/images/icons/ContainerManager_64.png" width="20" height="20"> Container Manager | ContainerManager | OK |
+| <img src="/images/icons/CMS_64.png" width="16" height="16"> Central Management System | CMS | OK |
+| <img src="/images/icons/CloudSync_64.png" width="16" height="16"> Cloud Sync | CloudSync | OK |
+| <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager | ContainerManager | OK |
 | DNS Server | DNSServer | OK |
-| <img src="/images/icons/docker_64.png" width="20" height="20"> Docker | Docker | OK |
+| <img src="/images/icons/docker_64.png" width="16" height="16"> Docker | Docker | OK |
 | Document Viewer | DocumentViewer | OK |
-| <img src="/images/icons/download_station_64.png" width="20" height="20"> Download Station | DownloadStation | OK |
+| <img src="/images/icons/download_station_64.png" width="16" height="16"> Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
 | exFAT Access | exFAT-Free | OK |
 | git | git | OK |
-| <img src="/images/icons/Git_64.png" width="20" height="20"> Git | Git | OK |
+| <img src="/images/icons/Git_64.png" width="16" height="16"> Git | Git | OK |
 | Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
-| <img src="/images/icons/HyperBackup_64.png" width="20" height="20"> Hyper Backup | HyperBackup | OK |
-| <img src="/images/icons/HyperBackupVault_64.png" width="20" height="20"> Hyper Backup Vault | HyperBackupVault | OK |
+| <img src="/images/icons/HyperBackup_64.png" width="16" height="16"> Hyper Backup | HyperBackup | OK |
+| <img src="/images/icons/HyperBackupVault_64.png" width="16" height="16"> Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server | DirectoryServer | OK |
-| <img src="/images/icons/LogAnalysis_64.png" width="20" height="20"> LogAnalysis | LogAnalysis | OK |
-| <img src="/images/icons/log_center_64.png" width="20" height="20"> Log Center | LogCenter | OK |
+| <img src="/images/icons/LogAnalysis_64.png" width="16" height="16"> LogAnalysis | LogAnalysis | OK |
+| <img src="/images/icons/log_center_64.png" width="16" height="16"> Log Center | LogCenter | OK |
 | Mail Station | MailStation | OK |
 | MariaDB 10 | MariaDB10 | OK |
-| <img src="/images/icons/MediaServer_64.png" width="20" height="20"> Media Server | MediaServer | OK |
+| <img src="/images/icons/MediaServer_64.png" width="16" height="16"> Media Server | MediaServer | OK |
 | MediaInfo | mediainfo | OK |
 | MinimServer | MinimServer | OK |
 | phpMyAdmin | phpMyAdmin | OK |
@@ -73,35 +73,35 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | PHP 8.0 | PHP8.0 | OK |
 | PHP 8.1 | PHP8.1 | OK |
 | PHP 8.2 | PHP8.2 | OK |
-| <img src="/images/icons/plexmediaserver_48.png" width="20" height="20"> Plex Media Server | PlexMediaServer | OK |
+| <img src="/images/icons/plexmediaserver_48.png" width="16" height="16"> Plex Media Server | PlexMediaServer | OK |
 | Presto File Server | PrestoServer | OK |
 | Proxy Server | ProxyServer | OK |
 | Python 3.9 | Python3.9 | OK |
 | Radius Server | RadiusServer | OK |
 | SMI-S Provider | SynoSmisProvider | OK |
-| <img src="/images/icons/SnapshotReplication_64.png" width="20" height="20"> Snapshot Replication | SnapshotReplication | OK |
+| <img src="/images/icons/SnapshotReplication_64.png" width="16" height="16"> Snapshot Replication | SnapshotReplication | OK |
 | SSO Server | SSOServer | OK |
-| <img src="/images/icons/StorageAnalyzer_64.png" width="20" height="20"> Storage Analyzer | StorageAnalyzer | OK |
+| <img src="/images/icons/StorageAnalyzer_64.png" width="16" height="16"> Storage Analyzer | StorageAnalyzer | OK |
 | Surveillance Station | SurveillanceStation | OK |
 | SynoCli Tools | synocli-"toolname" | OK |
-| <img src="/images/icons/SynologyApplicationService_64.png" width="20" height="20"> Synology Application Service | SynologyApplicationService | OK |
-| <img src="/images/icons/Calendar_64.png" width="20" height="20"> Synology Calendar | Calendar | OK |
+| <img src="/images/icons/SynologyApplicationService_64.png" width="16" height="16"> Synology Application Service | SynologyApplicationService | OK |
+| <img src="/images/icons/Calendar_64.png" width="16" height="16"> Synology Calendar | Calendar | OK |
 | Synology Chat Server | Chat | OK |
 | Synology Contacts | Contacts | OK |
 | Synology Directory Server | DirectoryServerForWindowsDomain | OK |
-| <img src="/images/icons/SynologyDrive_64.png" width="20" height="20"> Synology Drive Server | SynologyDrive | OK |
+| <img src="/images/icons/SynologyDrive_64.png" width="16" height="16"> Synology Drive Server | SynologyDrive | OK |
 | Synology Mail Server | MailServer | OK |
 | Synology MailPlus | MailPlus | OK |
 | Synology MailPlus Server | MailPlus-Server | OK I think |
 | Synology Office | Spreadsheet | OK |
-| <img src="/images/icons/photos_64.png" width="20" height="20"> Synology Photos | SynologyPhotos | OK |
+| <img src="/images/icons/photos_64.png" width="16" height="16"> Synology Photos | SynologyPhotos | OK |
 | Tailscale | Tailscale | OK |
-| <img src="/images/icons/TextEditor_64.png" width="20" height="20"> Text Editor | TextEditor | OK |
+| <img src="/images/icons/TextEditor_64.png" width="16" height="16"> Text Editor | TextEditor | OK |
 | Universal Viewer | UniversalViewer | OK |
-| <img src="/images/icons/VideoStation_64.png" width="20" height="20"> Video Station | VideoStation | OK |
-| <img src="/images/icons/VirtualManagement_64.png" width="20" height="20"> Virtual Machine Manager | Virtualization | OK |
+| <img src="/images/icons/VideoStation_64.png" width="16" height="16"> Video Station | VideoStation | OK |
+| <img src="/images/icons/VirtualManagement_64.png" width="16" height="16"> Virtual Machine Manager | Virtualization | OK |
 | VPN Server | VPNCenter | OK |
-| <img src="/images/icons/WebStation_64.png" width="20" height="20"> Web Station | WebStation | OK |
+| <img src="/images/icons/WebStation_64.png" width="16" height="16"> Web Station | WebStation | OK |
 | WebDAV Server | WebDAVServer | OK |
 
 </details>
@@ -116,29 +116,31 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Archiware P5 |  |
 | BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
 | Data Deposit Box |  |
+| <img src="/images/icons/diagnosis_64.png" width="20" height="20"> Diagnosis Tool |  |
 | Domotz Network Monitoring |  |
 | ElephantDrive |  |
-| <img src="/images/icons/gateone-64.png" width="20" height="20"> GateOne |  |
+| <img src="/images/icons/gateone-64.png" width="16" height="16"> GateOne |  |
 | GoodSync |  |
 | IDrive |  |
-| <img src="/images/icons/jackett-64.png" width="20" height="20"> Jackett |  |
+| <img src="/images/icons/jackett-64.png" width="16" height="16"> Jackett |  |
 | Joomla |  |
 | KodiExplorer |  |
-| <img src="/images/icons/mediainfo-64.png" width="20" height="20"> MediaInfo |  |
+| <img src="/images/icons/mediainfo-64.png" width="16" height="16"> MediaInfo |  |
 | MediaWiki |  |
-| <img src="/images/icons/medusa-64.png" width="20" height="20"> Medusa |  |
+| <img src="/images/icons/medusa-64.png" width="18" height="18"> Medusa |  |
 | MEGAcmd |  |
 | NAKIVO Backup and Replication |  |
 | NAKIVO Transporter |  |
 | PACS |  |
 | Ragic Cloud DB |  |
-| Resilo Sync |  |
-| <img src="/images/icons/shellinabox-48.png" width="20" height="20"> Shellinabox |  |
-| <img src="/images/icons/syncthing-64.png" width="20" height="20"> Syncthing |  |
+| <img src="/images/icons/resiliosync-48.png" width="16" height="16"> Resilo Sync |  |
+| <img src="/images/icons/shellinabox-48.png" width="16" height="16"> Shellinabox |  |
+| <img src="/images/icons/syncthing-64.png" width="18" height="18"> Syncthing |  |
 | TeamViewer |  |
 | <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission |  |
 | VirtualHere |  |
 | vtigerCRM |  |
+| <img src="/images/icons/WebTools-48.png" width="20" height="20"> WebTools |  |
 | Wordpress |  |
 
 </details>
