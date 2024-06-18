@@ -47,8 +47,8 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/download_station_64.png" width="16" height="16"> Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
 | exFAT Access | exFAT-Free | OK |
-| git | git | OK |
-| <img src="/images/icons/Git_64.png" width="16" height="16"> Git | Git | OK |
+| Git | git | OK |
+| <img src="/images/icons/Git_64.png" width="16" height="16"> Git Server | Git | OK |
 | Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
 | <img src="/images/icons/HyperBackup_64.png" width="16" height="16"> Hyper Backup | HyperBackup | OK |
 | <img src="/images/icons/HyperBackupVault_64.png" width="16" height="16"> Hyper Backup Vault | HyperBackupVault | OK |
