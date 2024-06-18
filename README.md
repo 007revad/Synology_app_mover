@@ -118,21 +118,25 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Data Deposit Box |  |
 | Domotz Network Monitoring |  |
 | ElephantDrive |  |
+| <img src="/images/icons/gateone-64.png" width="20" height="20"> GateOne |  |
 | GoodSync |  |
 | IDrive |  |
+| <img src="/images/icons/jackett-64.png" width="20" height="20"> Jackett |  |
 | Joomla |  |
 | KodiExplorer |  |
+| <img src="/images/icons/mediainfo-64.png" width="20" height="20"> MediaInfo |  |
 | MediaWiki |  |
+| <img src="/images/icons/medusa-64.png" width="20" height="20"> Medusa |  |
 | MEGAcmd |  |
 | NAKIVO Backup and Replication |  |
 | NAKIVO Transporter |  |
 | PACS |  |
 | Ragic Cloud DB |  |
 | Resilo Sync |  |
-| <img src="/images/icons/shellinabox-48.png" width="20" height="20"> Shellinabox | OK |
-| <img src="/images/icons/syncthing-64.png" width="20" height="20"> Syncthing | OK |
+| <img src="/images/icons/shellinabox-48.png" width="20" height="20"> Shellinabox |  |
+| <img src="/images/icons/syncthing-64.png" width="20" height="20"> Syncthing |  |
 | TeamViewer |  |
-| <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission | OK |
+| <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission |  |
 | VirtualHere |  |
 | vtigerCRM |  |
 | Wordpress |  |
