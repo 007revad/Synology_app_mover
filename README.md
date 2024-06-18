@@ -34,7 +34,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
-| Apache 2.4 | Apache2.4 | OK |
+| Apache HTTP Server 2.4 | Apache2.4 | OK |
 | <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK 	
 | Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
 | C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
