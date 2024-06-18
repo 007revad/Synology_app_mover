@@ -28,16 +28,16 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 | Package Center Name | Name shown in script | Result |
 |---------------------|-------------|--------|
-| Active Backup for Business | ActiveBackup | OK |
+| <img src="/images/icons/ActiveBackup_business_64.png" width="20" height="20"> Active Backup for Business | ActiveBackup | OK |
 | Active Backup for Google Workspace | ActiveBackup-GSuite | OK |
 | Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | AntiVirus Essential | AntiVirus | OK |
 | Apache 2.4 | Apache2.4 | OK |
-| Audio Station | AudioStation | OK 	
+| <img src="/images/icons/AudioStation_64.png" width="20" height="20"> Audio Station | AudioStation | OK 	
 | Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
-| C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
+| <img src="/images/icons/CMS_64.png" width="20" height="20"> C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
 | Central Management System | CMS | OK |
 | Cloud Sync | CloudSync | OK |
 | Container Manager | ContainerManager | OK |
