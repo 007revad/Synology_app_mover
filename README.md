@@ -26,7 +26,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 <details>
   <summary>Click here to see list</summary>
 
-| Package Center Name | Name shown in script | Result |
+| Package Center Name | System Name | Result |
 |---------------------|-------------|--------|
 | <img src="/images/icons/ActiveBackup_business_64.png" width="20" height="20"> Active Backup for Business | ActiveBackup | OK |
 | Active Backup for Google Workspace | ActiveBackup-GSuite | OK |
@@ -54,7 +54,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/HyperBackupVault_64.png" width="20" height="20"> Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server | DirectoryServer | OK |
 | <img src="/images/icons/LogAnalysis_64.png" width="20" height="20"> LogAnalysis | LogAnalysis | OK |
-| Log Center | Log Center | OK |
+| <img src="/images/icons/log_center_64.png" width="20" height="20"> Log Center | LogCenter | OK |
 | Mail Station | MailStation | OK |
 | MariaDB 10 | MariaDB10 | OK |
 | <img src="/images/icons/MediaServer_64.png" width="20" height="20"> Media Server | MediaServer | OK |
