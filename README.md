@@ -33,7 +33,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
 | Advanced Media Extensions | CodecPack | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
-| AntiVirus Essential | AntiVirus | OK |
+| <img src="/images/icons/anti_virus_64.png" width="20" height="20"> AntiVirus Essential | AntiVirus | OK |
 | Apache 2.4 | Apache2.4 | OK |
 | <img src="/images/icons/AudioStation_64.png" width="20" height="20"> Audio Station | AudioStation | OK 	
 | Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
@@ -129,7 +129,10 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | PACS |  |
 | Ragic Cloud DB |  |
 | Resilo Sync |  |
+| <img src="/images/icons/shellinabox-48.png" width="20" height="20"> Shellinabox | OK |
+| <img src="/images/icons/syncthing-64.png" width="20" height="20"> Syncthing | OK |
 | TeamViewer |  |
+| <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission | OK |
 | VirtualHere |  |
 | vtigerCRM |  |
 | Wordpress |  |
