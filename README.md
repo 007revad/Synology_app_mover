@@ -42,7 +42,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/CloudSync_64.png" width="20" height="20"> Cloud Sync | CloudSync | OK |
 | <img src="/images/icons/ContainerManager_64.png" width="20" height="20"> Container Manager | ContainerManager | OK |
 | DNS Server | DNSServer | OK |
-| Docker | Docker | OK |
+| <img src="/images/icons/docker_64.png" width="20" height="20"> Docker | Docker | OK |
 | Document Viewer | DocumentViewer | OK |
 | <img src="/images/icons/download_station_64.png" width="20" height="20"> Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
