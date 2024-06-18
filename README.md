@@ -73,35 +73,35 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | PHP 8.0 | PHP8.0 | OK |
 | PHP 8.1 | PHP8.1 | OK |
 | PHP 8.2 | PHP8.2 | OK |
-| Plex Media Server | PlexMediaServer | OK |
+| <img src="/images/icons/plexmediaserver_48.png" width="20" height="20"> Plex Media Server | PlexMediaServer | OK |
 | Presto File Server | PrestoServer | OK |
 | Proxy Server | ProxyServer | OK |
 | Python 3.9 | Python3.9 | OK |
 | Radius Server | RadiusServer | OK |
 | SMI-S Provider | SynoSmisProvider | OK |
-| Snapshot Replication | SnapshotReplication | OK |
+| <img src="/images/icons/SnapshotReplication_64.png" width="20" height="20"> Snapshot Replication | SnapshotReplication | OK |
 | SSO Server | SSOServer | OK |
-| Storage Analyzer | StorageAnalyzer | OK |
+| <img src="/images/icons/StorageAnalyzer_64.png" width="20" height="20"> Storage Analyzer | StorageAnalyzer | OK |
 | Surveillance Station | SurveillanceStation | OK |
 | SynoCli Tools | synocli-"toolname" | OK |
-| Synology Application Service | SynologyApplicationService | OK |
-| Synology Calendar | Calendar | OK |
+| <img src="/images/icons/SynologyApplicationService_64.png" width="20" height="20"> Synology Application Service | SynologyApplicationService | OK |
+| <img src="/images/icons/Calendar_64.png" width="20" height="20"> Synology Calendar | Calendar | OK |
 | Synology Chat Server | Chat | OK |
 | Synology Contacts | Contacts | OK |
 | Synology Directory Server | DirectoryServerForWindowsDomain | OK |
-| Synology Drive Server | SynologyDrive | OK |
+| <img src="/images/icons/SynologyDrive_64.png" width="20" height="20"> Synology Drive Server | SynologyDrive | OK |
 | Synology Mail Server | MailServer | OK |
 | Synology MailPlus | MailPlus | OK |
 | Synology MailPlus Server | MailPlus-Server | OK I think |
 | Synology Office | Spreadsheet | OK |
-| Synology Photos | SynologyPhotos | OK |
+| <img src="/images/icons/photos_64.png" width="20" height="20"> Synology Photos | SynologyPhotos | OK |
 | Tailscale | Tailscale | OK |
-| Text Editor | TextEditor | OK |
+| <img src="/images/icons/TextEditor_64.png" width="20" height="20"> Text Editor | TextEditor | OK |
 | Universal Viewer | UniversalViewer | OK |
-| Video Station | VideoStation | OK |
-| Virtual Machine Manager | Virtualization | OK |
+| <img src="/images/icons/VideoStation_64.png" width="20" height="20"> Video Station | VideoStation | OK |
+| <img src="/images/icons/VirtualManagement_64.png" width="20" height="20"> Virtual Machine Manager | Virtualization | OK |
 | VPN Server | VPNCenter | OK |
-| Web Station | WebStation | OK |
+| <img src="/images/icons/WebStation_64.png" width="20" height="20"> Web Station | WebStation | OK |
 | WebDAV Server | WebDAVServer | OK |
 
 </details>
