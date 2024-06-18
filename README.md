@@ -48,16 +48,16 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Emby Server | EmbyServer | OK |
 | exFAT Access | exFAT-Free | OK |
 | git | git | OK |
-| Git | Git | OK |
+| <img src="/images/icons/Git_64.png" width="20" height="20"> Git | Git | OK |
 | Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
-| Hyper Backup | HyperBackup | OK |
-| Hyper Backup Vault | HyperBackupVault | OK |
+| <img src="/images/icons/HyperBackup_64.png" width="20" height="20"> Hyper Backup | HyperBackup | OK |
+| <img src="/images/icons/HyperBackupVault_64.png" width="20" height="20"> Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server | DirectoryServer | OK |
-| LogAnalysis | LogAnalysis | OK |
+| <img src="/images/icons/LogAnalysis_64.png" width="20" height="20"> LogAnalysis | LogAnalysis | OK |
 | Log Center | Log Center | OK |
 | Mail Station | MailStation | OK |
 | MariaDB 10 | MariaDB10 | OK |
-| Media Server | MediaServer | OK |
+| <img src="/images/icons/MediaServer_64.png" width="20" height="20"> Media Server | MediaServer | OK |
 | MediaInfo | mediainfo | OK |
 | MinimServer | MinimServer | OK |
 | phpMyAdmin | phpMyAdmin | OK |
