@@ -31,7 +31,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/ActiveBackup_business_64.png" width="16" height="16"> Active Backup for Business | ActiveBackup | OK |
 | Active Backup for Google Workspace | ActiveBackup-GSuite | OK |
 | Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
-| Advanced Media Extensions | CodecPack | OK |
+| <img src="/images/icons/CodecPack_64.png" width="16" height="16"> Advanced Media Extensions | CodecPack | OK |
 | AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
 | Apache HTTP Server 2.4 | Apache2.4 | OK |
