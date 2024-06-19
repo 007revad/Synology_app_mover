@@ -114,6 +114,8 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Package | Result / Notes |
 |---------|--------|
 | Archiware P5 |  |
+| <img src="/images/icons/AvrCenter_64.png" width="16" height="16"> AvrCenter | community package |
+| <img src="/images/icons/AvrLogger_64.png" width="16" height="16"> AvrLogger | community package |
 | BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
 | Data Deposit Box |  |
 | <img src="/images/icons/diagnosis_64.png" width="20" height="20"> Diagnosis Tool |  |
