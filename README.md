@@ -133,13 +133,13 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | PACS |  |
 | Ragic Cloud DB |  |
 | <img src="/images/icons/resiliosync-48.png" width="16" height="16"> Resilo Sync |  |
-| <img src="/images/icons/shellinabox-48.png" width="16" height="16"> Shellinabox |  |
+| <img src="/images/icons/shellinabox-48.png" width="16" height="16"> Shellinabox | community package |
 | <img src="/images/icons/syncthing-64.png" width="18" height="18"> Syncthing |  |
 | TeamViewer |  |
-| <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission |  |
+| <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission | community package |
 | VirtualHere |  |
 | vtigerCRM |  |
-| <img src="/images/icons/WebTools-48.png" width="20" height="20"> WebTools |  |
+| <img src="/images/icons/WebTools-48.png" width="20" height="20"> WebTools | community package |
 | Wordpress |  |
 
 </details>
