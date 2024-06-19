@@ -58,7 +58,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Mail Station | MailStation | OK |
 | MariaDB 10 | MariaDB10 | OK |
 | <img src="/images/icons/MediaServer_64.png" width="16" height="16"> Media Server | MediaServer | OK |
-| MediaInfo | mediainfo | OK - community package |
+| <img src="/images/icons/mediainfo-64.png" width="16" height="16"> MediaInfo | mediainfo | OK - community package |
 | MinimServer | MinimServer | OK |
 | phpMyAdmin | phpMyAdmin | OK |
 | Node.js v14 | Node.js_v14 | OK |
@@ -111,7 +111,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 <details>
   <summary>Click here to see list</summary>
 
-| Package | Result |
+| Package | Result / Notes |
 |---------|--------|
 | Archiware P5 |  |
 | BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
@@ -122,12 +122,11 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/gateone-64.png" width="16" height="16"> GateOne |  |
 | GoodSync |  |
 | IDrive |  |
-| <img src="/images/icons/jackett-64.png" width="16" height="16"> Jackett |  |
+| <img src="/images/icons/jackett-64.png" width="16" height="16"> Jackett | community package |
 | Joomla |  |
 | KodiExplorer |  |
-| <img src="/images/icons/mediainfo-64.png" width="16" height="16"> MediaInfo |  |
 | MediaWiki |  |
-| <img src="/images/icons/medusa-64.png" width="18" height="18"> Medusa |  |
+| <img src="/images/icons/medusa-64.png" width="18" height="18"> Medusa | community package [link](https://github.com/BenjV/SYNO-packages) |
 | MEGAcmd |  |
 | NAKIVO Backup and Replication |  |
 | NAKIVO Transporter |  |
