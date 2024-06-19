@@ -47,18 +47,18 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/download_station_64.png" width="16" height="16"> Download Station | DownloadStation | OK |
 | Emby Server | EmbyServer | OK |
 | exFAT Access | exFAT-Free | OK |
-| Git | git | OK |
+| Git | git | OK - community package |
 | <img src="/images/icons/Git_64.png" width="16" height="16"> Git Server | Git | OK |
 | Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
 | <img src="/images/icons/HyperBackup_64.png" width="16" height="16"> Hyper Backup | HyperBackup | OK |
 | <img src="/images/icons/HyperBackupVault_64.png" width="16" height="16"> Hyper Backup Vault | HyperBackupVault | OK |
 | LDAP Server | DirectoryServer | OK |
-| <img src="/images/icons/LogAnalysis_64.png" width="16" height="16"> LogAnalysis | LogAnalysis | OK |
+| <img src="/images/icons/LogAnalysis_64.png" width="16" height="16"> LogAnalysis | LogAnalysis | OK - community package [link](https://github.com/toafez/LogAnalysis) |
 | <img src="/images/icons/log_center_64.png" width="16" height="16"> Log Center | LogCenter | OK |
 | Mail Station | MailStation | OK |
 | MariaDB 10 | MariaDB10 | OK |
 | <img src="/images/icons/MediaServer_64.png" width="16" height="16"> Media Server | MediaServer | OK |
-| MediaInfo | mediainfo | OK |
+| MediaInfo | mediainfo | OK - community package |
 | MinimServer | MinimServer | OK |
 | phpMyAdmin | phpMyAdmin | OK |
 | Node.js v14 | Node.js_v14 | OK |
@@ -77,7 +77,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Presto File Server | PrestoServer | OK |
 | Proxy Server | ProxyServer | OK |
 | Python 3.9 | Python3.9 | OK |
-| Radius Server | RadiusServer | OK |
+| RADIUS Server | RadiusServer | OK |
 | SMI-S Provider | SynoSmisProvider | OK |
 | <img src="/images/icons/SnapshotReplication_64.png" width="16" height="16"> Snapshot Replication | SnapshotReplication | OK |
 | SSO Server | SSOServer | OK |
