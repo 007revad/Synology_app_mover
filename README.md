@@ -140,9 +140,9 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | TeamViewer |  |
 | <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission | community package |
 | VirtualHere |  |
-| vtigerCRM |  |
+| <img src="/images/icons/vtigerCRM_64.png" width="16" height="16"> vtigerCRM |  |
 | <img src="/images/icons/WebTools-48.png" width="20" height="20"> WebTools | community package |
-| Wordpress |  |
+| <img src="/images/icons/Wordpress_64.png" width="16" height="16"> Wordpress |  |
 
 </details>
 
