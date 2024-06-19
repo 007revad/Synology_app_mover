@@ -125,7 +125,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | GoodSync |  |
 | IDrive |  |
 | <img src="/images/icons/jackett-64.png" width="16" height="16"> Jackett | community package |
-| Joomla |  |
+| <img src="/images/icons/Joomla_64.png" width="16" height="16"> Joomla |  |
 | KodiExplorer |  |
 | MediaWiki |  |
 | <img src="/images/icons/medusa-64.png" width="18" height="18"> Medusa | community package [link](https://github.com/BenjV/SYNO-packages) |
