@@ -110,8 +110,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 | Package | Result / Notes |
 |---------|--------|
-| <img src="/images/icons/.png" width="16" height="16"> Archiware P5 |  |
-||
+| <img src="/images/icons/ArchiwareP5_64.png" width="16" height="16"> Archiware P5 |  |
 | <img src="/images/icons/AvrCenter_64.png" width="16" height="16"> AvrCenter | community package |
 | <img src="/images/icons/AvrLogger_64.png" width="20" height="20"> AvrLogger | community package |
 | <img src="/images/icons/Sony_BraviaSignage_64.png" width="16" height="16"> BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
@@ -121,13 +120,11 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/elephantdrive_64.png" width="16" height="16"> ElephantDrive |  |
 | <img src="/images/icons/gateone-64.png" width="16" height="16"> GateOne |  |
 | <img src="/images/icons/GoodSync_64.png" width="16" height="16"> GoodSync |  |
-| <img src="/images/icons/.png" width="16" height="16"> IDrive |  |
-||
+| <img src="/images/icons/iDrive_72.png" width="16" height="16"> IDrive |  |
 | <img src="/images/icons/jackett-64.png" width="16" height="16"> Jackett | community package |
 | <img src="/images/icons/Joomla_64.png" width="16" height="16"> Joomla |  |
 | <img src="/images/icons/KodExplorer_64.png" width="16" height="16"> KodiExplorer |  |
-| <img src="/images/icons/.png" width="16" height="16"> MediaWiki |  |
-||
+| <img src="/images/icons/MediaWiki_72.png" width="16" height="16"> MediaWiki |  |
 | <img src="/images/icons/medusa-64.png" width="18" height="18"> Medusa | community package [link](https://github.com/BenjV/SYNO-packages) |
 | <img src="/images/icons/MEGAcmd_64.png" width="16" height="16"> MEGAcmd |  |
 | <img src="/images/icons/NBR_64.png" width="16" height="16"> NAKIVO Backup and Replication |  |
