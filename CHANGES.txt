@@ -1,3 +1,7 @@
+v3.0.52
+- Bug fix for DSM 6 where some packages have an extra symlink that needs editing:
+  - chromaprint, ffmpeg, git, jackett, mediainfo, mono, python310, syncthing, synocli-misc and transmission
+
 v3.0.51
 - Bug fix for checking free space on USB drives. Issue #63
 
