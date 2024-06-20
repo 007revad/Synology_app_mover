@@ -10,10 +10,6 @@
 # To run in a shell (replace /volume1/scripts/ with path to script):
 # sudo -s /volume1/scripts/syno_app_mover.sh
 #------------------------------------------------------------------------------
-#
-# Cannot uninstall packages with dependers 
-# "failed to uninstall a package who has dependers installed"
-#
 # TODO
 # Add volume space check for all extras folders.
 #  Should check the volume space BEFORE moving or backing up package.
@@ -27,116 +23,10 @@
 #   ./syno_app_mover.sh --auto ContainerManager
 #   ./syno_app_mover.sh --auto ContainerManager|Calendar|WebStation
 #
-#
 # https://docs.docker.com/config/pruning/
-#
-#
-# DSM 6 to 7.1.1 bug fix where script incorrectly showed package failed to stop error. Issue #44
-# DSM 6 to 7.1.1 bug fix for not detecting when package was not installed (for Restore mode).
-#
-#
-# DONE Bug fix for moving `@img_bkp_cache`. Issue #54
-# DONE Bug fix for moving `@docker`. Issues #34 #38 #46
-#
-# DONE Bug fix for not editing /var/packages/Calendar/etc/share_link.json. Issue #39
-# DONE Bug fix for not moving @synocalendar if it exists. Issue #39
-#
-# DONE Added skip restore if last restore was less than n minutes ago.
-#   - Set skip_minutes in syno_app_mover.conf
-# DONE Skip exit on error and skip processing app if backup all or restore all selected.
-# DONE Changed to suggest changing volume location in app's settings for each app with volume settings when All selected.
-#   - Previously only showed how to edit volume location in app's settings for the last app processed.
-# DONE Changed to show how to move volume for each app with a volume when All selected.
-#   - Previously only showed how to move volume for the last app processed.
-# DONE Bug fix for showing @docker instead of @download if not enough space on target volume for @download.
-#
-# DONE Added check that the extra @ folders exist to prevent errors.
-#
-# DONE Added skip backup if last backup was less than n minutes ago.
-#   - Set skip_minutes in syno_app_mover.conf
-#
-# DONE Skip processing app if it failed to stop.
-#
-# DONE Added support for backup and restore in DSM 6.
-#
-# DONE Fixed restore mode which was broken in 3.0.30.
-#
-# DONE Added DSM 7.1 and 6 compatibility for package status.
-# DONE Bug fix for DSM 6 getting volume of shared folder.
-#
-# DONE Bug fix for when package has spaces in the folder name (Plex Media Center).
-#
-# DONE Bug fix for not backing up packages that aren't running.
-#
-# DONE Bug fix for moving Media Server and Plex Media Server when Media Server was selected.
-#
-# DONE edited "move share" instructions to include enabling data checksums.
-#
-# DONE Minimised the time each package is stopped during backup/restore, while still only stopping and starting each package only once.
-#  First stops, backs up or restores and starts each package that other packages are dependent on.
-#  Then stops (if running), backs up or restores and starts each package that is dependent on other packages.
-#  Finally stops, backs up or restores and starts each package that has no dependencies.
-#
-# DONE Restore mode now only lists packages that are not utilities with no settings or data.
-#
-# DONE Improved speed of getting list of packages to be 6 times faster.
-#  Saves 1 second for every 20 packages installed.
-#
-# DONE Now shows how long the script took.
-# DONE Bug fix for `@synologydrive` and not `@SynologyDrive`.
-#
-# DONE For backup and restore skip packages that are development tools with no data.
-#  Node.js, Perl, PHP, python3, SynoCli etc.
-#
-# DONE Add "All" packages choice for backup and restore modes.
-#  Stop all packages that are on volumes (and their dependencies).
-#  Start all packages that we stopped (and their dependencies).
-# DONE Now sorts packages for selection in restore mode.
-# DONE `@docker` and `@download` warning now instead of "Moving" says:
-#  Moving, Backing up or Restoring depending on the mode selected.
-#
-# DONE Added reminder to edit docker volume settings if user moved shared folders that docker uses.
-#
-# DONE Fixed blank dependent package names if their INFO has no displayname set.
-#
-# DONE Added how to export/import database for packages that use MariaDB.
-#
-# DONE Backup package's web_package folder if there is one.
-# DONE Restore package's web_package folder if there is one.
-# DONE Fix dependent typos (dependant).
-#
-# DONE Added warning that moving `@docker` and `@download` can take a long time.
-# DONE Added check to stop script if package variable is empty.
-# DONE Bug fix for packages with no "display" value in their INFO file.
-#
-# DONE Now checks if there's enough space to move `@docker`.
-# DONE Now checks if there's enough space to move `@download`.
-# DONE Now asks if you want to backup `@download`.
-#
-# DONE Added 5 minute timeout to stopping, and starting, packages.
-#
-# DONE Gets package display name from package's INFO file.
-# DONE Added Synology Calendar's '@calendar' folder.
-# DONE Added Download Station's '@download' folder.
-#
-# DONE Added support to backup/restore ActiveBackup
-# DONE Check all PS3 sections validate choice.
-#
-# DONE Added support to backup/restore ContainerManager/Docker
-# DONE Added check that installed package version matches backup version
-#
-# DONE Added backup and restore modes
-# DONE Only start package if we stopped it
-# DONE Check exit status of package uninstall and install
-# DONE Added syno_app_mover.conf file for setting backup location
-# DONE Change so when progress bar showing cursor doesn't cover first letter
-# DONE Confirm folder was created when creating folder
-# DONE Copy files/folders with same permissions when using cp command
-# DONE Change package selection to avoid invalid key presses
-# DONE Bug fix when script updates itself and user ran the script from ./scriptname.sh
+#------------------------------------------------------------------------------
 
-
-scriptver="v3.0.51"
+scriptver="v3.0.52"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -395,7 +285,7 @@ fi
 #------------------------------------------------------------------------------
 # Functions
 
-# shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
+# shellcheck disable=SC2317,SC2329  # Don't warn about unreachable commands in this function
 pause(){ 
     # When debugging insert pause command where needed
     read -s -r -n 1 -p "Press any key to continue..."
@@ -404,7 +294,7 @@ pause(){
     echo -e "\n"
 }
 
-# shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
+# shellcheck disable=SC2317,SC2329  # Don't warn about unreachable commands in this function
 debug(){ 
     if [[ $1 == "on" ]]; then
         set -x
@@ -750,6 +640,14 @@ edit_symlinks(){
         @appstore)  # target --> @appstore
             rm "/var/packages/${1:?}/target"
             ln -s "${2:?}/@appstore/${1:?}" "/var/packages/${1:?}/target"
+            
+            # DSM 6 - Some packages have var symlink
+            if [[ $majorversion -lt 7 ]]; then
+                if [[ -L "/var/packages/${1:?}/var" ]]; then
+                    rm "/var/packages/${1:?}/var"
+                    ln -s "${2:?}/@appstore/${1:?}/var" "/var/packages/${1:?}/var"
+                fi
+            fi
             ;;
         @apptemp)  # tmp --> @apptemp
             rm "/var/packages/${1:?}/tmp"
