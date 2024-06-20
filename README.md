@@ -93,7 +93,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/SSOServer_64.png" width="16" height="16"> SSO Server | SSOServer | OK |
 | <img src="/images/icons/StorageAnalyzer_64.png" width="16" height="16"> Storage Analyzer | StorageAnalyzer | OK |
 | <img src="/images/icons/SurveillanceStation_64.png" width="16" height="16"> Surveillance Station | SurveillanceStation | OK |
-| SynoCli Tools | synocli-"toolname" | OK - community package |
+| <img src="/images/icons/synocli_72.png" width="16" height="16"> SynoCli Tools | synocli-"toolname" | OK - community package |
 | <img src="/images/icons/SynologyApplicationService_64.png" width="16" height="16"> Synology Application Service | SynologyApplicationService | OK |
 | <img src="/images/icons/Calendar_64.png" width="16" height="16"> Synology Calendar | Calendar | OK |
 | <img src="/images/icons/Chat_64.png" width="16" height="16"> Synology Chat Server | Chat | OK |
