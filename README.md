@@ -85,18 +85,14 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/plexmediaserver_48.png" width="16" height="16"> Plex Media Server | PlexMediaServer | OK |
 | <img src="/images/icons/.png" width="16" height="16"> Presto File Server | PrestoServer | OK |
 ||
-| <img src="/images/icons/.png" width="16" height="16"> Proxy Server | ProxyServer | OK |
-||
+| <img src="/images/icons/ProxyServer_64.png" width="16" height="16"> Proxy Server | ProxyServer | OK |
 | Python 3.9 | Python3.9 | OK |
-| <img src="/images/icons/.png" width="16" height="16"> RADIUS Server | RadiusServer | OK |
-||
+| <img src="/images/icons/RadiusServer_64.png" width="16" height="16"> RADIUS Server | RadiusServer | OK |
 | SMI-S Provider | SynoSmisProvider | OK |
 | <img src="/images/icons/SnapshotReplication_64.png" width="16" height="16"> Snapshot Replication | SnapshotReplication | OK |
-| <img src="/images/icons/.png" width="16" height="16"> SSO Server | SSOServer | OK |
-||
+| <img src="/images/icons/SSOServer_64.png" width="16" height="16"> SSO Server | SSOServer | OK |
 | <img src="/images/icons/StorageAnalyzer_64.png" width="16" height="16"> Storage Analyzer | StorageAnalyzer | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Surveillance Station | SurveillanceStation | OK |
-||
+| <img src="/images/icons/SurveillanceStation_64.png" width="16" height="16"> Surveillance Station | SurveillanceStation | OK |
 | SynoCli Tools | synocli-"toolname" | OK - community package |
 | <img src="/images/icons/SynologyApplicationService_64.png" width="16" height="16"> Synology Application Service | SynologyApplicationService | OK |
 | <img src="/images/icons/Calendar_64.png" width="16" height="16"> Synology Calendar | Calendar | OK |
