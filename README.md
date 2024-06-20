@@ -48,7 +48,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/DocumentViewer_64.png" width="16" height="16"> Document Viewer | DocumentViewer | OK |
 | <img src="/images/icons/download_station_64.png" width="20" height="20"> Download Station | DownloadStation | OK |
 | <img src="/images/icons/EmbyServer_64.png" width="16" height="16"> Emby Server | EmbyServer | OK |
-| exFAT Access | exFAT-Free | OK |
+| <img src="/images/icons/exFAT-Free_72.png" width="16" height="16"> exFAT Access | exFAT-Free | OK |
 | <img src="/images/icons/Git_64.png" width="16" height="16"> Git | git | OK - community package |
 | <img src="/images/icons/Git_64.png" width="16" height="16"> Git Server | Git | OK |
 | <img src="/images/icons/GlacierBackup_64.png" width="16" height="16"> Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
@@ -58,11 +58,11 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/LogAnalysis_64.png" width="16" height="16"> LogAnalysis | LogAnalysis | OK - community package [link](https://github.com/toafez/LogAnalysis) |
 | <img src="/images/icons/log_center_64.png" width="16" height="16"> Log Center | LogCenter | OK |
 | <img src="/images/icons/MailStation_64.png" width="16" height="16"> Mail Station | MailStation | OK |
-| <img src="/images/icons/MariaDB10_64.png" width="16" height="16"> MariaDB 10 | MariaDB10 | OK |
+| <img src="/images/icons/MariaDB10_64.png" width="20" height="20"> MariaDB 10 | MariaDB10 | OK |
 | <img src="/images/icons/MediaServer_64.png" width="16" height="16"> Media Server | MediaServer | OK |
 | <img src="/images/icons/mediainfo-64.png" width="16" height="16"> MediaInfo | mediainfo | OK - community package |
 | <img src="/images/icons/MinimServer_64.png" width="16" height="16"> MinimServer | MinimServer | OK |
-| phpMyAdmin | phpMyAdmin | OK |
+| <img src="/images/icons/phpMyAdmin_72.png" width="20" height="20"> phpMyAdmin | phpMyAdmin | OK |
 | <img src="/images/icons/Node.js_cropped.png" width="36" height="17"> Node.js | Node.js_v## | OK |
 | <img src="/images/icons/NoteStation_64.png" width="16" height="16"> Note Station | NoteStation | OK |
 | <img src="/images/icons/PDFViewer_64.png" width="16" height="16"> PDF Viewer | PDFViewer | OK |
@@ -73,7 +73,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/ProxyServer_64.png" width="16" height="16"> Proxy Server | ProxyServer | OK |
 | <img src="/images/icons/Python_64.png" width="16" height="16"> Python 3.9 | Python3.9 | OK |
 | <img src="/images/icons/RadiusServer_64.png" width="16" height="16"> RADIUS Server | RadiusServer | OK |
-| SMI-S Provider | SynoSmisProvider | OK |
+| <img src="/images/icons/SynoSmisProvider_64.png" width="16" height="16"> SMI-S Provider | SynoSmisProvider | OK |
 | <img src="/images/icons/SnapshotReplication_64.png" width="16" height="16"> Snapshot Replication | SnapshotReplication | OK |
 | <img src="/images/icons/SSOServer_64.png" width="16" height="16"> SSO Server | SSOServer | OK |
 | <img src="/images/icons/StorageAnalyzer_64.png" width="16" height="16"> Storage Analyzer | StorageAnalyzer | OK |
@@ -83,7 +83,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/Calendar_64.png" width="16" height="16"> Synology Calendar | Calendar | OK |
 | <img src="/images/icons/Chat_64.png" width="16" height="16"> Synology Chat Server | Chat | OK |
 | <img src="/images/icons/Contacts_64.png" width="16" height="16"> Synology Contacts | Contacts | OK |
-| Synology Directory Server | DirectoryServerForWindowsDomain | OK |
+| <img src="/images/icons/DirectoryServerForWindowsDomain_64.png" width="16" height="16"> Synology Directory Server | DirectoryServerForWindowsDomain | OK |
 | <img src="/images/icons/SynologyDrive_64.png" width="16" height="16"> Synology Drive Server | SynologyDrive | OK |
 | <img src="/images/icons/MailServer_64.png" width="16" height="16"> Synology Mail Server | MailServer | OK |
 | <img src="/images/icons/MailClient_64.png" width="16" height="16"> Synology MailPlus | MailPlus | OK |
