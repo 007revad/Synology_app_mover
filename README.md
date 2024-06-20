@@ -31,10 +31,10 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Package Center Name | System Name | Result |
 |---------------------|-------------|--------|
 | <img src="/images/icons/ActiveBackup_business_64.png" width="16" height="16"> Active Backup for Business | ActiveBackup | OK |
-| Active Backup for Google Workspace | ActiveBackup-GSuite | OK |
-| Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
+| <img src="/images/icons/ActiveBackup-GSuite_64.png" width="16" height="16"> Active Backup for Google Workspace | ActiveBackup-GSuite | OK |
+| <img src="/images/icons/ActiveBackup-Office365_64.png" width="16" height="16"> Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
 | <img src="/images/icons/CodecPack_64.png" width="16" height="16"> Advanced Media Extensions | CodecPack | OK |
-| AntiVirus by McAfee | AntiVirus-McAfee | OK |
+| <img src="/images/icons/AntiVirus-McAfee_64.png" width="16" height="16"> AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
 | <img src="/images/icons/apache_64.png" width="16" height="16"> Apache HTTP Server 2.4 | Apache2.4 | OK |
 | <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK 	
