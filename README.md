@@ -104,16 +104,12 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | Synology Contacts | Contacts | OK |
 | Synology Directory Server | DirectoryServerForWindowsDomain | OK |
 | <img src="/images/icons/SynologyDrive_64.png" width="16" height="16"> Synology Drive Server | SynologyDrive | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Synology Mail Server | MailServer | OK |
-||
+| <img src="/images/icons/MailServer_64.png" width="16" height="16"> Synology Mail Server | MailServer | OK |
 | Synology MailPlus | MailPlus | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Synology MailPlus Server | MailPlus-Server | OK I think |
-||
-| <img src="/images/icons/.png" width="16" height="16"> Synology Office | Spreadsheet | OK |
-||
+| <img src="/images/icons/MailPlus-Server_64.png" width="16" height="16"> Synology MailPlus Server | MailPlus-Server | OK I think |
+| <img src="/images/icons/Spreadsheet_64.png" width="16" height="16"> Synology Office | Spreadsheet | OK |
 | <img src="/images/icons/photos_64.png" width="16" height="16"> Synology Photos | SynologyPhotos | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Tailscale | Tailscale | OK |
-||
+| <img src="/images/icons/Tailscale_64.png" width="16" height="16"> Tailscale | Tailscale | OK |
 | <img src="/images/icons/TextEditor_64.png" width="16" height="16"> Text Editor | TextEditor | OK |
 | <img src="/images/icons/UniversalViewer_64.png" width="16" height="16"> Universal Viewer | UniversalViewer | OK |
 | <img src="/images/icons/VideoStation_64.png" width="16" height="16"> Video Station | VideoStation | OK |
