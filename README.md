@@ -73,7 +73,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/.png" width="16" height="16"> MinimServer | MinimServer | OK |
 ||
 | phpMyAdmin | phpMyAdmin | OK |
-| <img src="/images/icons/Node.js_64.png" width="34" height="34"> Node.js | Node.js_v## | OK |
+| <img src="/images/icons/Node.js_cropped.png" width="36" height="17"> Node.js | Node.js_v## | OK |
 | <img src="/images/icons/.png" width="16" height="16"> Note Station | NoteStation | OK |
 ||
 | <img src="/images/icons/.png" width="16" height="16"> PDF Viewer | PDFViewer | OK |
