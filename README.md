@@ -38,30 +38,23 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
 | Apache HTTP Server 2.4 | Apache2.4 | OK |
 | <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK 	
-| <img src="/images/icons/.png" width="16" height="16"> Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
-||
-| <img src="/images/icons/.png" width="16" height="16"> C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
-||
+| <img src="/images/icons/BitDefenderForMailPlus_64.png" width="16" height="16"> Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
+| <img src="/images/icons/C2IdentityLDAPAgent_64.png" width="16" height="16"> C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
 | <img src="/images/icons/CMS_64.png" width="16" height="16"> Central Management System | CMS | OK |
 | <img src="/images/icons/CloudSync_64.png" width="16" height="16"> Cloud Sync | CloudSync | OK |
 | <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager | ContainerManager | OK |
-| <img src="/images/icons/.png" width="16" height="16"> DNS Server | DNSServer | OK |
-||
+| <img src="/images/icons/DNSServer_64.png" width="16" height="16"> DNS Server | DNSServer | OK |
 | <img src="/images/icons/docker_64.png" width="20" height="20"> Docker | Docker | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Document Viewer | DocumentViewer | OK |
-||
+| <img src="/images/icons/DocumentViewer_64.png" width="16" height="16"> Document Viewer | DocumentViewer | OK |
 | <img src="/images/icons/download_station_64.png" width="20" height="20"> Download Station | DownloadStation | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Emby Server | EmbyServer | OK |
-||
+| <img src="/images/icons/EmbyServer_64.png" width="16" height="16"> Emby Server | EmbyServer | OK |
 | exFAT Access | exFAT-Free | OK |
 | Git | git | OK - community package |
 | <img src="/images/icons/Git_64.png" width="16" height="16"> Git Server | Git | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
-||
+| <img src="/images/icons/GlacierBackup_64.png" width="16" height="16"> Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
 | <img src="/images/icons/HyperBackup_64.png" width="16" height="16"> Hyper Backup | HyperBackup | OK |
 | <img src="/images/icons/HyperBackupVault_64.png" width="16" height="16"> Hyper Backup Vault | HyperBackupVault | OK |
-| <img src="/images/icons/.png" width="16" height="16"> LDAP Server | DirectoryServer | OK |
-||
+| <img src="/images/icons/DirectoryServer_64.png" width="16" height="16"> LDAP Server | DirectoryServer | OK |
 | <img src="/images/icons/LogAnalysis_64.png" width="16" height="16"> LogAnalysis | LogAnalysis | OK - community package [link](https://github.com/toafez/LogAnalysis) |
 | <img src="/images/icons/log_center_64.png" width="16" height="16"> Log Center | LogCenter | OK |
 | <img src="/images/icons/.png" width="16" height="16"> Mail Station | MailStation | OK |
