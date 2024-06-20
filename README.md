@@ -106,6 +106,8 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 <details>
   <summary>Click here to see list</summary>
 
+<img src="/images/icons/.png" width="16" height="16"> 
+
 | Package | Result / Notes |
 |---------|--------|
 | Archiware P5 |  |
