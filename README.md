@@ -110,33 +110,41 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 | Package | Result / Notes |
 |---------|--------|
-| Archiware P5 |  |
+| <img src="/images/icons/.png" width="16" height="16"> Archiware P5 |  |
+||
 | <img src="/images/icons/AvrCenter_64.png" width="16" height="16"> AvrCenter | community package |
 | <img src="/images/icons/AvrLogger_64.png" width="16" height="16"> AvrLogger | community package |
 | BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
-| Data Deposit Box |  |
+| <img src="/images/icons/.png" width="16" height="16"> Data Deposit Box |  |
+||
 | <img src="/images/icons/diagnosis_64.png" width="20" height="20"> Diagnosis Tool |  |
-| Domotz Network Monitoring |  |
-| ElephantDrive |  |
+| <img src="/images/icons/.png" width="16" height="16"> Domotz Network Monitoring |  |
+||
+| <img src="/images/icons/.png" width="16" height="16"> ElephantDrive |  |
+||
 | <img src="/images/icons/gateone-64.png" width="16" height="16"> GateOne |  |
-| GoodSync |  |
-| IDrive |  |
+| <img src="/images/icons/.png" width="16" height="16"> GoodSync |  |
+||
+| <img src="/images/icons/.png" width="16" height="16"> IDrive |  |
+||
 | <img src="/images/icons/jackett-64.png" width="16" height="16"> Jackett | community package |
 | <img src="/images/icons/Joomla_64.png" width="16" height="16"> Joomla |  |
-| KodiExplorer |  |
-| MediaWiki |  |
+| <img src="/images/icons/.png" width="16" height="16"> KodiExplorer |  |
+||
+| <img src="/images/icons/.png" width="16" height="16"> MediaWiki |  |
+||
 | <img src="/images/icons/medusa-64.png" width="18" height="18"> Medusa | community package [link](https://github.com/BenjV/SYNO-packages) |
-| MEGAcmd |  |
-| NAKIVO Backup and Replication |  |
-| NAKIVO Transporter |  |
-| PACS |  |
-| Ragic Cloud DB |  |
+| <img src="/images/icons/MEGAcmd_64.png" width="16" height="16"> MEGAcmd |  |
+| <img src="/images/icons/NBR_64.png" width="16" height="16"> NAKIVO Backup and Replication |  |
+| <img src="/images/icons/NBR-Transporter_64.png" width="16" height="16"> NAKIVO Transporter |  |
+| <img src="/images/icons/PACS_64.png" width="16" height="16"> PACS |  |
+| <img src="/images/icons/RagicBuilder_64.png" width="16" height="16"> Ragic Cloud DB |  |
 | <img src="/images/icons/resiliosync-48.png" width="16" height="16"> Resilo Sync |  |
 | <img src="/images/icons/shellinabox-48.png" width="16" height="16"> Shellinabox | community package |
 | <img src="/images/icons/syncthing-64.png" width="18" height="18"> Syncthing |  |
-| TeamViewer |  |
+| <img src="/images/icons/TeamViewer_64.png" width="16" height="16"> TeamViewer |  |
 | <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission | community package |
-| VirtualHere |  |
+| <img src="/images/icons/VirtualHere_64.png" width="16" height="16"> VirtualHere |  |
 | <img src="/images/icons/vtigerCRM_64.png" width="16" height="16"> vtigerCRM |  |
 | <img src="/images/icons/WebTools-48.png" width="20" height="20"> WebTools | community package |
 | <img src="/images/icons/Wordpress_64.png" width="16" height="16"> Wordpress |  |
