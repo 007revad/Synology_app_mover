@@ -49,7 +49,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/download_station_64.png" width="20" height="20"> Download Station | DownloadStation | OK |
 | <img src="/images/icons/EmbyServer_64.png" width="16" height="16"> Emby Server | EmbyServer | OK |
 | exFAT Access | exFAT-Free | OK |
-| Git | git | OK - community package |
+| <img src="/images/icons/Git_64.png" width="16" height="16"> Git | git | OK - community package |
 | <img src="/images/icons/Git_64.png" width="16" height="16"> Git Server | Git | OK |
 | <img src="/images/icons/GlacierBackup_64.png" width="16" height="16"> Glacier Backup | GlacierBackup | OK - need a Glacier account to fully test |
 | <img src="/images/icons/HyperBackup_64.png" width="16" height="16"> Hyper Backup | HyperBackup | OK |
@@ -57,27 +57,19 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 | <img src="/images/icons/DirectoryServer_64.png" width="16" height="16"> LDAP Server | DirectoryServer | OK |
 | <img src="/images/icons/LogAnalysis_64.png" width="16" height="16"> LogAnalysis | LogAnalysis | OK - community package [link](https://github.com/toafez/LogAnalysis) |
 | <img src="/images/icons/log_center_64.png" width="16" height="16"> Log Center | LogCenter | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Mail Station | MailStation | OK |
-||
-| <img src="/images/icons/.png" width="16" height="16"> MariaDB 10 | MariaDB10 | OK |
-||
+| <img src="/images/icons/MailStation_64.png" width="16" height="16"> Mail Station | MailStation | OK |
+| <img src="/images/icons/MariaDB10_64.png" width="16" height="16"> MariaDB 10 | MariaDB10 | OK |
 | <img src="/images/icons/MediaServer_64.png" width="16" height="16"> Media Server | MediaServer | OK |
 | <img src="/images/icons/mediainfo-64.png" width="16" height="16"> MediaInfo | mediainfo | OK - community package |
-| <img src="/images/icons/.png" width="16" height="16"> MinimServer | MinimServer | OK |
-||
+| <img src="/images/icons/MinimServer_64.png" width="16" height="16"> MinimServer | MinimServer | OK |
 | phpMyAdmin | phpMyAdmin | OK |
 | <img src="/images/icons/Node.js_cropped.png" width="36" height="17"> Node.js | Node.js_v## | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Note Station | NoteStation | OK |
-||
-| <img src="/images/icons/.png" width="16" height="16"> PDF Viewer | PDFViewer | OK |
-||
-| <img src="/images/icons/.png" width="16" height="16"> Perl | Perl | OK |
-||
-| <img src="/images/icons/.png" width="16" height="16"> PHP | PHP#.# | OK |
-||
+| <img src="/images/icons/NoteStation_64.png" width="16" height="16"> Note Station | NoteStation | OK |
+| <img src="/images/icons/PDFViewer_64.png" width="16" height="16"> PDF Viewer | PDFViewer | OK |
+| <img src="/images/icons/Perl_64.png" width="16" height="16"> Perl | Perl | OK |
+| <img src="/images/icons/PHP_64.png" width="16" height="16"> PHP | PHP#.# | OK |
 | <img src="/images/icons/plexmediaserver_48.png" width="16" height="16"> Plex Media Server | PlexMediaServer | OK |
-| <img src="/images/icons/.png" width="16" height="16"> Presto File Server | PrestoServer | OK |
-||
+| <img src="/images/icons/PrestoServer_64.png" width="16" height="16"> Presto File Server | PrestoServer | OK |
 | <img src="/images/icons/ProxyServer_64.png" width="16" height="16"> Proxy Server | ProxyServer | OK |
 | Python 3.9 | Python3.9 | OK |
 | <img src="/images/icons/RadiusServer_64.png" width="16" height="16"> RADIUS Server | RadiusServer | OK |
