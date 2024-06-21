@@ -28,6 +28,8 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 <img src="/images/icons/.png" width="16" height="16"> 
 
+The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.synology.com/en-br/DSM/help/DSM/Home/about?version=7) or Copyright the 3rd party developer.
+
 | Package Center Name | System Name | Result |
 |---------------------|-------------|--------|
 | <img src="/images/icons/ActiveBackup_business_64.png" width="16" height="16"> Active Backup for Business | ActiveBackup | OK |
@@ -107,6 +109,8 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
   <summary>Click here to see list</summary>
 
 <img src="/images/icons/.png" width="16" height="16"> 
+
+The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.synology.com/en-br/DSM/help/DSM/Home/about?version=7) or Copyright the 3rd party developer.
 
 | Package | Result / Notes |
 |---------|--------|
