@@ -1,0 +1,2 @@
+The icons in this folder are either Copyright © Synology Inc. or Copyright © the 3rd party package developer.
+https://kb.synology.com/en-br/DSM/help/DSM/Home/about?version=7
