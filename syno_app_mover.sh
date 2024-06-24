@@ -26,7 +26,7 @@
 # https://docs.docker.com/config/pruning/
 #------------------------------------------------------------------------------
 
-scriptver="v3.0.52"
+scriptver="v3.0.53"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -767,7 +767,7 @@ vol_free_space(){
     if [[ -d "$1" ]]; then
         # Get amount of free space on $1 volume
         #free=$(df --output=avail "$1" | grep -A1 Avail | grep -v Avail)  # dfs / for USB drives. # Issue #63
-        free=$(df | grep "$1" | awk '{print $4}')                 # dfs correctly for USB drives. # Issue #63
+        free=$(df | grep "$1"$ | awk '{print $4}')                 # dfs correctly for USB drives. # Issue #63
     fi
 }
 
