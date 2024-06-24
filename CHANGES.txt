@@ -1,6 +1,6 @@
 v3.0.53
 - Bug fix checking target volume free space when there's a symlink on the volume. Issue #72
-  - e.g. A symlink pointing to folder on same volume, another volume, another device or visiblw snapshots.
+  - e.g. A symlink pointing to folder on same volume, another volume, another device or visible snapshots.
 
 v3.0.52
 - Bug fix for DSM 6 where some packages have an extra symlink that needs editing:
