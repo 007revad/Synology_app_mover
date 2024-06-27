@@ -1,3 +1,6 @@
+v3.0.55
+- Bug fix for `synoshare: unrecognized option '--get-real-path'` error in DSM 7.2. Issue #76
+
 v3.0.54
 - Bug fix for `synoshare: unrecognized option '--get-real-path'` error in DSM 7.0 and 7.1. Issue #76
 
