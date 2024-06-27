@@ -43,7 +43,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/BitDefenderForMailPlus_64.png" width="16" height="16"> Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
 | <img src="/images/icons/C2IdentityLDAPAgent_64.png" width="16" height="16"> C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
 | <img src="/images/icons/CMS_64.png" width="16" height="16"> Central Management System | CMS | OK |
-| <img src="/images/icons/ChannelsDVR_64.png" width="16" height="16"> Channels DVR | ChannelsDVR | OK |
+| <img src="/images/icons/ChannelsDVR_64.png" width="16" height="16"> Channels DVR | ChannelsDVR | OK - 3rd party package [link](https://getchannels.com/dvr-server/#synology) |
 | <img src="/images/icons/CloudSync_64.png" width="16" height="16"> Cloud Sync | CloudSync | OK |
 | <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager | ContainerManager | OK |
 | <img src="/images/icons/DNSServer_64.png" width="16" height="16"> DNS Server | DNSServer | OK |
