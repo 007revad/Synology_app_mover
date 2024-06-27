@@ -26,7 +26,7 @@
 # https://docs.docker.com/config/pruning/
 #------------------------------------------------------------------------------
 
-scriptver="v3.0.54"
+scriptver="v3.0.55"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1267,11 +1267,11 @@ move_extras(){
 web_packages(){ 
     # $1 if pkg in lower case
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-    if [[ $buildnumber -gt "42962" ]]; then
-        # DSM 7.2 and later
+    if [[ $buildnumber -gt "64570" ]]; then
+        # DSM 7.2.1 and later
         web_pkg_path=$(/usr/syno/sbin/synoshare --get-real-path web_packages)
     else
-        # DSM 7.1 and earlier
+        # DSM 7.2 and earlier
         web_pkg_path=$(/usr/syno/sbin/synoshare --getmap web_packages | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
     fi
     if [[ -d "$web_pkg_path" ]]; then
