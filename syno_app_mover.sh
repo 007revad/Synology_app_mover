@@ -26,7 +26,7 @@
 # https://docs.docker.com/config/pruning/
 #------------------------------------------------------------------------------
 
-scriptver="v3.0.53"
+scriptver="v3.0.54"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -640,7 +640,7 @@ edit_symlinks(){
         @appstore)  # target --> @appstore
             rm "/var/packages/${1:?}/target"
             ln -s "${2:?}/@appstore/${1:?}" "/var/packages/${1:?}/target"
-            
+
             # DSM 6 - Some packages have var symlink
             if [[ $majorversion -lt 7 ]]; then
                 if [[ -L "/var/packages/${1:?}/var" ]]; then
@@ -767,7 +767,7 @@ vol_free_space(){
     if [[ -d "$1" ]]; then
         # Get amount of free space on $1 volume
         #free=$(df --output=avail "$1" | grep -A1 Avail | grep -v Avail)  # dfs / for USB drives. # Issue #63
-        free=$(df | grep "$1"$ | awk '{print $4}')                 # dfs correctly for USB drives. # Issue #63
+        free=$(df | grep "$1"$ | awk '{print $4}')                # dfs correctly for USB drives. # Issue #63
     fi
 }
 
@@ -1267,9 +1267,11 @@ move_extras(){
 web_packages(){ 
     # $1 if pkg in lower case
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-    if [[ $majorversion -gt "6" ]]; then
+    if [[ $buildnumber -gt "42962" ]]; then
+        # DSM 7.2 and later
         web_pkg_path=$(/usr/syno/sbin/synoshare --get-real-path web_packages)
     else
+        # DSM 7.1 and earlier
         web_pkg_path=$(/usr/syno/sbin/synoshare --getmap web_packages | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
     fi
     if [[ -d "$web_pkg_path" ]]; then
