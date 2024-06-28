@@ -209,7 +209,7 @@ If the script won't run check the following:
 
 ### Video
 
-[![Moving Container Manager](/images/thumbnail.jpg)](/images/video.mp4)
+https://github.com/007revad/Synology_app_mover/assets/39733752/8373dc38-2271-45bd-93f5-357669b7ec40
 
 ### DSM 7 screenshots
 
