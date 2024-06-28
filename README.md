@@ -207,6 +207,10 @@ If the script won't run check the following:
    sudo chmod +x "/volume1/scripts/syno_app_mover.sh"
    ```
 
+### Video
+
+[![Moving Container Manager](https://github.com/007revad/Synology_app_mover/images/thumbnail.jpg)](https://github.com/007revad/Synology_app_mover/images/video.mp4)
+
 ### DSM 7 screenshots
 
 <p align="center">Moving a package (with dependencies)</p>
