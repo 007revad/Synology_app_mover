@@ -1,5 +1,5 @@
 v3.0.56
-- Bug fix DSM 6 getting @docker or @download folder size.
+- Bug fix DSM 6 getting @docker or @download folder size. Issue #88
 
 v3.0.55
 - Bug fix for `synoshare: unrecognized option '--get-real-path'` error in DSM 7.2. Issue #76
