@@ -26,7 +26,7 @@
 # https://docs.docker.com/config/pruning/
 #------------------------------------------------------------------------------
 
-scriptver="v3.0.55"
+scriptver="v3.0.56"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -749,6 +749,10 @@ folder_size(){
     if [[ -d "$1" ]]; then
         # Get size of $1 folder
         need=$(du -s "$1" | awk '{ print $1 }')
+        if [[ ! $need -gt 0 ]]; then
+            echo "${Yellow}WARNING${Off} Failed to get size of $1" >&2
+            need=0
+        fi
         # Add buffer GBs so we don't fill volume
         buffer=$(/usr/syno/bin/synogetkeyvalue "$conffile" buffer)
         if [[ $buffer -gt "0" ]]; then
@@ -756,7 +760,7 @@ folder_size(){
         else
             buffer=0
         fi
-        needed=$((need +"$buffer"))
+        needed=$((need +buffer))
     fi
 }
 
@@ -1979,7 +1983,7 @@ check_last_process_time(){
             skip_minutes=$(/usr/syno/bin/synogetkeyvalue "$conffile" skip_minutes)
             if [[ $skip_minutes -gt "0" ]]; then
                 skip_secs=$((skip_minutes *60))
-                #if $(($(date +%s) +$skip_secs)) -gt 
+                #if $(($(date +%s) +skip_secs)) -gt 
                 if [[ $((last_process_time +skip_secs)) -gt $(date +%s) ]]; then
                     return 1
                 fi
