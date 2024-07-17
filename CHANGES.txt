@@ -1,4 +1,4 @@
-v3.0.57
+v3.0.58
 - Added info and progress after stopping and starting packages.
   - On a slow NAS the script could appear to have frozen for up to 20 seconds.
 
