@@ -26,7 +26,7 @@
 # https://docs.docker.com/config/pruning/
 #------------------------------------------------------------------------------
 
-scriptver="v3.0.56"
+scriptver="v3.0.57"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -416,8 +416,13 @@ package_stop(){
     progstatus "$?" "$string" "line ${LINENO}"
 
     # Allow package processes to finish stopping
-    wait_status "$1" stop
-    #sleep 1
+    #wait_status "$1" stop
+    wait_status "$1" stop &
+    pid=$!
+    string="Waiting for ${Cyan}${2}${Off} to stop"
+    progbar "$pid" "$string"
+    wait "$pid"
+    progstatus "$?" "$string" "line ${LINENO}"
 }
 
 package_start(){ 
@@ -432,7 +437,13 @@ package_start(){
     progstatus "$?" "$string" "line ${LINENO}"
 
     # Allow package processes to finish starting
-    wait_status "$1" start
+    #wait_status "$1" start
+    wait_status "$1" stop &
+    pid=$!
+    string="Waiting for ${Cyan}${2}${Off} to start"
+    progbar "$pid" "$string"
+    wait "$pid"
+    progstatus "$?" "$string" "line ${LINENO}"
 }
 
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this function
