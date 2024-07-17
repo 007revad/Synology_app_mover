@@ -26,7 +26,7 @@
 # https://docs.docker.com/config/pruning/
 #------------------------------------------------------------------------------
 
-scriptver="v3.0.57"
+scriptver="v3.0.58"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -438,7 +438,7 @@ package_start(){
 
     # Allow package processes to finish starting
     #wait_status "$1" start
-    wait_status "$1" stop &
+    wait_status "$1" start &
     pid=$!
     string="Waiting for ${Cyan}${2}${Off} to start"
     progbar "$pid" "$string"
