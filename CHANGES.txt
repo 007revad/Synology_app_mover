@@ -1,3 +1,7 @@
+v3.0.57
+- Added info and progress for stopping and starting packages.
+  - On a slow NAS the script would apear to have frozen for 10 or 20 seconds.
+
 v3.0.56
 - Bug fix DSM 6 getting @docker or @download folder size. Issue #88
 
