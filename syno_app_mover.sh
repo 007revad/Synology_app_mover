@@ -26,7 +26,7 @@
 # https://docs.docker.com/config/pruning/
 #------------------------------------------------------------------------------
 
-scriptver="v3.0.58"
+scriptver="v3.0.59"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1446,6 +1446,17 @@ if [[ ${mode,,} == "backup" ]]; then
     echo -e "Backup path is: ${Cyan}${backuppath}${Off}\n"
 elif [[ ${mode,,} == "restore" ]]; then
     echo -e "Restore from path is: ${Cyan}${backuppath}${Off}\n"
+fi
+
+# Check USB backup path file system is ext3, ext4 or btrfs if mode is backup
+backupvol="$(echo "$backuppath" | cut -d"/" -f2)"
+if [[ $backupvol =~ volumeUSB[1-9] ]]; then
+    filesys="$(mount | grep "/${backupvol:?}/usbshare " | awk '{print $5}')"
+    if [[ ! $filesys =~ ^ext[3-4]$ ]] && [[ ! $filesys =~ ^btrfs$ ]]; then
+        ding
+        echo -e "${Warn}WARNING${Off} Only backup to ext3, ext4 or btrfs USB partition!"
+        exit 1  # USB volume is not ext3, ext4 of btrfs
+    fi
 fi
 
 
