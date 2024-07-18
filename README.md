@@ -17,7 +17,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 **NEW** Now includes [Backup and Restore modes](/images/backup.png).
 
   - Supports DSM 7. Not fully tested with DSM 6.
-
+  - If backing up to a USB drive the partition's file system should be ext3, ext4 of btrfs.
 
 ### Packages confirmed working
 
@@ -96,6 +96,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/Tailscale_64.png" width="16" height="16"> Tailscale | Tailscale | OK |
 | <img src="/images/icons/TextEditor_64.png" width="16" height="16"> Text Editor | TextEditor | OK |
 | <img src="/images/icons/UniversalViewer_64.png" width="16" height="16"> Universal Viewer | UniversalViewer | OK |
+| <img src="/images/icons/USBCopy_64.png" width="18" height="18"> USB Copy | USBCopy | see [moving_extras](moving_extras.md)
 | <img src="/images/icons/VideoStation_64.png" width="16" height="16"> Video Station | VideoStation | OK |
 | <img src="/images/icons/VirtualManagement_64.png" width="16" height="16"> Virtual Machine Manager | Virtualization | OK |
 | <img src="/images/icons/VPNCenter_64.png" width="16" height="16"> VPN Server | VPNCenter | OK |
