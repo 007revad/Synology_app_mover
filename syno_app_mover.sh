@@ -26,7 +26,7 @@
 # https://docs.docker.com/config/pruning/
 #------------------------------------------------------------------------------
 
-scriptver="v3.0.59"
+scriptver="v3.1.60"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -943,6 +943,12 @@ move_dir(){
         rm -rf "/${sourcevol:?}/${1:?}/@eaDir"
     fi
 
+    # Warn if folder is larger than 1GB
+    folder_size "/${sourcevol:?}/$1"
+    if [[ $need -gt "1048576" ]]; then
+        echo -e "${Red}WARNING $action $1 could take a long time${Off}"
+    fi
+
     if [[ -d "/${sourcevol:?}/${1:?}" ]]; then
         if [[ ${mode,,} == "move" ]]; then
             if [[ ! -d "/${targetvol:?}/${1:?}" ]]; then
@@ -1071,12 +1077,12 @@ move_extras(){
                     ln -s "${2:?}/@docker" "/var/packages/${pkg:?}/target/docker"
                 fi
             fi
-            echo -e "${Red}WARNING $action @docker could take a long time${Off}"
+            #echo -e "${Red}WARNING $action @docker could take a long time${Off}"
             exitonerror="no" && move_dir "@docker" extras
             #echo ""
             ;;
         DownloadStation)
-            echo -e "${Red}WARNING $action @download could take a long time${Off}"
+            #echo -e "${Red}WARNING $action @download could take a long time${Off}"
             exitonerror="no" && move_dir "@download" extras
             #echo ""
             ;;
@@ -1280,7 +1286,7 @@ move_extras(){
 }
 
 web_packages(){ 
-    # $1 if pkg in lower case
+    # $1 is pkg in lower case
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ $buildnumber -gt "64570" ]]; then
         # DSM 7.2.1 and later
