@@ -209,7 +209,7 @@ If the script won't run check the following:
    sudo chmod +x "/volume1/scripts/syno_app_mover.sh"
    ```
 
-### Video
+### Video -  moving Container Manager
 
 https://github.com/007revad/Synology_app_mover/assets/39733752/8373dc38-2271-45bd-93f5-357669b7ec40
 
