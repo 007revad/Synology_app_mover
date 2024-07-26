@@ -39,7 +39,8 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/AntiVirus-McAfee_64.png" width="16" height="16"> AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
 | <img src="/images/icons/apache_64.png" width="16" height="16"> Apache HTTP Server 2.4 | Apache2.4 | OK |
-| <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK 	
+| <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK |
+| <img src="/images/icons/AvrLogger_64.png" width="20" height="20"> AvrLogger | OK - community package |
 | <img src="/images/icons/BitDefenderForMailPlus_64.png" width="16" height="16"> Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
 | <img src="/images/icons/C2IdentityLDAPAgent_64.png" width="16" height="16"> C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
 | <img src="/images/icons/CMS_64.png" width="16" height="16"> Central Management System | CMS | OK |
@@ -118,7 +119,6 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 |---------|--------|
 | <img src="/images/icons/ArchiwareP5_64.png" width="16" height="16"> Archiware P5 |  |
 | <img src="/images/icons/AvrCenter_64.png" width="16" height="16"> AvrCenter | community package |
-| <img src="/images/icons/AvrLogger_64.png" width="20" height="20"> AvrLogger | community package |
 | <img src="/images/icons/Sony_BraviaSignage_64.png" width="16" height="16"> BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
 | <img src="/images/icons/DdbBackup_64.png" width="16" height="16"> Data Deposit Box |  |
 | <img src="/images/icons/diagnosis_64.png" width="20" height="20"> Diagnosis Tool |  |
