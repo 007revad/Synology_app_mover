@@ -1,7 +1,6 @@
 v3.1.60
 - Now warns processing could take a long time if the folder is larger than 1GB.
   - Previously warned only for `@docker` and `@download` and regardless of folder size.
-- Changed to use rsync instead of cp when folder already exists on target volume. 
 
 v3.0.59
 - Added check that USB partition is ext3, ext4 or btrfs when backup is selected and target is a USB drive.
