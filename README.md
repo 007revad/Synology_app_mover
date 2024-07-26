@@ -40,7 +40,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
 | <img src="/images/icons/apache_64.png" width="16" height="16"> Apache HTTP Server 2.4 | Apache2.4 | OK |
 | <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK |
-| <img src="/images/icons/AvrLogger_64.png" width="20" height="20"> AvrLogger | OK - community package |
+| <img src="/images/icons/AvrLogger_64.png" width="20" height="20"> AvrLogger | AvrLogger | OK - community package |
 | <img src="/images/icons/BitDefenderForMailPlus_64.png" width="16" height="16"> Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
 | <img src="/images/icons/C2IdentityLDAPAgent_64.png" width="16" height="16"> C2 Identity LDAP Server | C2IdentityLDAPAgent | OK |
 | <img src="/images/icons/CMS_64.png" width="16" height="16"> Central Management System | CMS | OK |
