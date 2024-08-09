@@ -211,7 +211,9 @@ If the script won't run check the following:
 
 ### Video - moving Container Manager
 
-https://github.com/007revad/Synology_app_mover/assets/39733752/8373dc38-2271-45bd-93f5-357669b7ec40
+<!-- https://github.com/007revad/Synology_app_mover/assets/39733752/8373dc38-2271-45bd-93f5-357669b7ec40 -->
+<!-- https://github.com/user-attachments/assets/e308839a-1a3d-402b-9920-dc98901c1234 -->
+https://github.com/007revad/Synology_app_mover/assets/e308839a-1a3d-402b-9920-dc98901c1234
 
 ### DSM 7 screenshots
 
