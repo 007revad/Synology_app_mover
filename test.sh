@@ -674,7 +674,7 @@ edit_symlinks(){
     esac
 }
 
-move_pkg(){ 
+function move_pkg(){ 
     # $1 is package name
     # $2 is destination volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
