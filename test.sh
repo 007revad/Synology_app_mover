@@ -675,10 +675,11 @@ edit_symlinks(){
     esac
 }
 
-function move_pkg(){ 
+move_pkg(){ 
     # $1 is package name
     # $2 is destination volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+
     local appdir
     local perms
     local destination
@@ -755,6 +756,7 @@ function move_pkg(){
 folder_size(){ 
     # $1 is folder to check size of
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+
     need=""    # var is used later in script
     needed=""  # var is used later in script
     if [[ -d "$1" ]]; then
@@ -778,6 +780,7 @@ folder_size(){
 vol_free_space(){ 
     # $1 is volume to check free space
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+
     free=""  # var is used later in script
     if [[ -d "$1" ]]; then
         # Get amount of free space on $1 volume
