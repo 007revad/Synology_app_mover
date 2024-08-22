@@ -750,7 +750,7 @@ function move_pkg(){
     if [[ $majorversion -lt "7" ]]; then
         copy_dir_dsm6 "$1" "$2"
     fi
-} 
+}
 
 function folder_size(){ 
     # $1 is folder to check size of
