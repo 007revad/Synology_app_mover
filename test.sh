@@ -626,7 +626,6 @@ edit_symlinks(){
     # $1 is package name
     # $2 is destination volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     # Edit /var/packages symlinks
     case "$appdir" in
         @appconf)  # etc --> @appconf
@@ -679,7 +678,6 @@ move_pkg(){
     # $1 is package name
     # $2 is destination volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     local appdir
     local perms
     local destination
@@ -756,7 +754,6 @@ move_pkg(){
 folder_size(){ 
     # $1 is folder to check size of
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     need=""    # var is used later in script
     needed=""  # var is used later in script
     if [[ -d "$1" ]]; then
@@ -793,7 +790,6 @@ check_space(){
     # $1 is /path/folder
     # $2 is source volume or target volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     # Get size of extra @ folder
     folder_size "$1"
 
@@ -841,7 +837,6 @@ show_move_share(){
 copy_dir_dsm6(){ 
     # Backup or restore DSM 6 /usr/syno/etc/packages/$pkg/
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     # $1 is package name
     # $2 is destination volume
     local pack
@@ -853,7 +848,6 @@ copy_dir_dsm6(){
         if [[ ! -d "${bkpath:?}/etc" ]]; then
             mkdir -m 700 "${bkpath:?}/etc"
         fi
-
         #if ! is_empty "/usr/syno/etc/packages/${1:?}"; then
             # If string is too long progbar gets messed up
             cp -prf "/usr/syno/etc/packages/${1:?}" "${bkpath:?}/etc" &
@@ -879,7 +873,6 @@ copy_dir_dsm6(){
 copy_dir(){ 
     # Used by package backup and restore
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
     local pack
@@ -893,7 +886,6 @@ copy_dir(){
         packshow="${pkg:?}"
         #extras=""
     fi
-
     if [[ ${mode,,} == "backup" ]]; then
         if [[ $2 == "extras" ]] && [[ ! -d "${bkpath:?}/extras" ]]; then
             mkdir -m 700 "${bkpath:?}/extras"
