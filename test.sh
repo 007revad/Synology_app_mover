@@ -651,7 +651,6 @@ edit_symlinks(){
         @appstore)  # target --> @appstore
             rm "/var/packages/${1:?}/target"
             ln -s "${2:?}/@appstore/${1:?}" "/var/packages/${1:?}/target"
-
             # DSM 6 - Some packages have var symlink
             if [[ $majorversion -lt 7 ]]; then
                 if [[ -L "/var/packages/${1:?}/var" ]]; then
