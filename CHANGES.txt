@@ -3,6 +3,8 @@ v3.2.61
   - e.g. /volume1/docker/app_mover_exports
   - Includes new delete_older and ignored_containers options in syno_app_mover.conf
 - Added exclude option in syno_app_mover.conf so you can exclude specified apps when "all" mode is selected.
+- Now deletes unused and dangling docker images before restoring.
+- Now deletes dangling docker images before moving or backing up.
 
 v3.1.60
 - Now warns processing could take a long time if the folder is larger than 1GB.
