@@ -20,13 +20,24 @@
 # Add All option for moving All packages.
 #
 # Add ability to schedule a package or multiple packages.
-#   ./syno_app_mover.sh --auto ContainerManager
-#   ./syno_app_mover.sh --auto ContainerManager|Calendar|WebStation
+#   ./syno_app_mover.sh --auto=ContainerManager
+#   ./syno_app_mover.sh --auto=ContainerManager,Calendar,WebStation
 #
 # https://docs.docker.com/config/pruning/
+#
+# Add option for skipping specified apps when using --all option
+# https://github.com/007revad/Synology_app_mover/issues/87
+#
+# Add option to schedule backup of specific app
+# https://github.com/007revad/Synology_app_mover/issues/105
+#
+# Add ability to move all apps
+# https://www.reddit.com/r/synology/comments/1eybzc1/comment/ljcj8re/
+#
+# Add backing up "/volume#/@iSCSI/VDISK_BLUN" (VMM VMs)
 #------------------------------------------------------------------------------
 
-scriptver="v3.1.60"
+scriptver="v3.2.61"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -208,12 +219,28 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
 
                             # Copy script's conf file to script location if missing
                             if [[ ! -f "$scriptpath/${scriptname}.conf" ]]; then
-                                # Set persmission on config file
+                                # Set permission on config file
                                 if ! chmod 664 "/tmp/$script-$shorttag/${scriptname}.conf"; then
                                     permerr=1
                                     echo -e "${Error}ERROR${Off} Failed to set read/write permissions on:"
                                     echo "$scriptpath/${scriptname}.conf"
                                 fi
+
+                                # Copy existing conf file settings to new conf file
+                                while read -r LINE; do
+                                    if [[ ${LINE:0:1} != "#" ]]; then
+                                        if [[ $LINE =~ ^[a-z_]+=.* ]]; then
+                                            oldfile="${scriptpath}/${scriptname}.conf"
+                                            newfile="/tmp/$script-$shorttag/${scriptname}.conf"
+                                            key="${LINE%=*}"
+                                            oldvalue="$(synogetkeyvalue "$oldfile" "$key")"
+                                            newvalue="$(synogetkeyvalue "$newfile" "$key")"
+                                            if [[ $oldvalue != "$newvalue" ]]; then
+                                                synosetkeyvalue "$newfile" "$key" "$oldvalue"
+                                            fi
+                                        fi
+                                    fi    
+                                done < "${scriptpath}/${scriptname}.conf"
 
                                 # Copy conf file to script location
                                 if ! cp -p "/tmp/$script-$shorttag/${scriptname}.conf"\
@@ -228,7 +255,7 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
 
                             # Copy new CHANGES.txt file to script location (if script on a volume)
                             if [[ $scriptpath =~ /volume* ]]; then
-                                # Set permsissions on CHANGES.txt
+                                # Set permissions on CHANGES.txt
                                 if ! chmod 664 "/tmp/$script-$shorttag/CHANGES.txt"; then
                                     permerr=1
                                     echo -e "${Error}ERROR${Off} Failed to set read/write permissions on:"
@@ -761,7 +788,7 @@ folder_size(){
         # Get size of $1 folder
         need=$(du -s "$1" | awk '{ print $1 }')
         if [[ ! $need -gt 0 ]]; then
-            echo "${Yellow}WARNING${Off} Failed to get size of $1" >&2
+            echo -e "${Yellow}WARNING${Off} Failed to get size of $1"
             need=0
         fi
         # Add buffer GBs so we don't fill volume
@@ -944,9 +971,11 @@ move_dir(){
     fi
 
     # Warn if folder is larger than 1GB
-    folder_size "/${sourcevol:?}/$1"
-    if [[ $need -gt "1048576" ]]; then
-        echo -e "${Red}WARNING $action $1 could take a long time${Off}"
+    if [[ ! "${applist[*]}" =~ $1 ]]; then
+        folder_size "/${sourcevol:?}/$1"
+        if [[ $need -gt "1048576" ]]; then
+            echo -e "${Red}WARNING $action $1 could take a long time${Off}"
+        fi
     fi
 
     if [[ -d "/${sourcevol:?}/${1:?}" ]]; then
@@ -1290,6 +1319,7 @@ web_packages(){
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ $buildnumber -gt "64570" ]]; then
         # DSM 7.2.1 and later
+        # synoshare --get-real-path is case insensitive
         web_pkg_path=$(/usr/syno/sbin/synoshare --get-real-path web_packages)
     else
         # DSM 7.2 and earlier
@@ -1447,6 +1477,29 @@ if [[ ${mode,,} != "move" ]]; then
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} Backup folder ${Cyan}$backuppath${Off} not found!"
         exit 1  # Backup folder not found
     fi
+
+    # Get list of excluded packages
+    exclude="$(/usr/syno/bin/synogetkeyvalue "$conffile" exclude)"
+    if [[ $exclude ]]; then
+        IFS=',' read -r -a excludes <<< "$exclude"; unset IFS
+        # Trim leading and trailing spaces
+        for i in "${excludes[@]}"; do
+            excludelist+=($(echo -n "$i" | xargs))
+        done
+    fi
+
+    # Get age of container settings exports to delete
+    delete_older="$(/usr/syno/bin/synogetkeyvalue "$conffile" delete_older)"
+
+    # Get list of ignored containers
+    ignored_containers="$(/usr/syno/bin/synogetkeyvalue "$conffile" ignored_containers)"
+    if [[ $ignored_containers ]]; then
+        IFS=',' read -r -a ignoreds <<< "$ignored_containers"; unset IFS
+        # Trim leading and trailing spaces
+        for i in "${ignoreds[@]}"; do
+            ignored_containers_list+=($(echo -n "$i" | xargs))
+        done
+    fi
 fi
 if [[ ${mode,,} == "backup" ]]; then
     echo -e "Backup path is: ${Cyan}${backuppath}${Off}\n"
@@ -1460,7 +1513,7 @@ if [[ $backupvol =~ volumeUSB[1-9] ]]; then
     filesys="$(mount | grep "/${backupvol:?}/usbshare " | awk '{print $5}')"
     if [[ ! $filesys =~ ^ext[3-4]$ ]] && [[ ! $filesys =~ ^btrfs$ ]]; then
         ding
-        echo -e "${Warn}WARNING${Off} Only backup to ext3, ext4 or btrfs USB partition!"
+        echo -e "${Yellow}WARNING${Off} Only backup to ext3, ext4 or btrfs USB partition!"
         exit 1  # USB volume is not ext3, ext4 of btrfs
     fi
 fi
@@ -2020,10 +2073,105 @@ check_last_process_time(){
     fi
 }
 
+docker_export(){ 
+    local docker_share
+    local export_dir
+    local container
+    local export_file
+    export_date="$(date +%Y%m%d_%H%M)"
+
+    # Get docker share location
+    if [[ $buildnumber -gt "64570" ]]; then
+        # DSM 7.2.1 and later
+        # synoshare --get-real-path is case insensitive (docker or Docker both work)
+        docker_share=$(/usr/syno/sbin/synoshare --get-real-path docker)
+    else
+        # DSM 7.2 and earlier
+        # synoshare --getmap is case insensitive (docker or Docker both work)
+        docker_share=$(/usr/syno/sbin/synoshare --getmap docker | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
+    fi
+
+    if [[ ! -d "$docker_share" ]]; then
+        echo "${Error}WARNING${Off} docker shared folder not found!"
+        return
+    else
+        export_dir="${docker_share}/app_mover_exports"
+    fi
+
+    if [[ ! -d "$export_dir" ]]; then
+        if ! mkdir "$export_dir"; then
+            echo "${Error}WARNING${Off} Failed to create docker export folder!"
+            return
+        else
+            chmod 755 "$export_dir"
+        fi
+    fi
+
+    echo "Exporting container settings to ${export_dir}"
+    # Get list of all containers (running and stopped)
+    for container in $(docker ps --all --format "{{ .Names }}"); do
+        if grep -q "$container" <<< "${ignored_containers_list[@]}" ; then
+            echo "Skipping ${container} on ignore list."
+            continue
+        else
+            export_file="${export_dir:?}/${container}_${export_date}.json"
+            #echo "Exporting $container json to ${export_dir}"
+            echo "Exporting $container json"
+            # synowebapi -s or --silent does not work
+            /usr/syno/bin/synowebapi --exec api=SYNO.Docker.Container.Profile method=export version=1 outfile="$export_file" name="$container" &>/dev/null
+
+            # Check export was successful
+            if [[ ! -f "$export_file" ]] || [[ $(stat -c %s "$export_file") -eq "0" ]]; then
+                # No file or 0 bytes
+                echo "${Error}WARNING${Off} Failed to export $container settings!"
+                return
+            else
+                chmod 660 "${export_dir:?}/${container}_${export_date}.json"
+            fi
+
+            # Delete settings exports older than $delete_older days
+            if [[ $delete_older =~ ^[2-9][0-9]?$ ]]; then
+                find "$export_dir" -name "${container,,}_*.json" -mtime +"$delete_older" -exec rm {} \;
+            fi
+        fi
+    done
+}
+
+
 # Loop through pkgs_sorted array and process package
 for pkg in "${pkgs_sorted[@]}"; do
     pkg_name="${package_names_rev["$pkg"]}"
     process_error=""
+
+    # Skip backup or restore for excluded apps
+    if [[ $all == "yes" ]] && [[ "${excludelist[*]}" =~ $pkg ]] &&\
+        [[ $mode != "move" ]]; then
+        echo "Excluding $pkg"
+        continue
+    fi
+
+    if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
+        # Start package if needed so we can prune images
+        # and export container configurations
+        package_start "$pkg" "$pkg_name"
+
+        if [[ ${mode,,} != "restore" ]]; then
+            # Export container settings to json files
+            #echo "Exporting container settings"
+            docker_export
+        fi
+
+        if [[ ${mode,,} == "restore" ]]; then
+            # Remove dangling and unused images
+            echo "Removing dangling and unused docker images"
+            docker image prune --all --force >/dev/null
+        else
+            # Remove dangling images
+            echo "Removing dangling docker images"
+            docker image prune --force >/dev/null
+        fi
+    fi
+
 
     if check_last_process_time "$pkg"; then
         if [[ ${mode,,} != "move" ]]; then
