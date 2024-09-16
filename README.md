@@ -120,7 +120,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 |---------|--------|
 | <img src="/images/icons/ArchiwareP5_64.png" width="16" height="16"> Archiware P5 |  |
 | <img src="/images/icons/Sony_BraviaSignage_64.png" width="16" height="16"> BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
-| <img src="/images/icons/DdbBackup_64.png" width="16" height="16"> Data Deposit Box |  |
+| <img src="/images/icons/DdbBackup_64.png" width="18" height="18"> Data Deposit Box |  |
 | <img src="/images/icons/diagnosis_64.png" width="20" height="20"> Diagnosis Tool |  |
 | <img src="/images/icons/domotz_64.png" width="16" height="16"> Domotz Network Monitoring |  |
 | <img src="/images/icons/elephantdrive_64.png" width="16" height="16"> ElephantDrive |  |
@@ -130,7 +130,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/jackett-64.png" width="16" height="16"> Jackett | community package |
 | <img src="/images/icons/Joomla_64.png" width="16" height="16"> Joomla |  |
 | <img src="/images/icons/KodExplorer_64.png" width="16" height="16"> KodiExplorer |  |
-| <img src="/images/icons/MediaWiki_72.png" width="16" height="16"> MediaWiki |  |
+| <img src="/images/icons/MediaWiki_72.png" width="18" height="18"> MediaWiki |  |
 | <img src="/images/icons/medusa-64.png" width="18" height="18"> Medusa | community package [link](https://github.com/BenjV/SYNO-packages) |
 | <img src="/images/icons/MEGAcmd_64.png" width="16" height="16"> MEGAcmd |  |
 | <img src="/images/icons/mono_64.png" width="18" height="18"> Mono | community package |
@@ -145,7 +145,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/syncthing-64.png" width="18" height="18"> Syncthing |  |
 | <img src="/images/icons/TeamViewer_64.png" width="16" height="16"> TeamViewer |  |
 | <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission | community package |
-| <img src="/images/icons/VirtualHere_64.png" width="16" height="16"> VirtualHere |  |
+| <img src="/images/icons/VirtualHere_64.png" width="18" height="18"> VirtualHere |  |
 | <img src="/images/icons/vtigerCRM_64.png" width="16" height="16"> vtigerCRM |  |
 | <img src="/images/icons/WebTools-48.png" width="20" height="20"> WebTools | community package |
 | <img src="/images/icons/Wordpress_64.png" width="16" height="16"> Wordpress |  |
