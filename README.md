@@ -133,15 +133,15 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/MediaWiki_72.png" width="16" height="16"> MediaWiki |  |
 | <img src="/images/icons/medusa-64.png" width="18" height="18"> Medusa | community package [link](https://github.com/BenjV/SYNO-packages) |
 | <img src="/images/icons/MEGAcmd_64.png" width="16" height="16"> MEGAcmd |  |
-| <img src="/images/icons/mono_64.png" width="16" height="16"> Mono | community package |
+| <img src="/images/icons/mono_64.png" width="18" height="18"> Mono | community package |
 | <img src="/images/icons/NBR_64.png" width="16" height="16"> NAKIVO Backup and Replication |  |
 | <img src="/images/icons/NBR-Transporter_64.png" width="16" height="16"> NAKIVO Transporter |  |
 | <img src="/images/icons/PACS_64.png" width="16" height="16"> PACS |  |
-| <img src="/images/icons/PhotoStation_64.png" width="16" height="16"> Photo Station | DSM 6 |
+| <img src="/images/icons/PhotoStation_64.png" width="18" height="18"> Photo Station | DSM 6 |
 | <img src="/images/icons/RagicBuilder_64.png" width="20" height="20"> Ragic Cloud DB |  |
 | <img src="/images/icons/resiliosync-48.png" width="16" height="16"> Resilo Sync |  |
 | <img src="/images/icons/shellinabox-48.png" width="16" height="16"> Shellinabox | community package |
-| <img src="/images/icons/Sonarr_64.png" width="16" height="16"> Sonarr | community package |
+| <img src="/images/icons/Sonarr_64.png" width="18" height="18"> Sonarr | community package |
 | <img src="/images/icons/syncthing-64.png" width="18" height="18"> Syncthing |  |
 | <img src="/images/icons/TeamViewer_64.png" width="16" height="16"> TeamViewer |  |
 | <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission | community package |
