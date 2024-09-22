@@ -1,3 +1,15 @@
+v3.2.62-RC
+- Can now be scheduled in Task Scheduler to backup a package or multiple packages.
+  - Run the script with the -h or --help option to see how.
+- Added -h, --help option.
+
+- Now exports Container Manager/Docker container's settings to the docker shared folder. Thanks ctrlaltdelete
+  - e.g. /volume1/docker/app_mover_exports
+  - Includes new delete_older and ignored_containers options in syno_app_mover.conf
+- Added exclude option in syno_app_mover.conf so you can exclude specified apps when "all" mode is selected.
+- Now deletes unused and dangling docker images before restoring.
+- Now deletes dangling docker images before moving or backing up.
+
 v3.2.61-RC
 - Now exports Container Manager/Docker container's settings to the docker shared folder. Thanks ctrlaltdelete
   - e.g. /volume1/docker/app_mover_exports
