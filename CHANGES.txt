@@ -4,6 +4,7 @@ v3.2.62-RC
 - Added -h, --help option.
 - Added  --autoupdate=AGE option to auto update the script (useful when script is scheduled)
   - AGE is how many days old a release must be before auto-updating. AGE must be a number: 0 or greater
+- Bug fix for error getting size of folder if folder existed but was empty.
 
 - Now exports Container Manager/Docker container's settings to the docker shared folder. Thanks ctrlaltdelete
   - e.g. /volume1/docker/app_mover_exports
