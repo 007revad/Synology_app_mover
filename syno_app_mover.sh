@@ -17,44 +17,35 @@
 # Instead of moving large extra folders copy them to the target volume.
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
-# Add All option for moving All packages.
-#
-# Add ability to schedule a package or multiple packages.
-#   ./syno_app_mover.sh --auto=ContainerManager
-#   ./syno_app_mover.sh --auto=ContainerManager,Calendar,WebStation
-#
-# https://docs.docker.com/config/pruning/
-#
-# Add option for skipping specified apps when using --all option
-# https://github.com/007revad/Synology_app_mover/issues/87
-#
-# Add option to schedule backup of specific app
-# https://github.com/007revad/Synology_app_mover/issues/105
-#
 # Add ability to move all apps
 # https://www.reddit.com/r/synology/comments/1eybzc1/comment/ljcj8re/
 #
-# Add backing up "/volume#/@iSCSI/VDISK_BLUN" (VMM VMs)
+# Maybe add backing up "/volume#/@iSCSI/VDISK_BLUN" (VMM VMs)
+# https://www.synology-forum.de/threads/backup-der-vms.135462/post-1194705
+# https://www.synology-forum.de/threads/virtual-machine-manager-vms-sichern.91952/post-944113
+#
+#------------------------------------------------------------------------------
+# DONE Prune dangling docker images
+# https://docs.docker.com/config/pruning/
+#
+# DONE Add option for skipping specified apps when using --all option
+# https://github.com/007revad/Synology_app_mover/issues/87
+#
+# DONE Add ability to schedule backup a package or multiple packages.
+#   ./syno_app_mover.sh --auto=ContainerManager
+#   ./syno_app_mover.sh --auto=ContainerManager,Calendar,WebStation
+#   ./syno_app_mover.sh --auto=all
+#
+# DONE Add option to schedule backup of specific app
+# https://github.com/007revad/Synology_app_mover/issues/105
+#
 #------------------------------------------------------------------------------
 
-scriptver="v3.2.61"
+scriptver="v4.0.62"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
 
-
-# Shell Colors
-#Black='\e[0;30m'   # ${Black}
-Red='\e[0;31m'      # ${Red}
-#Green='\e[0;32m'   # ${Green}
-Yellow='\e[0;33m'   # ${Yellow}
-#Blue='\e[0;34m'    # ${Blue}
-#Purple='\e[0;35m'  # ${Purple}
-Cyan='\e[0;36m'     # ${Cyan}
-#White='\e[0;37m'   # ${White}
-Error='\e[41m'      # ${Error}
-#Warn='\e[47;31m'   # ${Warn}
-Off='\e[0m'         # ${Off}
 
 ding(){ 
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -109,12 +100,173 @@ buildphase=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION buildphase)
 buildnumber=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION buildnumber)
 smallfixnumber=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION smallfixnumber)
 majorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
-minorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION minorversion)
+#minorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION minorversion)
 
 # Show DSM full version and model
 if [[ $buildphase == GM ]]; then buildphase=""; fi
 if [[ $smallfixnumber -gt "0" ]]; then smallfix="-$smallfixnumber"; fi
 echo -e "$model DSM $productversion-$buildnumber$smallfix $buildphase\n"
+
+
+usage(){ 
+    cat <<EOF
+Usage: $(basename "$0") [options]
+
+Options:
+  -h, --help            Show this help message
+  -v, --version         Show the script version
+      --autoupdate=AGE  Auto update script (useful when script is scheduled)
+                          AGE is how many days old a release must be before
+                          auto-updating. AGE must be a number: 0 or greater
+
+      --auto=APP        Automatically backup APP (for scheduling backups)
+                          APP can be a single app or a comma separated list
+                          Examples:
+                          --auto=radarr
+                          --auto=Calender,ContainerManager,radarr
+
+                          APP needs to be the app's system name from:
+                          ls /var/packages
+                          
+EOF
+    echo " Your installed app's system names:"
+    ls /var/packages
+    echo ""
+}
+
+
+scriptversion(){ 
+    cat <<EOF
+$script $scriptver - by 007revad
+
+See https://github.com/$repo
+EOF
+    exit 0
+}
+
+
+# Save options used for getopt
+args=("$@")
+
+autoupdate=""
+
+# Check for flags with getopt
+if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l \
+    auto:,help,version,autoupdate:,log,debug -- "${args[@]}")"; then
+    eval set -- "$options"
+    while true; do
+        case "${1,,}" in
+            -h|--help)          # Show usage options
+                usage
+                exit
+                ;;
+            -v|--version)       # Show script version
+                scriptversion
+                ;;
+            -l|--log)           # Log
+                #log=yes
+                ;;
+            -d|--debug)         # Show and log debug info
+                debug=yes
+                ;;
+            --auto)             # Specify pkgs for scheduled backup
+                auto="yes"
+                color=no        # Disable colour text in task scheduler emails
+                mode="Backup"
+                action="Backing up"
+                if [[ ${2,,} == "all" ]]; then
+                    all="yes"
+                elif [[ $2 ]]; then
+                    IFS=',' read -r -a autos <<< "$2"; unset IFS
+                    if [[ ${#autos[@]} -gt "0" ]]; then
+                        for i in "${autos[@]}"; do
+                            # Trim leading and trailing spaces
+                            j=$(echo -n "$i" | xargs)
+                            # Check pkg name exists
+                            if [[ ! -d "/var/packages/$j" ]]; then
+                                echo -e "Invalid auto argument '$j'\n"
+                            else
+                                if readlink -f "/var/packages/$j/target" | grep -q -E '^/volume'; then
+                                    autolist+=("$j")
+                                else
+                                    #echo -e "Skipping system app: $j\n"
+                                    skipped+=("$j")
+                                fi
+                            fi
+                        done
+                    else
+                        ding
+                        echo -e "Missing argument to auto!\n"
+                        usage
+                        exit 2  # Missing argument
+                    fi
+                else
+                    ding
+                    echo -e "Missing argument to auto!\n"
+                    usage
+                    exit 2  # Missing argument
+                fi
+                shift
+                ;;
+            --autoupdate)       # Auto update script
+                autoupdate=yes
+                if [[ $2 =~ ^[0-9]+$ ]]; then
+                    delay="$2"
+                    shift
+                else
+                    delay="0"
+                fi
+                ;;
+            --)
+                shift
+                break
+                ;;
+            *)                  # Show usage options
+                ding
+                echo -e "Invalid option '$1'\n"
+                usage
+                exit 2  # Invalid argument
+                ;;
+        esac
+        shift
+    done
+else
+    echo
+    usage
+    exit
+fi
+
+# Abort if autolist is empty
+if [[ $auto == "yes" ]] && [[ ! ${#autolist[@]} -gt "0" ]]; then
+    ding
+    echo -e "No apps to backup!\n"
+    exit 2  # autolist empty
+fi
+
+# Show apps to auto backup
+#if [[ ${#autolist[@]} -gt "0" ]]; then     # debug
+#    echo -e "Backing up ${autolist[*]}\n"  # debug
+#fi                                         # debug
+
+if [[ $debug == "yes" ]]; then
+    set -x
+    export PS4='`[[ $? == 0 ]] || echo "\e[1;31;40m($?)\e[m\n "`:.$LINENO:'
+fi
+
+# Shell Colors
+if [[ $color != "no" ]]; then
+    #Black='\e[0;30m'   # ${Black}
+    Red='\e[0;31m'      # ${Red}
+    #Green='\e[0;32m'   # ${Green}
+    Yellow='\e[0;33m'   # ${Yellow}
+    #Blue='\e[0;34m'    # ${Blue}
+    #Purple='\e[0;35m'  # ${Purple}
+    Cyan='\e[0;36m'     # ${Cyan}
+    #White='\e[0;37m'   # ${White}
+    Error='\e[41m'      # ${Error}
+    #Warn='\e[47;31m'   # ${Warn}
+    Off='\e[0m'         # ${Off}
+fi
 
 
 #------------------------------------------------------------------------------
@@ -129,6 +281,18 @@ release=$(curl --silent -m 10 --connect-timeout 5 \
 # Release version
 tag=$(echo "$release" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 shorttag="${tag:1}"
+
+# Release published date
+published=$(echo "$release" | grep '"published_at":' | sed -E 's/.*"([^"]+)".*/\1/')
+published="${published:0:10}"
+published=$(date -d "$published" '+%s')
+
+# Today's date
+now=$(date '+%s')
+
+# Days since release published
+age=$(((now - published)/(60*60*24)))
+
 
 # Get script location
 # https://stackoverflow.com/questions/59895/
@@ -185,8 +349,18 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
         echo "You have the latest version extracted but are using an older version"
         sleep 10
     else
-        echo -e "${Cyan}Do you want to download $tag now?${Off} [y/n]"
-        read -r -t 30 reply
+        if [[ $autoupdate == "yes" ]]; then
+            if [[ $age -gt "$delay" ]] || [[ $age -eq "$delay" ]]; then
+                echo "Downloading $tag"
+                reply=y
+            else
+                echo "Skipping as $tag is less than $delay days old."
+            fi
+        else
+            echo -e "${Cyan}Do you want to download $tag now?${Off} [y/n]"
+            read -r -t 30 reply
+        fi
+
         if [[ ${reply,,} == "y" ]]; then
             # Delete previously downloaded .tar.gz file and extracted tmp files
             cleanup_tmp
@@ -751,7 +925,7 @@ move_pkg(){
             return 1
         fi
         # shellcheck disable=SC2162
-        while read link source; do
+        while read -r link source; do
             app_paths_tmp+=("$source")
         done < <(find . -maxdepth 2 -type l -ls | grep '/'"${1// /\\\\ }"'$' | cut -d'.' -f2- | sed 's/ ->//')
 
@@ -787,7 +961,7 @@ folder_size(){
     if [[ -d "$1" ]]; then
         # Get size of $1 folder
         need=$(du -s "$1" | awk '{ print $1 }')
-        if [[ ! $need -gt 0 ]]; then
+        if [[ ! $need =~ ^[0-9]+$ ]]; then
             echo -e "${Yellow}WARNING${Off} Failed to get size of $1"
             need=0
         fi
@@ -926,7 +1100,8 @@ copy_dir(){
         #if ! is_empty "/${sourcevol:?}/${1:?}$pack"; then
             if [[ $2 == "extras" ]]; then
                 # If string is too long progbar gets messed up
-                cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
+                #cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
+                rsync -q -aHX --delete --compress-level=0 "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
                 pid=$!
                 string="${action} /${sourcevol}/${1}"
                 progbar "$pid" "$string"
@@ -934,7 +1109,8 @@ copy_dir(){
                 progstatus "$?" "$string" "line ${LINENO}"
             else
                 # If string is too long progbar gets messed up
-                cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}/${1:?}" &
+                #cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}/${1:?}" &
+                rsync -q -aHX --delete --compress-level=0 "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
                 pid=$!
                 string="${action} /${sourcevol}/${1}/${Cyan}$pkg${Off}"
                 progbar "$pid" "$string"
@@ -1088,6 +1264,9 @@ move_extras(){
             #echo ""
             ;;
         ContainerManager|Docker)
+
+            # /var/services/web_packages/docker ???
+
             # Edit symlink before moving @docker
             # If edit after it does not get edited if move @docker errors
             if [[ ${mode,,} != "backup" ]]; then
@@ -1305,6 +1484,10 @@ move_extras(){
         Virtualization)
             exitonerror="no" && move_dir "@GuestImage" extras
             exitonerror="no" && move_dir "@Repository" extras
+
+            # Move Virtual Machines - target must be btrfs
+            #exitonerror="no" && move_dir "@iSCSI" extras
+
             # VMM creates /volume#/vdsm_repo.conf so no need to move it
             #echo ""
             ;;
@@ -1426,31 +1609,35 @@ skip_dev_tools(){
 # Select mode
 
 echo ""
-modes=( "Move" "Backup" "Restore" )
-PS3="Select the mode: "
-select m in "${modes[@]}"; do
-    case "$m" in
-        Move)
-            mode="Move"
-            action="Moving"
-            break
-            ;;
-        Backup)
-            mode="Backup"
-            action="Backing up"
-            break
-            ;;
-        Restore)
-            mode="Restore"
-            action="Restoring"
-            break
-            ;;
-        *)  
-            echo "Invalid choice!"
-            ;;
-    esac
-done
-echo -e "You selected ${Cyan}${mode}${Off}\n"
+if [[ $auto == "yes" ]]; then
+    echo -e "Using auto ${Cyan}${mode}${Off} mode\n"
+else
+    modes=( "Move" "Backup" "Restore" )
+    PS3="Select the mode: "
+    select m in "${modes[@]}"; do
+        case "$m" in
+            Move)
+                mode="Move"
+                action="Moving"
+                break
+                ;;
+            Backup)
+                mode="Backup"
+                action="Backing up"
+                break
+                ;;
+            Restore)
+                mode="Restore"
+                action="Restoring"
+                break
+                ;;
+            *)  
+                echo "Invalid choice!"
+                ;;
+        esac
+    done
+    echo -e "You selected ${Cyan}${mode}${Off}\n"
+fi
 
 
 # Check backup path if mode is backup or restore
@@ -1527,26 +1714,55 @@ declare -A package_names_rev
 package_infos=( )
 if [[ ${mode,,} != "restore" ]]; then
 
-    # Add non-system packages to array
-    cdir /var/packages || exit
-    #while read -r link target; do
-    # shellcheck disable=SC2162
-    while read link target; do
-        package="$(printf %s "$link" | cut -d'/' -f2 )"
-        package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
-        package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
-        if [[ -z "$package_name" ]]; then
-            package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
-        fi
+    if [[ $auto == "yes" ]]; then
+        # Add auto packages to array
+        for package in "${autolist[@]}"; do
+            package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+            if [[ -z "$package_name" ]]; then
+                package_name="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" package)"
+            fi
 
-        # Skip packages that are dev tools with no data
-        if ! skip_dev_tools "$package"; then
-            package_infos+=("${package_volume}|${package_name}")
-            package_names["${package_name}"]="${package}"
-            package_names_rev["${package}"]="${package_name}"
+            # Skip packages that are dev tools with no data
+            if ! skip_dev_tools "$package"; then
+                #package_infos+=("${package_name}")
+                package_names["${package_name}"]="${package}"
+                package_names_rev["${package}"]="${package_name}"
+            else
+                echo -e "Skipping non-stoppable app: $package_name"
+                skip_echo="yes"
+            fi
+        done
+
+        # Show skipped system apps
+        if [[ ${#skipped[*]} -gt "0" ]]; then
+            echo -e "Skipping system app(s): ${skipped[*]}"
+            skip_echo="yes"
         fi
-    #done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | awk '{print $(NF-2), $NF}')
-    done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | cut -d'.' -f2- | sed 's/ ->//')
+        if [[ $skip_echo == "yes" ]]; then
+            echo ""
+        fi
+    else
+        # Add non-system packages to array
+        cdir /var/packages || exit
+        #while read -r link target; do
+        # shellcheck disable=SC2162
+        while read -r link target; do
+            package="$(printf %s "$link" | cut -d'/' -f2 )"
+            package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
+            package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+            if [[ -z "$package_name" ]]; then
+                package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
+            fi
+
+            # Skip packages that are dev tools with no data
+            if ! skip_dev_tools "$package"; then
+                package_infos+=("${package_volume}|${package_name}")
+                package_names["${package_name}"]="${package}"
+                package_names_rev["${package}"]="${package_name}"
+            fi
+        #done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | awk '{print $(NF-2), $NF}')
+        done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | cut -d'.' -f2- | sed 's/ ->//')
+    fi
 elif [[ ${mode,,} == "restore" ]]; then
 
     # Add list of backed up packages to array
@@ -1573,98 +1789,100 @@ fi
 # Sort array
 IFS=$'\n' package_infos_sorted=($(sort <<<"${package_infos[*]}")); unset IFS
 
-# Offer to backup or restore all packages
-if [[ ${mode,,} == "backup" ]]; then
-    echo -e "Do you want to backup ${Cyan}All${Off} packages? [y/n]"
-    read -r answer
-    #echo ""
-    if [[ ${answer,,} == "y" ]]; then
-        all="yes"
-        echo -e "You selected ${Cyan}All${Off}\n"
-    fi
-elif [[ ${mode,,} == "restore" ]]; then
-    echo -e "Do you want to restore ${Cyan}All${Off} backed up packages? [y/n]"
-    read -r answer
-    #echo ""
-    if [[ ${answer,,} == "y" ]]; then
-        all="yes"
-        echo -e "You selected ${Cyan}All${Off}\n"
-    fi
-fi
-
-if [[ $all != "yes" ]]; then
-    if [[ ${mode,,} != "restore" ]]; then
-        # Select package to move or backup
-
-        if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
-            echo -e "[Installed package list]"
-            for ((i=1; i<=${#package_infos_sorted[@]}; i++)); do
-                info="${package_infos_sorted[i-1]}"
-                before_pipe="${info%%|*}"
-                after_pipe="${info#*|}"
-                package_infos_show+=("$before_pipe  $after_pipe")
-            done
+if [[ $auto != "yes" ]]; then
+    # Offer to backup or restore all packages
+    if [[ ${mode,,} == "backup" ]]; then
+        echo -e "Do you want to backup ${Cyan}All${Off} packages? [y/n]"
+        read -r answer
+        #echo ""
+        if [[ ${answer,,} == "y" ]]; then
+            all="yes"
+            echo -e "You selected ${Cyan}All${Off}\n"
         fi
-
-        if [[ ${#package_infos_show[@]} -gt 0 ]]; then
-            PS3="Select the package to ${mode,,}: "
-            select m in "${package_infos_show[@]}"; do
-                case "$m" in
-                    /volume*)
-                        # Parse selected element of array
-                        package_volume="$(echo "$m" | awk '{print $1}')"
-                        pkg_name=${m#"$package_volume  "}
-                        pkg="${package_names[${pkg_name}]}"
-                        break
-                        ;;
-                    *)
-                        echo "Invalid choice! $m"
-                        ;;
-                esac
-            done
-        else
-            echo "No movable packages found!" && exit 1
-        fi
-
-        echo -e "You selected ${Cyan}${pkg_name}${Off} in ${Cyan}${package_volume}${Off}\n"
-        target=$(readlink "/var/packages/${pkg}/target")
-        linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
-
     elif [[ ${mode,,} == "restore" ]]; then
-        # Select package to backup
+        echo -e "Do you want to restore ${Cyan}All${Off} backed up packages? [y/n]"
+        read -r answer
+        #echo ""
+        if [[ ${answer,,} == "y" ]]; then
+            all="yes"
+            echo -e "You selected ${Cyan}All${Off}\n"
+        fi
+    fi
 
-        # Select package to restore
-        if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
-            echo -e "[Restorable package list]"
-            PS3="Select the package to restore: "
-            select pkg_name in "${package_infos_sorted[@]}"; do
-                if [[ $pkg_name ]]; then
-                    pkg="${package_names[${pkg_name}]}"
-                    if [[ -d $pkg ]]; then
-                        echo -e "You selected ${Cyan}${pkg_name}${Off}\n"
-                        break
+    if [[ $all != "yes" ]]; then
+        if [[ ${mode,,} != "restore" ]]; then
+            # Select package to move or backup
+
+            if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
+                echo -e "[Installed package list]"
+                for ((i=1; i<=${#package_infos_sorted[@]}; i++)); do
+                    info="${package_infos_sorted[i-1]}"
+                    before_pipe="${info%%|*}"
+                    after_pipe="${info#*|}"
+                    package_infos_show+=("$before_pipe  $after_pipe")
+                done
+            fi
+
+            if [[ ${#package_infos_show[@]} -gt 0 ]]; then
+                PS3="Select the package to ${mode,,}: "
+                select m in "${package_infos_show[@]}"; do
+                    case "$m" in
+                        /volume*)
+                            # Parse selected element of array
+                            package_volume="$(echo "$m" | awk '{print $1}')"
+                            pkg_name=${m#"$package_volume  "}
+                            pkg="${package_names[${pkg_name}]}"
+                            break
+                            ;;
+                        *)
+                            echo "Invalid choice! $m"
+                            ;;
+                    esac
+                done
+            else
+                echo "No movable packages found!" && exit 1
+            fi
+
+            echo -e "You selected ${Cyan}${pkg_name}${Off} in ${Cyan}${package_volume}${Off}\n"
+            target=$(readlink "/var/packages/${pkg}/target")
+            linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
+
+        elif [[ ${mode,,} == "restore" ]]; then
+            # Select package to backup
+
+            # Select package to restore
+            if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
+                echo -e "[Restorable package list]"
+                PS3="Select the package to restore: "
+                select pkg_name in "${package_infos_sorted[@]}"; do
+                    if [[ $pkg_name ]]; then
+                        pkg="${package_names[${pkg_name}]}"
+                        if [[ -d $pkg ]]; then
+                            echo -e "You selected ${Cyan}${pkg_name}${Off}\n"
+                            break
+                        else
+                            ding
+                            echo -e "Line ${LINENO}: ${Error}ERROR${Off} $pkg_name not found!"
+                            exit 1  # Selected package not found
+                        fi
                     else
-                        ding
-                        echo -e "Line ${LINENO}: ${Error}ERROR${Off} $pkg_name not found!"
-                        exit 1  # Selected package not found
+                        echo "Invalid choice!"
                     fi
-                else
-                    echo "Invalid choice!"
-                fi
-            done
+                done
 
-            # Check if package is installed
-            check_pkg_installed "$pkg" "$pkg_name"
-        else
-            ding
-            echo -e "Line ${LINENO}: ${Error}ERROR${Off} No package backups found!"
-            exit 1  # No package backups found
+                # Check if package is installed
+                check_pkg_installed "$pkg" "$pkg_name"
+            else
+                ding
+                echo -e "Line ${LINENO}: ${Error}ERROR${Off} No package backups found!"
+                exit 1  # No package backups found
+            fi
         fi
     fi
 fi
 
 # Assign just the selected package to array
-if [[ $all != "yes" ]]; then
+if [[ $all != "yes" ]] && [[ $auto != "yes" ]]; then
     unset package_names
     declare -A package_names
     package_names["${pkg_name:?}"]="${pkg:?}"
@@ -1715,11 +1933,11 @@ if [[ ${mode,,} == "move" ]]; then
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} Only 1 volume found!"
         exit 1  # Only 1 volume
     fi
-elif [[ ${mode,,} == "backup" ]]; then
-    targetvol="/$(echo "${backuppath:?}" | cut -d"/" -f2)"
-    if [[ $all != "yes" ]]; then
-        echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
-    fi
+#elif [[ ${mode,,} == "backup" ]]; then
+#    targetvol="/$(echo "${backuppath:?}" | cut -d"/" -f2)"
+#    if [[ $all != "yes" ]]; then
+#        echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
+#    fi
 elif [[ ${mode,,} == "restore" ]]; then
     if [[ $all != "yes" ]]; then
         targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
@@ -1728,23 +1946,25 @@ elif [[ ${mode,,} == "restore" ]]; then
 fi
 
 # Check user is ready
-if [[ $all == "yes" ]]; then
-    #echo -e "${Red}WARNING Packages with dependencies may be stopped until the"
-    #echo -e "${mode} of all packages has finished which could take long while.${Off}"
-    if [[ ${mode,,} == "backup" ]]; then
-        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} packages to ${Cyan}${backuppath}${Off}? [y/n]"
+if [[ $auto != "yes" ]]; then
+    if [[ $all == "yes" ]]; then
+        #echo -e "${Red}WARNING Packages with dependencies may be stopped until the"
+        #echo -e "${mode} of all packages has finished which could take long while.${Off}"
+        if [[ ${mode,,} == "backup" ]]; then
+            echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} packages to ${Cyan}${backuppath}${Off}? [y/n]"
+        else
+            echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} backed up packages? [y/n]"
+        fi
+    elif [[ ${mode,,} == "backup" ]]; then
+        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${backuppath}${Off}? [y/n]"
     else
-        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} backed up packages? [y/n]"
+        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
     fi
-elif [[ ${mode,,} == "backup" ]]; then
-    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${backuppath}${Off}? [y/n]"
-else
-    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
-fi
-read -r answer
-echo ""
-if [[ ${answer,,} != y ]]; then
-    exit  # Answered no
+    read -r answer
+    echo ""
+    if [[ ${answer,,} != y ]]; then
+        exit  # Answered no
+    fi
 fi
 
 # Reset shell's SECONDS var to later show how long the script took
@@ -2308,6 +2528,8 @@ fi
 
 if [[ $all == "yes" ]]; then
     echo -e "Finished ${action,,} all packages\n"
+elif [[ $auto == "yes" ]]; then
+    echo -e "Finished ${action,,} ${pkgs_sorted[*]}\n"
 else
     echo -e "Finished ${action,,} $pkg_name\n"
 fi
