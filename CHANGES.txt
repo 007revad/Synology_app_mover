@@ -2,6 +2,8 @@ v3.2.62-RC
 - Can now be scheduled in Task Scheduler to backup a package or multiple packages.
   - Run the script with the -h or --help option to see how.
 - Added -h, --help option.
+- Added  --autoupdate=AGE option to auto update the script (useful when script is scheduled)
+  - AGE is how many days old a release must be before auto-updating. AGE must be a number: 0 or greater
 
 - Now exports Container Manager/Docker container's settings to the docker shared folder. Thanks ctrlaltdelete
   - e.g. /volume1/docker/app_mover_exports
