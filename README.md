@@ -184,6 +184,29 @@ backuppath="/volume1/backups"
 # skip_minutes is in minutes
 
 skip_minutes=360
+
+# exclude setting for use when auto="all" option is used to skip specified apps
+# For example:
+# exclude="ContainerManager"
+# exclude="DownloadStation,ContainerManager,HyperBackup"
+#
+# Note: You need to use the app's system name
+# Run syno_app_mover.sh with the --list option to see your app's system names
+
+exclude=
+
+# For Docker or Container Manager's container settings json exports
+# Set delete_older to age in days before old exports are deleted
+# Set ignored_containers to a list of containers to not export settings
+# For example:
+# delete_older=7
+# ignored_containers="libraspeed-1,netdata"
+#
+# Note you need use the container's docker name. To see their names via SSH use:
+# sudo docker ps -a --format "{{.Names}}"
+
+delete_older=30
+ignored_containers=
 ```
 
 ### To run the script
