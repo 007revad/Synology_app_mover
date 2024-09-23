@@ -41,7 +41,7 @@
 #
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.62"
+scriptver="v4.0.63"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -125,15 +125,38 @@ Options:
                           --auto=radarr
                           --auto=Calender,ContainerManager,radarr
 
-                          APP needs to be the app's system name from:
-                          ls /var/packages
+                          APP needs to be the app's system name
+                          View the system names with the --list option
+
+      --list            Display installed apps' system names
                           
 EOF
-    echo " Your installed app's system names:"
-    ls /var/packages
-    echo ""
 }
 
+list_names(){ 
+    # List app system names
+    cd /var/packages
+
+    # Print header
+    echo -e "Use app system name for --auto option or exclude in conf file\n"
+    printf -- '-%.0s' {1..62}; echo  # print 62 -
+    echo "APP SYSTEM NAME              APP DISPLAY NAME"
+    printf -- '-%.0s' {1..62}; echo  # print 62 -
+
+    for p in *; do
+        long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" displayname)"
+        if [[ -z "$long_name" ]]; then
+            long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" package)"
+        fi
+        # Pad with spaces to 29 chars
+        pad=$(printf -- ' %.0s' {1..29})
+        printf '%.*s' 29 "$p${pad}"
+
+        echo "$long_name"
+    done < <(find * -maxdepth 2 -type d)
+    echo ""
+    exit 0
+}
 
 scriptversion(){ 
     cat <<EOF
@@ -152,7 +175,7 @@ autoupdate=""
 
 # Check for flags with getopt
 if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l \
-    auto:,help,version,autoupdate:,log,debug -- "${args[@]}")"; then
+    auto:,list,help,version,autoupdate:,log,debug -- "${args[@]}")"; then
     eval set -- "$options"
     while true; do
         case "${1,,}" in
@@ -168,6 +191,9 @@ if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l \
                 ;;
             -d|--debug)         # Show and log debug info
                 debug=yes
+                ;;
+            --list)             # List installed app's system names
+                list_names
                 ;;
             --auto)             # Specify pkgs for scheduled backup
                 auto="yes"
@@ -1719,7 +1745,7 @@ if [[ ${mode,,} != "restore" ]]; then
         for package in "${autolist[@]}"; do
             package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
             if [[ -z "$package_name" ]]; then
-                package_name="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" package)"
+                package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
             fi
 
             # Skip packages that are dev tools with no data
