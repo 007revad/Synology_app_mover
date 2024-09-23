@@ -1,4 +1,8 @@
 v4.0.63-RC
+- Added --list option to show installed app's system names.
+- Updated instructions in conf file.
+- Bug fix for getting app's display name when --auto option used.
+
 - Can now be scheduled in Task Scheduler to backup a package or multiple packages. Issue #105
   - Run the script with the -h or --help option to see how.
 - Changed to use rsync instead of cp for backups to make backing the same package again faster.
@@ -12,8 +16,6 @@ v4.0.63-RC
 - Added exclude option in syno_app_mover.conf so you can exclude specified apps when "all" mode is selected.
 - Now deletes unused and dangling docker images before restoring.
 - Now deletes dangling docker images before moving or backing up.
-- Updated instructions in conf file.
-- Bug fix for getting app's display name when --auto option used.
 
 v4.0.62-RC
 - Can now be scheduled in Task Scheduler to backup a package or multiple packages. Issue #105
