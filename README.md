@@ -209,7 +209,7 @@ delete_older=30
 ignored_containers=
 ```
 
-### To run the script
+### To run the script via SSH
 
 [How to enable SSH and login to DSM via SSH](https://kb.synology.com/en-global/DSM/tutorial/How_to_login_to_DSM_with_root_permission_via_SSH_Telnet)
 
@@ -218,6 +218,28 @@ sudo -s /volume1/scripts/syno_app_mover.sh
 ```
 
 **Note:** Replace /volume1/scripts/ with the path to where the script is located.
+
+### Options when running the script <a name="options"></a>
+
+There are optional flags you can use when running the script:
+```YAML
+  -h, --help            Show this help message
+  -v, --version         Show the script version
+      --autoupdate=AGE  Auto update script (useful when script is scheduled)
+                          AGE is how many days old a release must be before
+                          auto-updating. AGE must be a number: 0 or greater
+
+      --auto=APP        Automatically backup APP (for scheduling backups)
+                          APP can be a single app or a comma separated list
+                          Examples:
+                          --auto=radarr
+                          --auto=Calender,ContainerManager,radarr
+
+                          APP needs to be the app's system name
+                          View the system names with the --list option
+
+      --list            Display installed apps' system names
+```
 
 ### Troubleshooting
 
