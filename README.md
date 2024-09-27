@@ -138,6 +138,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/NBR-Transporter_64.png" width="16" height="16"> NAKIVO Transporter |  |
 | <img src="/images/icons/PACS_64.png" width="16" height="16"> PACS |  |
 | <img src="/images/icons/PhotoStation_64.png" width="18" height="18"> Photo Station | DSM 6 |
+| <img src="/images/icons/radarr-64.png" width="20" height="20"> Radarr | community package |
 | <img src="/images/icons/RagicBuilder_64.png" width="20" height="20"> Ragic Cloud DB |  |
 | <img src="/images/icons/resiliosync-48.png" width="16" height="16"> Resilo Sync |  |
 | <img src="/images/icons/shellinabox-48.png" width="16" height="16"> Shellinabox | community package |
