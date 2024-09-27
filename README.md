@@ -145,6 +145,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/syncthing-64.png" width="18" height="18"> Syncthing |  |
 | <img src="/images/icons/TeamViewer_64.png" width="16" height="16"> TeamViewer |  |
 | <img src="/images/icons/transmission-64.png" width="20" height="20"> Transmission | community package |
+| <img src="/images/icons/tvheadend-64.png" width="20" height="20"> Tvheadend | community package |
 | <img src="/images/icons/VirtualHere_64.png" width="18" height="18"> VirtualHere |  |
 | <img src="/images/icons/vtigerCRM_64.png" width="16" height="16"> vtigerCRM |  |
 | <img src="/images/icons/WebTools-48.png" width="20" height="20"> WebTools | community package |
