@@ -44,7 +44,7 @@
 # DONE Bugfix for packages with spaces in their name (DSM 6 Plex Media Server)
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.64"
+scriptver="v4.0.65"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1485,7 +1485,9 @@ move_extras(){
             #echo ""
             ;;
         SynologyDrive)
+            # Synology Drive database
             exitonerror="no" && move_dir "@synologydrive" extras
+            # Synology Drive Team Folder
             exitonerror="no" && move_dir "@SynologyDriveShareSync" extras
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SynologyDrive/etc/sharesync/daemon.conf
@@ -1781,7 +1783,6 @@ if [[ ${mode,,} != "restore" ]]; then
     else
         # Add non-system packages to array
         cdir /var/packages || exit
-        # shellcheck disable=SC2162  # `read` without `-r` will mangle backslashes
         while IFS= read -r -d '' link && IFS= read -r -d '' target; do
             if [[ ${link##*/} == "target" ]] && echo "$target" | grep -q 'volume'; then
                 # Check symlink target exists
@@ -1973,11 +1974,11 @@ if [[ ${mode,,} == "move" ]]; then
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} Only 1 volume found!"
         exit 1  # Only 1 volume
     fi
-#elif [[ ${mode,,} == "backup" ]]; then
-#    targetvol="/$(echo "${backuppath:?}" | cut -d"/" -f2)"
-#    if [[ $all != "yes" ]]; then
-#        echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
-#    fi
+elif [[ ${mode,,} == "backup" ]]; then
+    targetvol="/$(echo "${backuppath:?}" | cut -d"/" -f2)"
+    if [[ $all != "yes" ]]; then
+        echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
+    fi
 elif [[ ${mode,,} == "restore" ]]; then
     if [[ $all != "yes" ]]; then
         targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
@@ -2413,7 +2414,9 @@ for pkg in "${pkgs_sorted[@]}"; do
     if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
         # Start package if needed so we can prune images
         # and export container configurations
-        package_start "$pkg" "$pkg_name"
+        if ! package_is_running "$pkg"; then
+            package_start "$pkg" "$pkg_name"
+        fi
 
         if [[ ${mode,,} != "restore" ]]; then
             # Export container settings to json files
