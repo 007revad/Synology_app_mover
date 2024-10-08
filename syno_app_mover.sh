@@ -39,9 +39,12 @@
 # DONE Add option to schedule backup of specific app
 # https://github.com/007revad/Synology_app_mover/issues/105
 #
+# DONE Changed --list option to also show if there are any broken packages (broken 'target' symlink or missing volume)
+# DONE Bugfix for bad array subscript when a broken package exists. Issue #117
+# DONE Bugfix for packages with spaces in their name (DSM 6 Plex Media Server)
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.63"
+scriptver="v4.0.64"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -135,7 +138,10 @@ EOF
 
 list_names(){ 
     # List app system names
-    cd /var/packages
+    if ! cd /var/packages; then
+        echo "Failed to cd to /var/packages!"
+        exit 1
+    fi
 
     # Print header
     echo -e "Use app system name for --auto option or exclude in conf file\n"
@@ -144,16 +150,22 @@ list_names(){
     printf -- '-%.0s' {1..62}; echo  # print 62 -
 
     for p in *; do
-        long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" displayname)"
-        if [[ -z "$long_name" ]]; then
-            long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" package)"
-        fi
-        # Pad with spaces to 29 chars
-        pad=$(printf -- ' %.0s' {1..29})
-        printf '%.*s' 29 "$p${pad}"
+        if [[ -d "$p" ]]; then
+            if [[ ! -a "$p/target" ]] ; then
+                echo -e "\e[41mBroken symlink\e[0m $p"
+            else
+                long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" displayname)"
+                if [[ -z "$long_name" ]]; then
+                    long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" package)"
+                fi
+                # Pad with spaces to 29 chars
+                pad=$(printf -- ' %.0s' {1..29})
+                printf '%.*s' 29 "$p${pad}"
 
-        echo "$long_name"
-    done < <(find * -maxdepth 2 -type d)
+                echo "$long_name"
+            fi
+        fi
+    done < <(find . -maxdepth 1 -type d)
     echo ""
     exit 0
 }
@@ -572,7 +584,6 @@ progstatus(){
     #echo "return: $1"  # debug
 }
 
-# shellcheck disable=SC2143
 package_status(){ 
     # $1 is package name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -950,7 +961,7 @@ move_pkg(){
             process_error="yes"
             return 1
         fi
-        # shellcheck disable=SC2162
+        # shellcheck disable=SC2162  # `read` without `-r` will mangle backslashes
         while read -r link source; do
             app_paths_tmp+=("$source")
         done < <(find . -maxdepth 2 -type l -ls | grep '/'"${1// /\\\\ }"'$' | cut -d'.' -f2- | sed 's/ ->//')
@@ -1770,24 +1781,27 @@ if [[ ${mode,,} != "restore" ]]; then
     else
         # Add non-system packages to array
         cdir /var/packages || exit
-        #while read -r link target; do
-        # shellcheck disable=SC2162
-        while read -r link target; do
-            package="$(printf %s "$link" | cut -d'/' -f2 )"
-            package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
-            package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
-            if [[ -z "$package_name" ]]; then
-                package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
-            fi
+        # shellcheck disable=SC2162  # `read` without `-r` will mangle backslashes
+        while IFS= read -r -d '' link && IFS= read -r -d '' target; do
+            if [[ ${link##*/} == "target" ]] && echo "$target" | grep -q 'volume'; then
+                # Check symlink target exists
+                if [[ -a "/var/packages${link#.}" ]] ; then
+                    package="$(printf %s "$link" | cut -d'/' -f2 )"
+                    package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
+                    package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+                    if [[ -z "$package_name" ]]; then
+                        package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
+                    fi
 
-            # Skip packages that are dev tools with no data
-            if ! skip_dev_tools "$package"; then
-                package_infos+=("${package_volume}|${package_name}")
-                package_names["${package_name}"]="${package}"
-                package_names_rev["${package}"]="${package_name}"
+                    # Skip packages that are dev tools with no data
+                    if ! skip_dev_tools "$package"; then
+                        package_infos+=("${package_volume}|${package_name}")
+                        package_names["${package_name}"]="${package}"
+                        package_names_rev["${package}"]="${package_name}"
+                    fi
+                fi
             fi
-        #done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | awk '{print $(NF-2), $NF}')
-        done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | cut -d'.' -f2- | sed 's/ ->//')
+        done < <(find . -maxdepth 2 -type l -printf '%p\0%l\0')
     fi
 elif [[ ${mode,,} == "restore" ]]; then
 
@@ -2438,7 +2452,7 @@ for pkg in "${pkgs_sorted[@]}"; do
             fi
         fi
 
-        # shellcheck disable=SC2143
+        # shellcheck disable=SC2143  # Use grep -q
         if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
             start_packages
             #echo ""
