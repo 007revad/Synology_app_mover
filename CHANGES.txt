@@ -1,3 +1,27 @@
+v4.0.65
+- Bug fix for backing up Container Manager failing free space check. Issues #116 and #118
+- Changed to only start Container Manager if it's stopped, before exporting container settings.
+
+- Changed --list option to also show if there are any broken packages (broken 'target' symlink or missing volume).
+- Bug fix for bad array subscript when a broken package exists. Issue #117
+- Bug fix for packages with spaces in their name (DSM 6 Plex Media Server).
+- Added --list option to show installed app's system names.
+- Updated instructions in conf file.
+- Bug fix for getting app's display name when --auto option used.
+- Can now be scheduled in Task Scheduler to backup a package or multiple packages. Issue #105
+  - Run the script with the -h or --help option to see how.
+- Changed to use rsync instead of cp for backups to make backing the same package again faster.
+- Added -h, --help option.
+- Added  --autoupdate=AGE option to auto update the script (useful when script is scheduled)
+  - AGE is how many days old a release must be before auto-updating. AGE must be a number: 0 or greater
+- Bug fix for error getting size of folder if folder existed but was empty.
+- Now exports Container Manager/Docker container's settings to the docker shared folder. Thanks ctrlaltdelete
+  - e.g. /volume1/docker/app_mover_exports
+  - Includes new delete_older and ignored_containers options in syno_app_mover.conf
+- Added exclude option in syno_app_mover.conf so you can exclude specified apps when "all" mode is selected.
+- Now deletes unused and dangling docker images before restoring.
+- Now deletes dangling docker images before moving or backing up.
+
 v4.0.64
 - Changed --list option to also show if there are any broken packages (broken 'target' symlink or missing volume).
 - Bug fix for bad array subscript when a broken package exists. Issue #117
