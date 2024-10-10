@@ -1,3 +1,6 @@
+v4.0.66
+- Bug fix for "rsync: mknod failed: File name too long (36)" when backing up `@docker`. Issue #120
+
 v4.0.65
 - Bug fix for backing up Container Manager failing free space check. Issues #116 and #118
 - Changed to only start Container Manager if it's stopped, before exporting container settings.
