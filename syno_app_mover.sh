@@ -44,9 +44,10 @@
 # DONE Bugfix for packages with spaces in their name (DSM 6 Plex Media Server)
 # DONE Bugfix for checking volume space when backing up `@docker`. Issues #116 and #118
 # DONE Bugfix for "rsync: mknod failed: File name too long (36)" when backing up `@docker`. Issue #120
+# DONE Bugfix for "rsync: mknod failed: No such file or directory (2)" when backing up `@docker`. Issue #117
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.66"
+scriptver="v4.0.67"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1141,7 +1142,12 @@ copy_dir(){
                 # If string is too long progbar gets messed up
                 #cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
                 if [[ $1 == "@docker" ]]; then
-                    rsync -q -aHX --delete --compress-level=0 --exclude subvolumes/*/tmp/ --exclude subvolumes/*/run/ "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
+                    excludeargs=(
+                        "--exclude subvolumes/*/tmp/"  # btfs        Issue #120
+                        "--exclude subvolumes/*/run/"  # btfs        Issue #120
+                        "--exclude aufs/diff/*/run/"   # aufs (ext4) Issue #117
+                    )
+                    rsync -q -aHX --delete --compress-level=0 "${excludeargs[@]}" "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
                 else
                     rsync -q -aHX --delete --compress-level=0 "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
                 fi
