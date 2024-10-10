@@ -42,9 +42,11 @@
 # DONE Changed --list option to also show if there are any broken packages (broken 'target' symlink or missing volume)
 # DONE Bugfix for bad array subscript when a broken package exists. Issue #117
 # DONE Bugfix for packages with spaces in their name (DSM 6 Plex Media Server)
+# DONE Bugfix for checking volume space when backing up `@docker`. Issues #116 and #118
+# DONE Bugfix for "rsync: mknod failed: File name too long (36)" when backing up `@docker`. Issue #120
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.65"
+scriptver="v4.0.66"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1138,7 +1140,11 @@ copy_dir(){
             if [[ $2 == "extras" ]]; then
                 # If string is too long progbar gets messed up
                 #cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
-                rsync -q -aHX --delete --compress-level=0 "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
+                if [[ $1 == "@docker" ]]; then
+                    rsync -q -aHX --delete --compress-level=0 --exclude subvolumes/*/tmp/ --exclude subvolumes/*/run/ "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
+                else
+                    rsync -q -aHX --delete --compress-level=0 "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
+                fi
                 pid=$!
                 string="${action} /${sourcevol}/${1}"
                 progbar "$pid" "$string"
