@@ -47,7 +47,7 @@
 # DONE Bugfix for "rsync: mknod failed: No such file or directory (2)" when backing up `@docker`. Issue #117
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.67"
+scriptver="v4.0.68"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1143,9 +1143,9 @@ copy_dir(){
                 #cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
                 if [[ $1 == "@docker" ]]; then
                     excludeargs=(
-                        "--exclude subvolumes/*/tmp/"  # btfs        Issue #120
-                        "--exclude subvolumes/*/run/"  # btfs        Issue #120
-                        "--exclude aufs/diff/*/run/"   # aufs (ext4) Issue #117
+                        "--exclude=subvolumes/*/tmp/"  # btfs        Issue #120
+                        "--exclude=subvolumes/*/run/"  # btfs        Issue #120
+                        "--exclude=aufs/diff/*/run/"   # aufs (ext4) Issue #117
                     )
                     rsync -q -aHX --delete --compress-level=0 "${excludeargs[@]}" "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
                 else
