@@ -47,7 +47,7 @@
 # DONE Bugfix for "rsync: mknod failed: No such file or directory (2)" when backing up `@docker`. Issue #117
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.68"
+scriptver="v4.0.69"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -822,7 +822,12 @@ move_pkg_do(){
             is_empty "${2:?}/${appdir:?}/${1:?}"; then
 
             # Move source folder to target folder
-            mv -f "${source:?}" "${2:?}/${appdir:?}" &
+            if [[ -w "/$sourcevol" ]]; then
+                mv -f "${source:?}" "${2:?}/${appdir:?}" &
+            else
+                # Source volume if read only
+                cp -prf "${source:?}" "${2:?}/${appdir:?}" &
+            fi
             pid=$!
             string="${action} $source to ${Cyan}$2${Off}"
             progbar "$pid" "$string"
@@ -1210,9 +1215,19 @@ move_dir(){
                     # Create @docker folder on target volume
                     create_dir "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}"
                     # Move contents of @docker to @docker on target volume
-                    mv -f "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" &
+                    if [[ -w "/$sourcevol" ]]; then
+                        mv -f "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" &
+                    else
+                        # Source volume if read only
+                        cp -prf "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" &
+                    fi
                 else
-                    mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+                    if [[ -w "/$sourcevol" ]]; then
+                        mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+                    else
+                        # Source volume if read only
+                        cp -prf "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+                    fi
                 fi
                 pid=$!
                 string="${action} /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
@@ -1557,6 +1572,7 @@ web_packages(){
         web_pkg_path=$(/usr/syno/sbin/synoshare --get-real-path web_packages)
     else
         # DSM 7.2 and earlier
+        # synoshare --getmap is case insensitive
         web_pkg_path=$(/usr/syno/sbin/synoshare --getmap web_packages | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
     fi
     if [[ -d "$web_pkg_path" ]]; then
@@ -2140,31 +2156,34 @@ backup_extras(){
     # $1 is @folder (@docker or @downloads etc)
     local extrabakvol
     local answer
-    if [[ ${mode,,} != "backup" ]]; then
-        if [[ ${mode,,} == "move" ]]; then
-            extrabakvol="/$sourcevol"
-        elif [[ ${mode,,} == "restore" ]]; then
-            extrabakvol="$targetvol"
-        fi
-        echo -e "NOTE: A backup of ${Cyan}$1${Off} is required"\
-            "for recovery if the move fails."
-        echo -e "Do you want to ${Yellow}backup${Off} the"\
-            "${Cyan}$1${Off} folder on $extrabakvol? [y/n]"
-        read -r answer
-        #echo ""
-        if [[ ${answer,,} == "y" ]]; then
-            # Check we have enough space
-            if ! check_space "/${sourcevol}/$1" "/${sourcevol}"; then
-                ding
-                echo -e "${Error}ERROR${Off} Not enough space on $extrabakvol to backup ${Cyan}$1${Off}!"
-                echo "Do you want to continue ${action,,} ${1}? [y/n]"
-                read -r answer
-                if [[ ${answer,,} != "y" ]]; then
-                    exit  # Answered no
+    # Skip if source volume is read only
+    if [[ -w "/$sourcevol" ]]; then
+        if [[ ${mode,,} != "backup" ]]; then
+            if [[ ${mode,,} == "move" ]]; then
+                extrabakvol="/$sourcevol"
+            elif [[ ${mode,,} == "restore" ]]; then
+                extrabakvol="$targetvol"
+            fi
+            echo -e "NOTE: A backup of ${Cyan}$1${Off} is required"\
+                "for recovery if the move fails."
+            echo -e "Do you want to ${Yellow}backup${Off} the"\
+                "${Cyan}$1${Off} folder on $extrabakvol? [y/n]"
+            read -r answer
+            #echo ""
+            if [[ ${answer,,} == "y" ]]; then
+                # Check we have enough space
+                if ! check_space "/${sourcevol}/$1" "/${sourcevol}" extra; then
+                    ding
+                    echo -e "${Error}ERROR${Off} Not enough space on $extrabakvol to backup ${Cyan}$1${Off}!"
+                    echo "Do you want to continue ${action,,} ${1}? [y/n]"
+                    read -r answer
+                    if [[ ${answer,,} != "y" ]]; then
+                        exit  # Answered no
+                    fi
+                else
+                    echo -e "${Red}WARNING Backing up $1 could take a long time${Off}"
+                    backup_dir "$1" "$extrabakvol"
                 fi
-            else
-                echo -e "${Red}WARNING Backing up $1 could take a long time${Off}"
-                backup_dir "$1" "$extrabakvol"
             fi
         fi
     fi
@@ -2424,26 +2443,34 @@ for pkg in "${pkgs_sorted[@]}"; do
     fi
 
     if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
-        # Start package if needed so we can prune images
-        # and export container configurations
-        if ! package_is_running "$pkg"; then
-            package_start "$pkg" "$pkg_name"
-        fi
+        if [[ -w "/$sourcevol" ]]; then
+            # Start package if needed so we can prune images
+            # and export container configurations
+            if ! package_is_running "$pkg"; then
+                package_start "$pkg" "$pkg_name"
+            fi
 
-        if [[ ${mode,,} != "restore" ]]; then
-            # Export container settings to json files
-            #echo "Exporting container settings"
-            docker_export
-        fi
+            if [[ ${mode,,} != "restore" ]]; then
+                # Export container settings to json files
+                #echo "Exporting container settings"
+                docker_export
+            fi
 
-        if [[ ${mode,,} == "restore" ]]; then
-            # Remove dangling and unused images
-            echo "Removing dangling and unused docker images"
-            docker image prune --all --force >/dev/null
+            if [[ ${mode,,} == "restore" ]]; then
+                # Remove dangling and unused images
+                echo "Removing dangling and unused docker images"
+                docker image prune --all --force >/dev/null
+            else
+                # Remove dangling images
+                echo "Removing dangling docker images"
+                docker image prune --force >/dev/null
+            fi
         else
-            # Remove dangling images
-            echo "Removing dangling docker images"
-            docker image prune --force >/dev/null
+            # Skip read only source volume
+            echo "/$sourcevol is read only. Skipping:"
+            echo "  - Exporting container settings"
+            echo "  - Removing dangling and unused docker images"
+            echo "  - Removing dangling docker images"
         fi
     fi
 
