@@ -1,5 +1,5 @@
 v4.0.69
-- Changed to allow "moving" or backing up apps when volume is read only.
+- Changed to allow "moving" or backing up apps when volume is read only. #122
   - If source volume is read only:
     - Copies apps to target volume instead of trying to move them, when move selected.
     - Skips exporting container settings, as Docker or Container Manager cannot be start when volume is read only.
