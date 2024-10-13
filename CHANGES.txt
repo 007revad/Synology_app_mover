@@ -3,7 +3,7 @@ v4.0.69
   - If source volume is read only:
     - Copies apps to target volume instead of trying to move them, when move selected.
     - Skips exporting container settings, as Docker or Container Manager cannot be start when volume is read only.
-    - Skips removing dcoker dangling and unused images.
+    - Skips removing docker dangling and unused images.
 
 - Bug for DSM 6 rsync expecting `--exclude=PATTERN` and not `--exclude PATTERN`.
 - Bug fix for ext4 "rsync: mknod failed: No such file or directory (2)" when backing up `@docker`. Issue #117
