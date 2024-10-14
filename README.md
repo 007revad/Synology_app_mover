@@ -173,6 +173,7 @@ The **syno_app_mover.conf** file must be in the same foller as the **syno_app_mo
 
 buffer=50
 
+# The backuppath is only used by Backup and Restore modes
 # backuppath should be in the format of /volume/sharename/folder
 # For example:
 # backuppath="/volume1/backups"
