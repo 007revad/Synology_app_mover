@@ -47,7 +47,7 @@
 # DONE Bugfix for "rsync: mknod failed: No such file or directory (2)" when backing up `@docker`. Issue #117
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.69"
+scriptver="v4.0.70"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -998,6 +998,16 @@ move_pkg(){
     fi
 }
 
+set_buffer(){ 
+    # Set buffer GBs so we don't fill volume
+    bufferGB=$(/usr/syno/bin/synogetkeyvalue "$conffile" buffer)
+    if [[ $bufferGB -gt "0" ]]; then
+        buffer=$((bufferGB *1048576))
+    else
+        buffer=0
+    fi
+}
+
 folder_size(){ 
     # $1 is folder to check size of
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -1005,18 +1015,13 @@ folder_size(){
     needed=""  # var is used later in script
     if [[ -d "$1" ]]; then
         # Get size of $1 folder
-        need=$(du -s "$1" | awk '{ print $1 }')
+        need=$(du -s "$1" | awk '{print $1}')
         if [[ ! $need =~ ^[0-9]+$ ]]; then
             echo -e "${Yellow}WARNING${Off} Failed to get size of $1"
             need=0
         fi
         # Add buffer GBs so we don't fill volume
-        buffer=$(/usr/syno/bin/synogetkeyvalue "$conffile" buffer)
-        if [[ $buffer -gt "0" ]]; then
-            buffer=$((buffer *1000000))
-        else
-            buffer=0
-        fi
+        set_buffer
         needed=$((need +buffer))
     fi
 }
@@ -1032,24 +1037,49 @@ vol_free_space(){
     fi
 }
 
+need_show(){ 
+    if [[ $need -gt "999999" ]]; then
+        size_show="$((need /1048576)) GB"
+    elif [[ $need -gt "999" ]]; then
+        size_show="$((need /1048)) MB"
+    else
+        size_show="$need KB"
+    fi
+}
+
 check_space(){ 
     # $1 is /path/folder
     # $2 is source volume or target volume
+    # $3 is 'extra' or null
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
-    # Get size of extra @ folder
-    folder_size "$1"
+    if [[ $3 == "extra" ]]; then
+        # Get size of extra @ folder
+        folder_size "$1"
+    else
+        # Total size of pkg or all pkgs
+        need="$all_pkg_size"
+        # Add buffer GBs so we don't fill volume
+        set_buffer
+        needed=$((need +buffer))
+    fi
 
     # Get amount of free space on target volume
     vol_free_space "$2"
 
     # Check we have enough space
     if [[ ! $free -gt $needed ]]; then
-        echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,}"\
-            "/${sourcevol}/${Cyan}$(basename -- "$1")${Off} to $targetvol"
-        echo -en "Free: $((free /1048576)) GB  Needed: $((need /1048576)) GB"
+        if [[ $all == "yes" ]] && [[ $3 != "extra" ]]; then
+            echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,}"\
+                "${Cyan}All apps${Off} to $targetvol"
+        else
+            echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,}"\
+                "/${sourcevol}/${Cyan}$(basename -- "$1")${Off} to $targetvol"
+        fi
+        need_show
+        echo -en "Free: $((free /1048576)) GB  Needed: $size_show"
         if [[ $buffer -gt "0" ]]; then
-            echo -e " (plus $((buffer /1000000)) GB buffer)\n"
+            echo -e " (plus $bufferGB GB buffer)\n"
         else
             echo -e "\n"
         fi
@@ -1122,7 +1152,6 @@ copy_dir_dsm6(){
 copy_dir(){ 
     # Used by package backup and restore
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
     local pack
@@ -1671,6 +1700,141 @@ skip_dev_tools(){
     fi
 }
 
+check_pkg_size(){ 
+    # $1 is package name
+    # $2 is package source volume
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+    #size=$(du -sL /var/packages/"$1"/target | awk '{print $1}')
+    size=$(du -s /var/packages/"$1"/target/ | awk '{print $1}')
+    case "$1" in
+        ActiveBackup)
+            if [[ -d "/$sourcevol/@ActiveBackup" ]]; then
+                size2=$(du -s /"$sourcevol"/@ActiveBackup | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        ActiveBackup-GSuite)
+            if [[ -d "/$sourcevol/@ActiveBackup-GSuite" ]]; then
+                size2=$(du -s /"$sourcevol"/@ActiveBackup-GSuite | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        ActiveBackup-Office365)
+            if [[ -d "/$sourcevol/@ActiveBackup-Office365" ]]; then
+                size2=$(du -s /"$sourcevol"/@ActiveBackup-Office365 | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        Calendar)
+            if [[ -d "/$sourcevol/@calendar" ]]; then
+                size2=$(du -s /"$sourcevol"/@calendar | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        ContainerManager|Docker)
+            if [[ -d "/$sourcevol/@docker" ]]; then
+                size2=$(du -s /"$sourcevol"/@docker | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        DownloadStation)
+            if [[ -d "/$sourcevol/@download" ]]; then
+                size2=$(du -s /"$sourcevol"/@download | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        GlacierBackup)
+            if [[ -d "/$sourcevol/@GlacierBackup" ]]; then
+                size2=$(du -s /"$sourcevol"/@GlacierBackup | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        HyperBackup)
+            if [[ -d "/$sourcevol/@img_bkp_cache" ]]; then
+                size2=$(du -s /"$sourcevol"/@img_bkp_cache | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        MailPlus-Server)
+            if [[ -d "/$sourcevol/@maillog" ]]; then
+                size2=$(du -s /"$sourcevol"/@maillog | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@MailPlus-Server" ]]; then
+                size2=$(du -s /"$sourcevol"/@MailPlus-Server | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        MailServer)
+            if [[ -d "/$sourcevol/@maillog" ]]; then
+                size2=$(du -s /"$sourcevol"/@maillog | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@MailScanner" ]]; then
+                size2=$(du -s /"$sourcevol"/@MailScanner | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@clamav" ]]; then
+                size2=$(du -s /"$sourcevol"/@clamav | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        PrestoServer)
+            if [[ -d "/$sourcevol/@presto" ]]; then
+                size2=$(du -s /"$sourcevol"/@presto | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        SurveillanceStation)
+            if [[ -d "/$sourcevol/@ssbackup" ]]; then
+                size2=$(du -s /"$sourcevol"/@ssbackup | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@surveillance" ]]; then
+                size2=$(du -s /"$sourcevol"/@surveillance | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        SynologyApplicationService)
+            if [[ -d "/$sourcevol/@SynologyApplicationService" ]]; then
+                size2=$(du -s /"$sourcevol"/@SynologyApplicationService | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        SynologyDrive)
+            if [[ -d "/$sourcevol/@synologydrive" ]]; then
+                size2=$(du -s /"$sourcevol"/@synologydrive | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@SynologyDriveShareSync" ]]; then
+                size2=$(du -s /"$sourcevol"/@SynologyDriveShareSync | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        WebDAVServer)
+            if [[ -d "/$sourcevol/@webdav" ]]; then
+                size2=$(du -s /"$sourcevol"/@webdav | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        Virtualization)
+            if [[ -d "/$sourcevol/@GuestImage" ]]; then
+                size2=$(du -s /"$sourcevol"/@GuestImage | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@Repository" ]]; then
+                size2=$(du -s /"$sourcevol"/@Repository | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        *)
+            total_size="$size"
+            return
+            ;;
+    esac
+    total_size="$size"
+}
+
 
 #------------------------------------------------------------------------------
 # Select mode
@@ -1955,6 +2119,10 @@ if [[ $all != "yes" ]] && [[ $auto != "yes" ]]; then
     unset package_names
     declare -A package_names
     package_names["${pkg_name:?}"]="${pkg:?}"
+
+    unset package_names_rev
+    declare -A package_names_rev
+    package_names_rev["${pkg:?}"]="${pkg_name:?}"
 fi
 
 
@@ -2012,6 +2180,36 @@ elif [[ ${mode,,} == "restore" ]]; then
         targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
         echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
     fi
+fi
+
+# Check selected pkgs will fit on target volume
+if [[ "${#package_names[@]}" -gt "1" ]]; then
+    echo -e "Checking size of selected apps"
+else
+    echo -e "Checking size of ${package_names_rev[*]}"
+fi
+for pkg in "${package_names[@]}"; do
+    # Get volume package is installed on
+    sourcevol="$(readlink "/var/packages/$pkg/target" | cut -d'/' -f2)"
+
+    # Get pkg total size
+    check_pkg_size "$pkg" "/$sourcevol"
+    all_pkg_size=$((all_pkg_size +total_size))
+done
+
+# Abort if not enough space on target volume
+if ! check_space "$pkg" "${targetvol:?}" "$all_pkg_size"; then
+    ding
+    exit 1  # Not enough space
+fi
+
+# Show size of selected packages
+if [[ $all_pkg_size -gt "999999" ]]; then
+    echo -e "Size of selected app(s) is $((all_pkg_size /1048576)) GB\n"
+elif [[ $all_pkg_size -gt "999" ]]; then
+    echo -e "Size of selected app(s) is $((all_pkg_size /1048)) MB\n"
+else
+    echo -e "Size of selected app(s) is $all_pkg_size KB\n"
 fi
 
 # Check user is ready
@@ -2252,7 +2450,7 @@ process_packages(){
         # Check if @docker is on same volume as Docker package
         if [[ -d "/${sourcevol}/@docker" ]]; then
             # Check we have enough space
-            if ! check_space "/${sourcevol}/@docker" "${targetvol}"; then
+            if ! check_space "/${sourcevol}/@docker" "${targetvol}" extra; then
                 ding
                 echo -e "${Error}ERROR${Off} Not enough space on $targetvol to ${mode,,} ${Cyan}@docker${Off}!"
                 process_error="yes"
@@ -2275,7 +2473,7 @@ process_packages(){
         # Check if @download is on same volume as DownloadStation package
         if [[ -d "/${sourcevol}/@download" ]]; then
             # Check we have enough space
-            if ! check_space "/${sourcevol}/@download" "${targetvol}"; then
+            if ! check_space "/${sourcevol}/@download" "${targetvol}" extra; then
                 ding
                 echo -e "${Error}ERROR${Off} Not enough space on $targetvol to ${mode,,} ${Cyan}@download${Off}!"
                 process_error="yes"
@@ -2438,7 +2636,7 @@ for pkg in "${pkgs_sorted[@]}"; do
     # Skip backup or restore for excluded apps
     if [[ $all == "yes" ]] && [[ "${excludelist[*]}" =~ $pkg ]] &&\
         [[ $mode != "move" ]]; then
-        echo "Excluding $pkg"
+        echo -e "Excluding $pkg\n"
         continue
     fi
 
