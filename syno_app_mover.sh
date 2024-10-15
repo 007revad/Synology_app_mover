@@ -47,7 +47,7 @@
 # DONE Bugfix for "rsync: mknod failed: No such file or directory (2)" when backing up `@docker`. Issue #117
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.70"
+scriptver="v4.0.71"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1835,6 +1835,24 @@ check_pkg_size(){
     total_size="$size"
 }
 
+source_fs(){ 
+    # $1 is $sourcevol
+    if [[ $1 =~ "USB" ]]; then
+        sourcefs="$(mount | grep "/${1:?}/" | awk '{print $5}')"
+    else
+        sourcefs="$(mount | grep "/${1:?} " | awk '{print $5}')"
+    fi
+}
+
+target_fs(){
+    # $1 is $targetvol
+    if [[ $1 =~ "USB" ]]; then
+        targetfs="$(mount | grep "${1:?}/" | awk '{print $5}')"
+    else
+        targetfs="$(mount | grep "${1:?} " | awk '{print $5}')"
+    fi
+}
+
 
 #------------------------------------------------------------------------------
 # Select mode
@@ -2179,6 +2197,34 @@ elif [[ ${mode,,} == "restore" ]]; then
     if [[ $all != "yes" ]]; then
         targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
         echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
+    fi
+fi
+
+# Check source and target filesystem if Docker or Container Manager selected
+if [[ ${package_names[*]} =~ "ContainerManager" ]] || [[ ${package_names[*]} =~ "Docker" ]]; then
+    if [[ $mode == "restore" ]]; then
+        sourcevol=$(echo "$bkpath" | cut -d "/" -f2)
+    else
+        if [[ ${package_names[*]} =~ "ContainerManager" ]]; then
+            pkg="ContainerManager"
+        elif [[ ${package_names[*]} =~ "Docker" ]]; then
+            pkg="Docker"
+        fi
+        target=$(readlink "/var/packages/${pkg}/target")
+        sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
+    fi
+    source_fs "$sourcevol"
+    target_fs "$targetvol"
+    if [[ $targetfs != "$sourcefs" ]]; then
+        # Warn about different filesystems
+        if [[ ${#package_names[@]} -gt "1" ]]; then
+            skipdocker="yes"
+        else
+            ding
+            echo -en "${Yellow}WARNING${Off} Do not ${mode,,} ${package_names[*]} "
+            echo -e "from ${Cyan}$sourcefs${Off} volume to ${Cyan}$targetfs${Off} volume!\n"
+            exit 3
+        fi
     fi
 fi
 
@@ -2641,34 +2687,39 @@ for pkg in "${pkgs_sorted[@]}"; do
     fi
 
     if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
-        if [[ -w "/$sourcevol" ]]; then
-            # Start package if needed so we can prune images
-            # and export container configurations
-            if ! package_is_running "$pkg"; then
-                package_start "$pkg" "$pkg_name"
-            fi
-
-            if [[ ${mode,,} != "restore" ]]; then
-                # Export container settings to json files
-                #echo "Exporting container settings"
-                docker_export
-            fi
-
-            if [[ ${mode,,} == "restore" ]]; then
-                # Remove dangling and unused images
-                echo "Removing dangling and unused docker images"
-                docker image prune --all --force >/dev/null
-            else
-                # Remove dangling images
-                echo "Removing dangling docker images"
-                docker image prune --force >/dev/null
-            fi
+        if [[ $skipdocker == "yes" ]]; then
+            # Source and target are different files systems
+            echo -en "${Yellow}WARNING${Off} Refusing to ${mode,,} ${package_names_rev["$pkg"]}"
+            echo "from $sourcefs to $targetfs"
         else
-            # Skip read only source volume
-            echo "/$sourcevol is read only. Skipping:"
-            echo "  - Exporting container settings"
-            echo "  - Removing dangling and unused docker images"
-            echo "  - Removing dangling docker images"
+            if [[ -w "/$sourcevol" ]]; then
+                # Start package if needed so we can prune images
+                # and export container configurations
+                if ! package_is_running "$pkg"; then
+                    package_start "$pkg" "$pkg_name"
+                fi
+
+                if [[ ${mode,,} != "restore" ]]; then
+                    # Export container settings to json files
+                    #echo "Exporting container settings"
+                    docker_export
+                fi
+
+                if [[ ${mode,,} == "restore" ]]; then
+                    # Remove dangling and unused images
+                    echo "Removing dangling and unused docker images"
+                    docker image prune --all --force >/dev/null
+                else
+                    # Remove dangling images
+                    echo "Removing dangling docker images"
+                    docker image prune --force >/dev/null
+                fi
+            else
+                # Skip read only source volume
+                echo "/$sourcevol is read only. Skipping:"
+                echo "  - Exporting container settings"
+                echo "  - Removing dangling and unused docker images"
+            fi
         fi
     fi
 
