@@ -47,11 +47,14 @@
 # DONE Bugfix for "rsync: mknod failed: No such file or directory (2)" when backing up `@docker`. Issue #117
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.71"
+scriptver="v4.0.72"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
 
+# Prevent Entware or user edited PATH causing issues
+# shellcheck disable=SC2155  # Declare and assign separately to avoid masking return values
+export PATH=$(echo "$PATH" | sed -e 's/\/opt\/bin:\/opt\/sbin://')
 
 ding(){ 
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -560,7 +563,7 @@ progbar(){
             dots=""
             progress="           "
         fi
-        echo -ne "  ${2}$progress\r"; sleep 0.3
+        echo -ne "  ${2}$progress\r"; /usr/bin/sleep 0.3
     done
 }
 
@@ -1015,7 +1018,7 @@ folder_size(){
     needed=""  # var is used later in script
     if [[ -d "$1" ]]; then
         # Get size of $1 folder
-        need=$(du -s "$1" | awk '{print $1}')
+        need=$(/usr/bin/du -s "$1" | awk '{print $1}')
         if [[ ! $need =~ ^[0-9]+$ ]]; then
             echo -e "${Yellow}WARNING${Off} Failed to get size of $1"
             need=0
@@ -1704,126 +1707,126 @@ check_pkg_size(){
     # $1 is package name
     # $2 is package source volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-    #size=$(du -sL /var/packages/"$1"/target | awk '{print $1}')
-    size=$(du -s /var/packages/"$1"/target/ | awk '{print $1}')
+    #size=$(/usr/bin/du -sL /var/packages/"$1"/target | awk '{print $1}')
+    size=$(/usr/bin/du -s /var/packages/"$1"/target/ | awk '{print $1}')
     case "$1" in
         ActiveBackup)
             if [[ -d "/$sourcevol/@ActiveBackup" ]]; then
-                size2=$(du -s /"$sourcevol"/@ActiveBackup | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         ActiveBackup-GSuite)
             if [[ -d "/$sourcevol/@ActiveBackup-GSuite" ]]; then
-                size2=$(du -s /"$sourcevol"/@ActiveBackup-GSuite | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup-GSuite | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         ActiveBackup-Office365)
             if [[ -d "/$sourcevol/@ActiveBackup-Office365" ]]; then
-                size2=$(du -s /"$sourcevol"/@ActiveBackup-Office365 | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup-Office365 | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         Calendar)
             if [[ -d "/$sourcevol/@calendar" ]]; then
-                size2=$(du -s /"$sourcevol"/@calendar | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@calendar | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         ContainerManager|Docker)
             if [[ -d "/$sourcevol/@docker" ]]; then
-                size2=$(du -s /"$sourcevol"/@docker | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@docker | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         DownloadStation)
             if [[ -d "/$sourcevol/@download" ]]; then
-                size2=$(du -s /"$sourcevol"/@download | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@download | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         GlacierBackup)
             if [[ -d "/$sourcevol/@GlacierBackup" ]]; then
-                size2=$(du -s /"$sourcevol"/@GlacierBackup | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@GlacierBackup | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         HyperBackup)
             if [[ -d "/$sourcevol/@img_bkp_cache" ]]; then
-                size2=$(du -s /"$sourcevol"/@img_bkp_cache | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@img_bkp_cache | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         MailPlus-Server)
             if [[ -d "/$sourcevol/@maillog" ]]; then
-                size2=$(du -s /"$sourcevol"/@maillog | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@maillog | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             if [[ -d "/$sourcevol/@MailPlus-Server" ]]; then
-                size2=$(du -s /"$sourcevol"/@MailPlus-Server | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@MailPlus-Server | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         MailServer)
             if [[ -d "/$sourcevol/@maillog" ]]; then
-                size2=$(du -s /"$sourcevol"/@maillog | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@maillog | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             if [[ -d "/$sourcevol/@MailScanner" ]]; then
-                size2=$(du -s /"$sourcevol"/@MailScanner | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@MailScanner | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             if [[ -d "/$sourcevol/@clamav" ]]; then
-                size2=$(du -s /"$sourcevol"/@clamav | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@clamav | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         PrestoServer)
             if [[ -d "/$sourcevol/@presto" ]]; then
-                size2=$(du -s /"$sourcevol"/@presto | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@presto | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         SurveillanceStation)
             if [[ -d "/$sourcevol/@ssbackup" ]]; then
-                size2=$(du -s /"$sourcevol"/@ssbackup | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@ssbackup | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             if [[ -d "/$sourcevol/@surveillance" ]]; then
-                size2=$(du -s /"$sourcevol"/@surveillance | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@surveillance | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         SynologyApplicationService)
             if [[ -d "/$sourcevol/@SynologyApplicationService" ]]; then
-                size2=$(du -s /"$sourcevol"/@SynologyApplicationService | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyApplicationService | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         SynologyDrive)
             if [[ -d "/$sourcevol/@synologydrive" ]]; then
-                size2=$(du -s /"$sourcevol"/@synologydrive | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@synologydrive | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             if [[ -d "/$sourcevol/@SynologyDriveShareSync" ]]; then
-                size2=$(du -s /"$sourcevol"/@SynologyDriveShareSync | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyDriveShareSync | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         WebDAVServer)
             if [[ -d "/$sourcevol/@webdav" ]]; then
-                size2=$(du -s /"$sourcevol"/@webdav | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@webdav | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
         Virtualization)
             if [[ -d "/$sourcevol/@GuestImage" ]]; then
-                size2=$(du -s /"$sourcevol"/@GuestImage | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@GuestImage | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             if [[ -d "/$sourcevol/@Repository" ]]; then
-                size2=$(du -s /"$sourcevol"/@Repository | awk '{print $1}')
+                size2=$(/usr/bin/du -s /"$sourcevol"/@Repository | awk '{print $1}')
                 size=$((size +"$size2"))
             fi
             ;;
@@ -1837,20 +1840,12 @@ check_pkg_size(){
 
 source_fs(){ 
     # $1 is $sourcevol
-    if [[ $1 =~ "USB" ]]; then
-        sourcefs="$(mount | grep "/${1:?}/" | awk '{print $5}')"
-    else
-        sourcefs="$(mount | grep "/${1:?} " | awk '{print $5}')"
-    fi
+    sourcefs="$(df --print-type "/${1:?}" | tail -n +2 | awk '{print $2}')"
 }
 
-target_fs(){
+target_fs(){ 
     # $1 is $targetvol
-    if [[ $1 =~ "USB" ]]; then
-        targetfs="$(mount | grep "${1:?}/" | awk '{print $5}')"
-    else
-        targetfs="$(mount | grep "${1:?} " | awk '{print $5}')"
-    fi
+    targetfs="$(df --print-type "/${1:?}" | tail -n +2 | awk '{print $2}')"
 }
 
 
@@ -2215,7 +2210,7 @@ if [[ ${package_names[*]} =~ "ContainerManager" ]] || [[ ${package_names[*]} =~ 
     fi
     source_fs "$sourcevol"
     target_fs "$targetvol"
-    if [[ $targetfs != "$sourcefs" ]]; then
+    if [[ $targetfs != "$sourcefs" ]]; then
         # Warn about different filesystems
         if [[ ${#package_names[@]} -gt "1" ]]; then
             skipdocker="yes"
