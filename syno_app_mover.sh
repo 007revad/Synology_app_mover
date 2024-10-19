@@ -17,33 +17,44 @@
 # Instead of moving large extra folders copy them to the target volume.
 #   Then rename the source volume's @downloads to @downloads_backup.
 #
-# Add All option for moving All packages.
+# Add ability to move all apps
+# https://www.reddit.com/r/synology/comments/1eybzc1/comment/ljcj8re/
 #
-# Add ability to schedule a package or multiple packages.
-#   ./syno_app_mover.sh --auto ContainerManager
-#   ./syno_app_mover.sh --auto ContainerManager|Calendar|WebStation
+# Maybe add backing up "/volume#/@iSCSI/VDISK_BLUN" (VMM VMs)
+# https://www.synology-forum.de/threads/backup-der-vms.135462/post-1194705
+# https://www.synology-forum.de/threads/virtual-machine-manager-vms-sichern.91952/post-944113
 #
+#------------------------------------------------------------------------------
+# DONE Prune dangling docker images
 # https://docs.docker.com/config/pruning/
+#
+# DONE Add option for skipping specified apps when using --all option
+# https://github.com/007revad/Synology_app_mover/issues/87
+#
+# DONE Add ability to schedule backup a package or multiple packages.
+#   ./syno_app_mover.sh --auto=ContainerManager
+#   ./syno_app_mover.sh --auto=ContainerManager,Calendar,WebStation
+#   ./syno_app_mover.sh --auto=all
+#
+# DONE Add option to schedule backup of specific app
+# https://github.com/007revad/Synology_app_mover/issues/105
+#
+# DONE Changed --list option to also show if there are any broken packages (broken 'target' symlink or missing volume)
+# DONE Bugfix for bad array subscript when a broken package exists. Issue #117
+# DONE Bugfix for packages with spaces in their name (DSM 6 Plex Media Server)
+# DONE Bugfix for checking volume space when backing up `@docker`. Issues #116 and #118
+# DONE Bugfix for "rsync: mknod failed: File name too long (36)" when backing up `@docker`. Issue #120
+# DONE Bugfix for "rsync: mknod failed: No such file or directory (2)" when backing up `@docker`. Issue #117
 #------------------------------------------------------------------------------
 
-scriptver="v3.1.60"
+scriptver="v4.0.73"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
 
-
-# Shell Colors
-#Black='\e[0;30m'   # ${Black}
-Red='\e[0;31m'      # ${Red}
-#Green='\e[0;32m'   # ${Green}
-Yellow='\e[0;33m'   # ${Yellow}
-#Blue='\e[0;34m'    # ${Blue}
-#Purple='\e[0;35m'  # ${Purple}
-Cyan='\e[0;36m'     # ${Cyan}
-#White='\e[0;37m'   # ${White}
-Error='\e[41m'      # ${Error}
-#Warn='\e[47;31m'   # ${Warn}
-Off='\e[0m'         # ${Off}
+# Prevent Entware or user edited PATH causing issues
+# shellcheck disable=SC2155  # Declare and assign separately to avoid masking return values
+export PATH=$(echo "$PATH" | sed -e 's/\/opt\/bin:\/opt\/sbin://')
 
 ding(){ 
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -98,12 +109,208 @@ buildphase=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION buildphase)
 buildnumber=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION buildnumber)
 smallfixnumber=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION smallfixnumber)
 majorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
-minorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION minorversion)
+#minorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION minorversion)
 
 # Show DSM full version and model
 if [[ $buildphase == GM ]]; then buildphase=""; fi
 if [[ $smallfixnumber -gt "0" ]]; then smallfix="-$smallfixnumber"; fi
 echo -e "$model DSM $productversion-$buildnumber$smallfix $buildphase\n"
+
+
+usage(){ 
+    cat <<EOF
+Usage: $(basename "$0") [options]
+
+Options:
+  -h, --help            Show this help message
+  -v, --version         Show the script version
+      --autoupdate=AGE  Auto update script (useful when script is scheduled)
+                          AGE is how many days old a release must be before
+                          auto-updating. AGE must be a number: 0 or greater
+
+      --auto=APP        Automatically backup APP (for scheduling backups)
+                          APP can be a single app or a comma separated list
+                          Examples:
+                          --auto=radarr
+                          --auto=Calender,ContainerManager,radarr
+
+                          APP needs to be the app's system name
+                          View the system names with the --list option
+
+      --list            Display installed apps' system names
+                          
+EOF
+}
+
+list_names(){ 
+    # List app system names
+    if ! cd /var/packages; then
+        echo "Failed to cd to /var/packages!"
+        exit 1
+    fi
+
+    # Print header
+    echo -e "Use app system name for --auto option or exclude in conf file\n"
+    printf -- '-%.0s' {1..62}; echo  # print 62 -
+    echo "APP SYSTEM NAME              APP DISPLAY NAME"
+    printf -- '-%.0s' {1..62}; echo  # print 62 -
+
+    for p in *; do
+        if [[ -d "$p" ]]; then
+            if [[ ! -a "$p/target" ]] ; then
+                echo -e "\e[41mBroken symlink\e[0m $p"
+            else
+                long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" displayname)"
+                if [[ -z "$long_name" ]]; then
+                    long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" package)"
+                fi
+                # Pad with spaces to 29 chars
+                pad=$(printf -- ' %.0s' {1..29})
+                printf '%.*s' 29 "$p${pad}"
+
+                echo "$long_name"
+            fi
+        fi
+    done < <(find . -maxdepth 1 -type d)
+    echo ""
+    exit 0
+}
+
+scriptversion(){ 
+    cat <<EOF
+$script $scriptver - by 007revad
+
+See https://github.com/$repo
+EOF
+    exit 0
+}
+
+
+# Save options used for getopt
+args=("$@")
+
+autoupdate=""
+
+# Check for flags with getopt
+if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l \
+    auto:,list,help,version,autoupdate:,log,debug -- "${args[@]}")"; then
+    eval set -- "$options"
+    while true; do
+        case "${1,,}" in
+            -h|--help)          # Show usage options
+                usage
+                exit
+                ;;
+            -v|--version)       # Show script version
+                scriptversion
+                ;;
+            -l|--log)           # Log
+                #log=yes
+                ;;
+            -d|--debug)         # Show and log debug info
+                debug=yes
+                ;;
+            --list)             # List installed app's system names
+                list_names
+                ;;
+            --auto)             # Specify pkgs for scheduled backup
+                auto="yes"
+                color=no        # Disable colour text in task scheduler emails
+                mode="Backup"
+                action="Backing up"
+                if [[ ${2,,} == "all" ]]; then
+                    all="yes"
+                elif [[ $2 ]]; then
+                    IFS=',' read -r -a autos <<< "$2"; unset IFS
+                    if [[ ${#autos[@]} -gt "0" ]]; then
+                        for i in "${autos[@]}"; do
+                            # Trim leading and trailing spaces
+                            j=$(echo -n "$i" | xargs)
+                            # Check pkg name exists
+                            if [[ ! -d "/var/packages/$j" ]]; then
+                                echo -e "Invalid auto argument '$j'\n"
+                            else
+                                if readlink -f "/var/packages/$j/target" | grep -q -E '^/volume'; then
+                                    autolist+=("$j")
+                                else
+                                    #echo -e "Skipping system app: $j\n"
+                                    skipped+=("$j")
+                                fi
+                            fi
+                        done
+                    else
+                        ding
+                        echo -e "Missing argument to auto!\n"
+                        usage
+                        exit 2  # Missing argument
+                    fi
+                else
+                    ding
+                    echo -e "Missing argument to auto!\n"
+                    usage
+                    exit 2  # Missing argument
+                fi
+                shift
+                ;;
+            --autoupdate)       # Auto update script
+                autoupdate=yes
+                if [[ $2 =~ ^[0-9]+$ ]]; then
+                    delay="$2"
+                    shift
+                else
+                    delay="0"
+                fi
+                ;;
+            --)
+                shift
+                break
+                ;;
+            *)                  # Show usage options
+                ding
+                echo -e "Invalid option '$1'\n"
+                usage
+                exit 2  # Invalid argument
+                ;;
+        esac
+        shift
+    done
+else
+    echo
+    usage
+    exit
+fi
+
+# Abort if autolist is empty
+if [[ $auto == "yes" ]] && [[ ! ${#autolist[@]} -gt "0" ]]; then
+    ding
+    echo -e "No apps to backup!\n"
+    exit 2  # autolist empty
+fi
+
+# Show apps to auto backup
+#if [[ ${#autolist[@]} -gt "0" ]]; then     # debug
+#    echo -e "Backing up ${autolist[*]}\n"  # debug
+#fi                                         # debug
+
+if [[ $debug == "yes" ]]; then
+    set -x
+    export PS4='`[[ $? == 0 ]] || echo "\e[1;31;40m($?)\e[m\n "`:.$LINENO:'
+fi
+
+# Shell Colors
+if [[ $color != "no" ]]; then
+    #Black='\e[0;30m'   # ${Black}
+    Red='\e[0;31m'      # ${Red}
+    #Green='\e[0;32m'   # ${Green}
+    Yellow='\e[0;33m'   # ${Yellow}
+    #Blue='\e[0;34m'    # ${Blue}
+    #Purple='\e[0;35m'  # ${Purple}
+    Cyan='\e[0;36m'     # ${Cyan}
+    #White='\e[0;37m'   # ${White}
+    Error='\e[41m'      # ${Error}
+    #Warn='\e[47;31m'   # ${Warn}
+    Off='\e[0m'         # ${Off}
+fi
 
 
 #------------------------------------------------------------------------------
@@ -118,6 +325,18 @@ release=$(curl --silent -m 10 --connect-timeout 5 \
 # Release version
 tag=$(echo "$release" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 shorttag="${tag:1}"
+
+# Release published date
+published=$(echo "$release" | grep '"published_at":' | sed -E 's/.*"([^"]+)".*/\1/')
+published="${published:0:10}"
+published=$(date -d "$published" '+%s')
+
+# Today's date
+now=$(date '+%s')
+
+# Days since release published
+age=$(((now - published)/(60*60*24)))
+
 
 # Get script location
 # https://stackoverflow.com/questions/59895/
@@ -174,8 +393,18 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
         echo "You have the latest version extracted but are using an older version"
         sleep 10
     else
-        echo -e "${Cyan}Do you want to download $tag now?${Off} [y/n]"
-        read -r -t 30 reply
+        if [[ $autoupdate == "yes" ]]; then
+            if [[ $age -gt "$delay" ]] || [[ $age -eq "$delay" ]]; then
+                echo "Downloading $tag"
+                reply=y
+            else
+                echo "Skipping as $tag is less than $delay days old."
+            fi
+        else
+            echo -e "${Cyan}Do you want to download $tag now?${Off} [y/n]"
+            read -r -t 30 reply
+        fi
+
         if [[ ${reply,,} == "y" ]]; then
             # Delete previously downloaded .tar.gz file and extracted tmp files
             cleanup_tmp
@@ -208,12 +437,28 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
 
                             # Copy script's conf file to script location if missing
                             if [[ ! -f "$scriptpath/${scriptname}.conf" ]]; then
-                                # Set persmission on config file
+                                # Set permission on config file
                                 if ! chmod 664 "/tmp/$script-$shorttag/${scriptname}.conf"; then
                                     permerr=1
                                     echo -e "${Error}ERROR${Off} Failed to set read/write permissions on:"
                                     echo "$scriptpath/${scriptname}.conf"
                                 fi
+
+                                # Copy existing conf file settings to new conf file
+                                while read -r LINE; do
+                                    if [[ ${LINE:0:1} != "#" ]]; then
+                                        if [[ $LINE =~ ^[a-z_]+=.* ]]; then
+                                            oldfile="${scriptpath}/${scriptname}.conf"
+                                            newfile="/tmp/$script-$shorttag/${scriptname}.conf"
+                                            key="${LINE%=*}"
+                                            oldvalue="$(synogetkeyvalue "$oldfile" "$key")"
+                                            newvalue="$(synogetkeyvalue "$newfile" "$key")"
+                                            if [[ $oldvalue != "$newvalue" ]]; then
+                                                synosetkeyvalue "$newfile" "$key" "$oldvalue"
+                                            fi
+                                        fi
+                                    fi    
+                                done < "${scriptpath}/${scriptname}.conf"
 
                                 # Copy conf file to script location
                                 if ! cp -p "/tmp/$script-$shorttag/${scriptname}.conf"\
@@ -228,7 +473,7 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
 
                             # Copy new CHANGES.txt file to script location (if script on a volume)
                             if [[ $scriptpath =~ /volume* ]]; then
-                                # Set permsissions on CHANGES.txt
+                                # Set permissions on CHANGES.txt
                                 if ! chmod 664 "/tmp/$script-$shorttag/CHANGES.txt"; then
                                     permerr=1
                                     echo -e "${Error}ERROR${Off} Failed to set read/write permissions on:"
@@ -318,7 +563,7 @@ progbar(){
             dots=""
             progress="           "
         fi
-        echo -ne "  ${2}$progress\r"; sleep 0.3
+        echo -ne "  ${2}$progress\r"; /usr/bin/sleep 0.3
     done
 }
 
@@ -336,7 +581,7 @@ progstatus(){
     else
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} $2 failed!"
-        echo "$tracestring"
+        echo "$tracestring ($scriptver)"
         if [[ $exitonerror != "no" ]]; then
             exit 1  # Skip exit if exitonerror != no
         fi
@@ -345,7 +590,6 @@ progstatus(){
     #echo "return: $1"  # debug
 }
 
-# shellcheck disable=SC2143
 package_status(){ 
     # $1 is package name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -581,7 +825,12 @@ move_pkg_do(){
             is_empty "${2:?}/${appdir:?}/${1:?}"; then
 
             # Move source folder to target folder
-            mv -f "${source:?}" "${2:?}/${appdir:?}" &
+            if [[ -w "/$sourcevol" ]]; then
+                mv -f "${source:?}" "${2:?}/${appdir:?}" &
+            else
+                # Source volume if read only
+                cp -prf "${source:?}" "${2:?}/${appdir:?}" &
+            fi
             pid=$!
             string="${action} $source to ${Cyan}$2${Off}"
             progbar "$pid" "$string"
@@ -723,8 +972,8 @@ move_pkg(){
             process_error="yes"
             return 1
         fi
-        # shellcheck disable=SC2162
-        while read link source; do
+        # shellcheck disable=SC2162  # `read` without `-r` will mangle backslashes
+        while read -r link source; do
             app_paths_tmp+=("$source")
         done < <(find . -maxdepth 2 -type l -ls | grep '/'"${1// /\\\\ }"'$' | cut -d'.' -f2- | sed 's/ ->//')
 
@@ -752,6 +1001,16 @@ move_pkg(){
     fi
 }
 
+set_buffer(){ 
+    # Set buffer GBs so we don't fill volume
+    bufferGB=$(/usr/syno/bin/synogetkeyvalue "$conffile" buffer)
+    if [[ $bufferGB -gt "0" ]]; then
+        buffer=$((bufferGB *1048576))
+    else
+        buffer=0
+    fi
+}
+
 folder_size(){ 
     # $1 is folder to check size of
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
@@ -759,18 +1018,13 @@ folder_size(){
     needed=""  # var is used later in script
     if [[ -d "$1" ]]; then
         # Get size of $1 folder
-        need=$(du -s "$1" | awk '{ print $1 }')
-        if [[ ! $need -gt 0 ]]; then
-            echo "${Yellow}WARNING${Off} Failed to get size of $1" >&2
+        need=$(/usr/bin/du -s "$1" | awk '{print $1}')
+        if [[ ! $need =~ ^[0-9]+$ ]]; then
+            echo -e "${Yellow}WARNING${Off} Failed to get size of $1"
             need=0
         fi
         # Add buffer GBs so we don't fill volume
-        buffer=$(/usr/syno/bin/synogetkeyvalue "$conffile" buffer)
-        if [[ $buffer -gt "0" ]]; then
-            buffer=$((buffer *1000000))
-        else
-            buffer=0
-        fi
+        set_buffer
         needed=$((need +buffer))
     fi
 }
@@ -786,24 +1040,49 @@ vol_free_space(){
     fi
 }
 
+need_show(){ 
+    if [[ $need -gt "999999" ]]; then
+        size_show="$((need /1048576)) GB"
+    elif [[ $need -gt "999" ]]; then
+        size_show="$((need /1048)) MB"
+    else
+        size_show="$need KB"
+    fi
+}
+
 check_space(){ 
     # $1 is /path/folder
     # $2 is source volume or target volume
+    # $3 is 'extra' or null
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
 
-    # Get size of extra @ folder
-    folder_size "$1"
+    if [[ $3 == "extra" ]]; then
+        # Get size of extra @ folder
+        folder_size "$1"
+    else
+        # Total size of pkg or all pkgs
+        need="$all_pkg_size"
+        # Add buffer GBs so we don't fill volume
+        set_buffer
+        needed=$((need +buffer))
+    fi
 
     # Get amount of free space on target volume
     vol_free_space "$2"
 
     # Check we have enough space
     if [[ ! $free -gt $needed ]]; then
-        echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,}"\
-            "/${sourcevol}/${Cyan}$(basename -- "$1")${Off} to $targetvol"
-        echo -en "Free: $((free /1048576)) GB  Needed: $((need /1048576)) GB"
+        if [[ $all == "yes" ]] && [[ $3 != "extra" ]]; then
+            echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,}"\
+                "${Cyan}All apps${Off} to $targetvol"
+        else
+            echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,}"\
+                "/${sourcevol}/${Cyan}$(basename -- "$1")${Off} to $targetvol"
+        fi
+        need_show
+        echo -en "Free: $((free /1048576)) GB  Needed: $size_show"
         if [[ $buffer -gt "0" ]]; then
-            echo -e " (plus $((buffer /1000000)) GB buffer)\n"
+            echo -e " (plus $bufferGB GB buffer)\n"
         else
             echo -e "\n"
         fi
@@ -838,7 +1117,6 @@ show_move_share(){
 copy_dir_dsm6(){ 
     # Backup or restore DSM 6 /usr/syno/etc/packages/$pkg/
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     # $1 is package name
     # $2 is destination volume
     local pack
@@ -876,7 +1154,6 @@ copy_dir_dsm6(){
 copy_dir(){ 
     # Used by package backup and restore
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     # $1 is folder (@surveillance etc)
     # $2 is "extras" or null
     local pack
@@ -899,7 +1176,17 @@ copy_dir(){
         #if ! is_empty "/${sourcevol:?}/${1:?}$pack"; then
             if [[ $2 == "extras" ]]; then
                 # If string is too long progbar gets messed up
-                cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
+                #cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" &
+                if [[ $1 == "@docker" ]]; then
+                    excludeargs=(
+                        "--exclude=subvolumes/*/tmp/"  # btfs        Issue #120
+                        "--exclude=subvolumes/*/run/"  # btfs        Issue #120
+                        "--exclude=aufs/diff/*/run/"   # aufs (ext4) Issue #117
+                    )
+                    rsync -q -aHX --delete --compress-level=0 "${excludeargs[@]}" "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
+                else
+                    rsync -q -aHX --delete --compress-level=0 "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
+                fi
                 pid=$!
                 string="${action} /${sourcevol}/${1}"
                 progbar "$pid" "$string"
@@ -907,7 +1194,8 @@ copy_dir(){
                 progstatus "$?" "$string" "line ${LINENO}"
             else
                 # If string is too long progbar gets messed up
-                cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}/${1:?}" &
+                #cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}/${1:?}" &
+                rsync -q -aHX --delete --compress-level=0 "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" &
                 pid=$!
                 string="${action} /${sourcevol}/${1}/${Cyan}$pkg${Off}"
                 progbar "$pid" "$string"
@@ -944,9 +1232,11 @@ move_dir(){
     fi
 
     # Warn if folder is larger than 1GB
-    folder_size "/${sourcevol:?}/$1"
-    if [[ $need -gt "1048576" ]]; then
-        echo -e "${Red}WARNING $action $1 could take a long time${Off}"
+    if [[ ! "${applist[*]}" =~ $1 ]]; then
+        folder_size "/${sourcevol:?}/$1"
+        if [[ $need -gt "1048576" ]]; then
+            echo -e "${Red}WARNING $action $1 could take a long time${Off}"
+        fi
     fi
 
     if [[ -d "/${sourcevol:?}/${1:?}" ]]; then
@@ -956,9 +1246,19 @@ move_dir(){
                     # Create @docker folder on target volume
                     create_dir "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}"
                     # Move contents of @docker to @docker on target volume
-                    mv -f "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" &
+                    if [[ -w "/$sourcevol" ]]; then
+                        mv -f "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" &
+                    else
+                        # Source volume if read only
+                        cp -prf "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" &
+                    fi
                 else
-                    mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+                    if [[ -w "/$sourcevol" ]]; then
+                        mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+                    else
+                        # Source volume if read only
+                        cp -prf "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" &
+                    fi
                 fi
                 pid=$!
                 string="${action} /${sourcevol}/$1 to ${Cyan}$targetvol${Off}"
@@ -1059,6 +1359,9 @@ move_extras(){
             #echo ""
             ;;
         ContainerManager|Docker)
+
+            # /var/services/web_packages/docker ???
+
             # Edit symlink before moving @docker
             # If edit after it does not get edited if move @docker errors
             if [[ ${mode,,} != "backup" ]]; then
@@ -1240,7 +1543,11 @@ move_extras(){
             #echo ""
             ;;
         SynologyDrive)
-            exitonerror="no" && move_dir "@synologydrive" extras
+            # Synology Drive database
+            # Moving the database in Synology Drive Admin moves @synologydrive
+            #exitonerror="no" && move_dir "@synologydrive" extras
+
+            # Synology Drive ShareSync Folder
             exitonerror="no" && move_dir "@SynologyDriveShareSync" extras
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SynologyDrive/etc/sharesync/daemon.conf
@@ -1262,10 +1569,13 @@ move_extras(){
                     /usr/syno/bin/synosetkeyvalue "$file" volume "${2:?}"
                 fi
 
-                if ! readlink /var/packages/SynologyDrive/etc/repo | grep "${2:?}" >/dev/null; then
-                    rm /var/packages/SynologyDrive/etc/repo
-                    ln -s "${2:?}/@synologydrive/@sync" /var/packages/SynologyDrive/etc/repo
-                fi
+                # Moving the database in Synology Drive Admin changes 
+                # the repo symlink and the db-vol setting
+                # in /var/packages/SynologyDrive/etc/db-path.conf
+                #if ! readlink /var/packages/SynologyDrive/etc/repo | grep "${2:?}" >/dev/null; then
+                #    rm /var/packages/SynologyDrive/etc/repo
+                #    ln -s "${2:?}/@synologydrive/@sync" /var/packages/SynologyDrive/etc/repo
+                #fi
             fi
             #echo ""
             ;;
@@ -1276,6 +1586,10 @@ move_extras(){
         Virtualization)
             exitonerror="no" && move_dir "@GuestImage" extras
             exitonerror="no" && move_dir "@Repository" extras
+
+            # Move Virtual Machines - target must be btrfs
+            #exitonerror="no" && move_dir "@iSCSI" extras
+
             # VMM creates /volume#/vdsm_repo.conf so no need to move it
             #echo ""
             ;;
@@ -1290,9 +1604,11 @@ web_packages(){
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
     if [[ $buildnumber -gt "64570" ]]; then
         # DSM 7.2.1 and later
+        # synoshare --get-real-path is case insensitive
         web_pkg_path=$(/usr/syno/sbin/synoshare --get-real-path web_packages)
     else
         # DSM 7.2 and earlier
+        # synoshare --getmap is case insensitive
         web_pkg_path=$(/usr/syno/sbin/synoshare --getmap web_packages | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
     fi
     if [[ -d "$web_pkg_path" ]]; then
@@ -1391,36 +1707,186 @@ skip_dev_tools(){
     fi
 }
 
+check_pkg_size(){ 
+    # $1 is package name
+    # $2 is package source volume
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
+    #size=$(/usr/bin/du -sL /var/packages/"$1"/target | awk '{print $1}')
+    size=$(/usr/bin/du -s /var/packages/"$1"/target/ | awk '{print $1}')
+    case "$1" in
+        ActiveBackup)
+            if [[ -d "/$sourcevol/@ActiveBackup" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        ActiveBackup-GSuite)
+            if [[ -d "/$sourcevol/@ActiveBackup-GSuite" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup-GSuite | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        ActiveBackup-Office365)
+            if [[ -d "/$sourcevol/@ActiveBackup-Office365" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup-Office365 | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        Calendar)
+            if [[ -d "/$sourcevol/@calendar" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@calendar | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        ContainerManager|Docker)
+            if [[ -d "/$sourcevol/@docker" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@docker | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        DownloadStation)
+            if [[ -d "/$sourcevol/@download" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@download | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        GlacierBackup)
+            if [[ -d "/$sourcevol/@GlacierBackup" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@GlacierBackup | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        HyperBackup)
+            if [[ -d "/$sourcevol/@img_bkp_cache" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@img_bkp_cache | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        MailPlus-Server)
+            if [[ -d "/$sourcevol/@maillog" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@maillog | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@MailPlus-Server" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@MailPlus-Server | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        MailServer)
+            if [[ -d "/$sourcevol/@maillog" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@maillog | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@MailScanner" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@MailScanner | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@clamav" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@clamav | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        PrestoServer)
+            if [[ -d "/$sourcevol/@presto" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@presto | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        SurveillanceStation)
+            if [[ -d "/$sourcevol/@ssbackup" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@ssbackup | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@surveillance" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@surveillance | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        SynologyApplicationService)
+            if [[ -d "/$sourcevol/@SynologyApplicationService" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyApplicationService | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        SynologyDrive)
+            # Moving the database in Synology Drive Admin moves @synologydrive
+            #if [[ -d "/$sourcevol/@synologydrive" ]]; then
+            #    size2=$(/usr/bin/du -s /"$sourcevol"/@synologydrive | awk '{print $1}')
+            #    size=$((size +"$size2"))
+            #fi
+            if [[ -d "/$sourcevol/@SynologyDriveShareSync" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyDriveShareSync | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        WebDAVServer)
+            if [[ -d "/$sourcevol/@webdav" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@webdav | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        Virtualization)
+            if [[ -d "/$sourcevol/@GuestImage" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@GuestImage | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            if [[ -d "/$sourcevol/@Repository" ]]; then
+                size2=$(/usr/bin/du -s /"$sourcevol"/@Repository | awk '{print $1}')
+                size=$((size +"$size2"))
+            fi
+            ;;
+        *)
+            total_size="$size"
+            return
+            ;;
+    esac
+    total_size="$size"
+}
+
+source_fs(){ 
+    # $1 is $sourcevol
+    sourcefs="$(df --print-type "/${1:?}" | tail -n +2 | awk '{print $2}')"
+}
+
+target_fs(){ 
+    # $1 is $targetvol
+    targetfs="$(df --print-type "/${1:?}" | tail -n +2 | awk '{print $2}')"
+}
+
 
 #------------------------------------------------------------------------------
 # Select mode
 
 echo ""
-modes=( "Move" "Backup" "Restore" )
-PS3="Select the mode: "
-select m in "${modes[@]}"; do
-    case "$m" in
-        Move)
-            mode="Move"
-            action="Moving"
-            break
-            ;;
-        Backup)
-            mode="Backup"
-            action="Backing up"
-            break
-            ;;
-        Restore)
-            mode="Restore"
-            action="Restoring"
-            break
-            ;;
-        *)  
-            echo "Invalid choice!"
-            ;;
-    esac
-done
-echo -e "You selected ${Cyan}${mode}${Off}\n"
+if [[ $auto == "yes" ]]; then
+    echo -e "Using auto ${Cyan}${mode}${Off} mode\n"
+else
+    modes=( "Move" "Backup" "Restore" )
+    PS3="Select the mode: "
+    select m in "${modes[@]}"; do
+        case "$m" in
+            Move)
+                mode="Move"
+                action="Moving"
+                break
+                ;;
+            Backup)
+                mode="Backup"
+                action="Backing up"
+                break
+                ;;
+            Restore)
+                mode="Restore"
+                action="Restoring"
+                break
+                ;;
+            *)  
+                echo "Invalid choice!"
+                ;;
+        esac
+    done
+    echo -e "You selected ${Cyan}${mode}${Off}\n"
+fi
 
 
 # Check backup path if mode is backup or restore
@@ -1447,6 +1913,29 @@ if [[ ${mode,,} != "move" ]]; then
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} Backup folder ${Cyan}$backuppath${Off} not found!"
         exit 1  # Backup folder not found
     fi
+
+    # Get list of excluded packages
+    exclude="$(/usr/syno/bin/synogetkeyvalue "$conffile" exclude)"
+    if [[ $exclude ]]; then
+        IFS=',' read -r -a excludes <<< "$exclude"; unset IFS
+        # Trim leading and trailing spaces
+        for i in "${excludes[@]}"; do
+            excludelist+=($(echo -n "$i" | xargs))
+        done
+    fi
+
+    # Get age of container settings exports to delete
+    delete_older="$(/usr/syno/bin/synogetkeyvalue "$conffile" delete_older)"
+
+    # Get list of ignored containers
+    ignored_containers="$(/usr/syno/bin/synogetkeyvalue "$conffile" ignored_containers)"
+    if [[ $ignored_containers ]]; then
+        IFS=',' read -r -a ignoreds <<< "$ignored_containers"; unset IFS
+        # Trim leading and trailing spaces
+        for i in "${ignoreds[@]}"; do
+            ignored_containers_list+=($(echo -n "$i" | xargs))
+        done
+    fi
 fi
 if [[ ${mode,,} == "backup" ]]; then
     echo -e "Backup path is: ${Cyan}${backuppath}${Off}\n"
@@ -1460,7 +1949,7 @@ if [[ $backupvol =~ volumeUSB[1-9] ]]; then
     filesys="$(mount | grep "/${backupvol:?}/usbshare " | awk '{print $5}')"
     if [[ ! $filesys =~ ^ext[3-4]$ ]] && [[ ! $filesys =~ ^btrfs$ ]]; then
         ding
-        echo -e "${Warn}WARNING${Off} Only backup to ext3, ext4 or btrfs USB partition!"
+        echo -e "${Yellow}WARNING${Off} Only backup to ext3, ext4 or btrfs USB partition!"
         exit 1  # USB volume is not ext3, ext4 of btrfs
     fi
 fi
@@ -1474,26 +1963,57 @@ declare -A package_names_rev
 package_infos=( )
 if [[ ${mode,,} != "restore" ]]; then
 
-    # Add non-system packages to array
-    cdir /var/packages || exit
-    #while read -r link target; do
-    # shellcheck disable=SC2162
-    while read link target; do
-        package="$(printf %s "$link" | cut -d'/' -f2 )"
-        package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
-        package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
-        if [[ -z "$package_name" ]]; then
-            package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
-        fi
+    if [[ $auto == "yes" ]]; then
+        # Add auto packages to array
+        for package in "${autolist[@]}"; do
+            package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+            if [[ -z "$package_name" ]]; then
+                package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
+            fi
 
-        # Skip packages that are dev tools with no data
-        if ! skip_dev_tools "$package"; then
-            package_infos+=("${package_volume}|${package_name}")
-            package_names["${package_name}"]="${package}"
-            package_names_rev["${package}"]="${package_name}"
+            # Skip packages that are dev tools with no data
+            if ! skip_dev_tools "$package"; then
+                #package_infos+=("${package_name}")
+                package_names["${package_name}"]="${package}"
+                package_names_rev["${package}"]="${package_name}"
+            else
+                echo -e "Skipping non-stoppable app: $package_name"
+                skip_echo="yes"
+            fi
+        done
+
+        # Show skipped system apps
+        if [[ ${#skipped[*]} -gt "0" ]]; then
+            echo -e "Skipping system app(s): ${skipped[*]}"
+            skip_echo="yes"
         fi
-    #done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | awk '{print $(NF-2), $NF}')
-    done < <(find . -maxdepth 2 -type l -ls | grep volume | grep target | cut -d'.' -f2- | sed 's/ ->//')
+        if [[ $skip_echo == "yes" ]]; then
+            echo ""
+        fi
+    else
+        # Add non-system packages to array
+        cdir /var/packages || exit
+        while IFS= read -r -d '' link && IFS= read -r -d '' target; do
+            if [[ ${link##*/} == "target" ]] && echo "$target" | grep -q 'volume'; then
+                # Check symlink target exists
+                if [[ -a "/var/packages${link#.}" ]] ; then
+                    package="$(printf %s "$link" | cut -d'/' -f2 )"
+                    package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
+                    package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+                    if [[ -z "$package_name" ]]; then
+                        package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
+                    fi
+
+                    # Skip packages that are dev tools with no data
+                    if ! skip_dev_tools "$package"; then
+                        package_infos+=("${package_volume}|${package_name}")
+                        package_names["${package_name}"]="${package}"
+                        package_names_rev["${package}"]="${package_name}"
+                    fi
+                fi
+            fi
+        done < <(find . -maxdepth 2 -type l -printf '%p\0%l\0')
+    fi
 elif [[ ${mode,,} == "restore" ]]; then
 
     # Add list of backed up packages to array
@@ -1520,101 +2040,107 @@ fi
 # Sort array
 IFS=$'\n' package_infos_sorted=($(sort <<<"${package_infos[*]}")); unset IFS
 
-# Offer to backup or restore all packages
-if [[ ${mode,,} == "backup" ]]; then
-    echo -e "Do you want to backup ${Cyan}All${Off} packages? [y/n]"
-    read -r answer
-    #echo ""
-    if [[ ${answer,,} == "y" ]]; then
-        all="yes"
-        echo -e "You selected ${Cyan}All${Off}\n"
-    fi
-elif [[ ${mode,,} == "restore" ]]; then
-    echo -e "Do you want to restore ${Cyan}All${Off} backed up packages? [y/n]"
-    read -r answer
-    #echo ""
-    if [[ ${answer,,} == "y" ]]; then
-        all="yes"
-        echo -e "You selected ${Cyan}All${Off}\n"
-    fi
-fi
-
-if [[ $all != "yes" ]]; then
-    if [[ ${mode,,} != "restore" ]]; then
-        # Select package to move or backup
-
-        if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
-            echo -e "[Installed package list]"
-            for ((i=1; i<=${#package_infos_sorted[@]}; i++)); do
-                info="${package_infos_sorted[i-1]}"
-                before_pipe="${info%%|*}"
-                after_pipe="${info#*|}"
-                package_infos_show+=("$before_pipe  $after_pipe")
-            done
+if [[ $auto != "yes" ]]; then
+    # Offer to backup or restore all packages
+    if [[ ${mode,,} == "backup" ]]; then
+        echo -e "Do you want to backup ${Cyan}All${Off} packages? [y/n]"
+        read -r answer
+        #echo ""
+        if [[ ${answer,,} == "y" ]]; then
+            all="yes"
+            echo -e "You selected ${Cyan}All${Off}\n"
         fi
-
-        if [[ ${#package_infos_show[@]} -gt 0 ]]; then
-            PS3="Select the package to ${mode,,}: "
-            select m in "${package_infos_show[@]}"; do
-                case "$m" in
-                    /volume*)
-                        # Parse selected element of array
-                        package_volume="$(echo "$m" | awk '{print $1}')"
-                        pkg_name=${m#"$package_volume  "}
-                        pkg="${package_names[${pkg_name}]}"
-                        break
-                        ;;
-                    *)
-                        echo "Invalid choice! $m"
-                        ;;
-                esac
-            done
-        else
-            echo "No movable packages found!" && exit 1
-        fi
-
-        echo -e "You selected ${Cyan}${pkg_name}${Off} in ${Cyan}${package_volume}${Off}\n"
-        target=$(readlink "/var/packages/${pkg}/target")
-        linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
-
     elif [[ ${mode,,} == "restore" ]]; then
-        # Select package to backup
+        echo -e "Do you want to restore ${Cyan}All${Off} backed up packages? [y/n]"
+        read -r answer
+        #echo ""
+        if [[ ${answer,,} == "y" ]]; then
+            all="yes"
+            echo -e "You selected ${Cyan}All${Off}\n"
+        fi
+    fi
 
-        # Select package to restore
-        if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
-            echo -e "[Restorable package list]"
-            PS3="Select the package to restore: "
-            select pkg_name in "${package_infos_sorted[@]}"; do
-                if [[ $pkg_name ]]; then
-                    pkg="${package_names[${pkg_name}]}"
-                    if [[ -d $pkg ]]; then
-                        echo -e "You selected ${Cyan}${pkg_name}${Off}\n"
-                        break
+    if [[ $all != "yes" ]]; then
+        if [[ ${mode,,} != "restore" ]]; then
+            # Select package to move or backup
+
+            if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
+                echo -e "[Installed package list]"
+                for ((i=1; i<=${#package_infos_sorted[@]}; i++)); do
+                    info="${package_infos_sorted[i-1]}"
+                    before_pipe="${info%%|*}"
+                    after_pipe="${info#*|}"
+                    package_infos_show+=("$before_pipe  $after_pipe")
+                done
+            fi
+
+            if [[ ${#package_infos_show[@]} -gt 0 ]]; then
+                PS3="Select the package to ${mode,,}: "
+                select m in "${package_infos_show[@]}"; do
+                    case "$m" in
+                        /volume*)
+                            # Parse selected element of array
+                            package_volume="$(echo "$m" | awk '{print $1}')"
+                            pkg_name=${m#"$package_volume  "}
+                            pkg="${package_names[${pkg_name}]}"
+                            break
+                            ;;
+                        *)
+                            echo "Invalid choice! $m"
+                            ;;
+                    esac
+                done
+            else
+                echo "No movable packages found!" && exit 1
+            fi
+
+            echo -e "You selected ${Cyan}${pkg_name}${Off} in ${Cyan}${package_volume}${Off}\n"
+            target=$(readlink "/var/packages/${pkg}/target")
+            linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
+
+        elif [[ ${mode,,} == "restore" ]]; then
+            # Select package to backup
+
+            # Select package to restore
+            if [[ ${#package_infos_sorted[@]} -gt 0 ]]; then
+                echo -e "[Restorable package list]"
+                PS3="Select the package to restore: "
+                select pkg_name in "${package_infos_sorted[@]}"; do
+                    if [[ $pkg_name ]]; then
+                        pkg="${package_names[${pkg_name}]}"
+                        if [[ -d $pkg ]]; then
+                            echo -e "You selected ${Cyan}${pkg_name}${Off}\n"
+                            break
+                        else
+                            ding
+                            echo -e "Line ${LINENO}: ${Error}ERROR${Off} $pkg_name not found!"
+                            exit 1  # Selected package not found
+                        fi
                     else
-                        ding
-                        echo -e "Line ${LINENO}: ${Error}ERROR${Off} $pkg_name not found!"
-                        exit 1  # Selected package not found
+                        echo "Invalid choice!"
                     fi
-                else
-                    echo "Invalid choice!"
-                fi
-            done
+                done
 
-            # Check if package is installed
-            check_pkg_installed "$pkg" "$pkg_name"
-        else
-            ding
-            echo -e "Line ${LINENO}: ${Error}ERROR${Off} No package backups found!"
-            exit 1  # No package backups found
+                # Check if package is installed
+                check_pkg_installed "$pkg" "$pkg_name"
+            else
+                ding
+                echo -e "Line ${LINENO}: ${Error}ERROR${Off} No package backups found!"
+                exit 1  # No package backups found
+            fi
         fi
     fi
 fi
 
 # Assign just the selected package to array
-if [[ $all != "yes" ]]; then
+if [[ $all != "yes" ]] && [[ $auto != "yes" ]]; then
     unset package_names
     declare -A package_names
     package_names["${pkg_name:?}"]="${pkg:?}"
+
+    unset package_names_rev
+    declare -A package_names_rev
+    package_names_rev["${pkg:?}"]="${pkg_name:?}"
 fi
 
 
@@ -1674,24 +2200,84 @@ elif [[ ${mode,,} == "restore" ]]; then
     fi
 fi
 
-# Check user is ready
-if [[ $all == "yes" ]]; then
-    #echo -e "${Red}WARNING Packages with dependencies may be stopped until the"
-    #echo -e "${mode} of all packages has finished which could take long while.${Off}"
-    if [[ ${mode,,} == "backup" ]]; then
-        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} packages to ${Cyan}${backuppath}${Off}? [y/n]"
+# Check source and target filesystem if Docker or Container Manager selected
+if [[ ${package_names[*]} =~ "ContainerManager" ]] || [[ ${package_names[*]} =~ "Docker" ]]; then
+    if [[ $mode == "restore" ]]; then
+        sourcevol=$(echo "$bkpath" | cut -d "/" -f2)
     else
-        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} backed up packages? [y/n]"
+        if [[ ${package_names[*]} =~ "ContainerManager" ]]; then
+            pkg="ContainerManager"
+        elif [[ ${package_names[*]} =~ "Docker" ]]; then
+            pkg="Docker"
+        fi
+        target=$(readlink "/var/packages/${pkg}/target")
+        sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
     fi
-elif [[ ${mode,,} == "backup" ]]; then
-    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${backuppath}${Off}? [y/n]"
-else
-    echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
+    source_fs "$sourcevol"
+    target_fs "$targetvol"
+    if [[ $targetfs != "$sourcefs" ]]; then
+        # Warn about different filesystems
+        if [[ ${#package_names[@]} -gt "1" ]]; then
+            skipdocker="yes"
+        else
+            ding
+            echo -en "${Yellow}WARNING${Off} Do not ${mode,,} ${package_names[*]} "
+            echo -e "from ${Cyan}$sourcefs${Off} volume to ${Cyan}$targetfs${Off} volume!\n"
+            exit 3
+        fi
+    fi
 fi
-read -r answer
-echo ""
-if [[ ${answer,,} != y ]]; then
-    exit  # Answered no
+
+# Check selected pkgs will fit on target volume
+if [[ "${#package_names[@]}" -gt "1" ]]; then
+    echo -e "Checking size of selected apps"
+else
+    echo -e "Checking size of ${package_names_rev[*]}"
+fi
+for pkg in "${package_names[@]}"; do
+    # Get volume package is installed on
+    sourcevol="$(readlink "/var/packages/$pkg/target" | cut -d'/' -f2)"
+
+    # Get pkg total size
+    check_pkg_size "$pkg" "/$sourcevol"
+    all_pkg_size=$((all_pkg_size +total_size))
+done
+
+# Abort if not enough space on target volume
+if ! check_space "$pkg" "${targetvol:?}" "$all_pkg_size"; then
+    ding
+    exit 1  # Not enough space
+fi
+
+# Show size of selected packages
+if [[ $all_pkg_size -gt "999999" ]]; then
+    echo -e "Size of selected app(s) is $((all_pkg_size /1048576)) GB\n"
+elif [[ $all_pkg_size -gt "999" ]]; then
+    echo -e "Size of selected app(s) is $((all_pkg_size /1048)) MB\n"
+else
+    echo -e "Size of selected app(s) is $all_pkg_size KB\n"
+fi
+
+# Check user is ready
+if [[ $auto != "yes" ]]; then
+    if [[ $all == "yes" ]]; then
+        #echo -e "${Red}WARNING Packages with dependencies may be stopped until the"
+        #echo -e "${mode} of all packages has finished which could take long while.${Off}"
+        if [[ ${mode,,} == "backup" ]]; then
+            echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} packages to ${Cyan}${backuppath}${Off}? [y/n]"
+        else
+            echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}All${Off} backed up packages? [y/n]"
+        fi
+    elif [[ ${mode,,} == "backup" ]]; then
+        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${backuppath}${Off}? [y/n]"
+    else
+        echo -e "Ready to ${Yellow}${mode}${Off} ${Cyan}${pkg_name}${Off} to ${Cyan}${targetvol}${Off}? [y/n]"
+    fi
+    read -r answer
+    echo ""
+    if [[ ${answer,,} != y ]]; then
+        exit  # Answered no
+    fi
 fi
 
 # Reset shell's SECONDS var to later show how long the script took
@@ -1814,31 +2400,34 @@ backup_extras(){
     # $1 is @folder (@docker or @downloads etc)
     local extrabakvol
     local answer
-    if [[ ${mode,,} != "backup" ]]; then
-        if [[ ${mode,,} == "move" ]]; then
-            extrabakvol="/$sourcevol"
-        elif [[ ${mode,,} == "restore" ]]; then
-            extrabakvol="$targetvol"
-        fi
-        echo -e "NOTE: A backup of ${Cyan}$1${Off} is required"\
-            "for recovery if the move fails."
-        echo -e "Do you want to ${Yellow}backup${Off} the"\
-            "${Cyan}$1${Off} folder on $extrabakvol? [y/n]"
-        read -r answer
-        #echo ""
-        if [[ ${answer,,} == "y" ]]; then
-            # Check we have enough space
-            if ! check_space "/${sourcevol}/$1" "/${sourcevol}"; then
-                ding
-                echo -e "${Error}ERROR${Off} Not enough space on $extrabakvol to backup ${Cyan}$1${Off}!"
-                echo "Do you want to continue ${action,,} ${1}? [y/n]"
-                read -r answer
-                if [[ ${answer,,} != "y" ]]; then
-                    exit  # Answered no
+    # Skip if source volume is read only
+    if [[ -w "/$sourcevol" ]]; then
+        if [[ ${mode,,} != "backup" ]]; then
+            if [[ ${mode,,} == "move" ]]; then
+                extrabakvol="/$sourcevol"
+            elif [[ ${mode,,} == "restore" ]]; then
+                extrabakvol="$targetvol"
+            fi
+            echo -e "NOTE: A backup of ${Cyan}$1${Off} is required"\
+                "for recovery if the move fails."
+            echo -e "Do you want to ${Yellow}backup${Off} the"\
+                "${Cyan}$1${Off} folder on $extrabakvol? [y/n]"
+            read -r answer
+            #echo ""
+            if [[ ${answer,,} == "y" ]]; then
+                # Check we have enough space
+                if ! check_space "/${sourcevol}/$1" "/${sourcevol}" extra; then
+                    ding
+                    echo -e "${Error}ERROR${Off} Not enough space on $extrabakvol to backup ${Cyan}$1${Off}!"
+                    echo "Do you want to continue ${action,,} ${1}? [y/n]"
+                    read -r answer
+                    if [[ ${answer,,} != "y" ]]; then
+                        exit  # Answered no
+                    fi
+                else
+                    echo -e "${Red}WARNING Backing up $1 could take a long time${Off}"
+                    backup_dir "$1" "$extrabakvol"
                 fi
-            else
-                echo -e "${Red}WARNING Backing up $1 could take a long time${Off}"
-                backup_dir "$1" "$extrabakvol"
             fi
         fi
     fi
@@ -1907,7 +2496,7 @@ process_packages(){
         # Check if @docker is on same volume as Docker package
         if [[ -d "/${sourcevol}/@docker" ]]; then
             # Check we have enough space
-            if ! check_space "/${sourcevol}/@docker" "${targetvol}"; then
+            if ! check_space "/${sourcevol}/@docker" "${targetvol}" extra; then
                 ding
                 echo -e "${Error}ERROR${Off} Not enough space on $targetvol to ${mode,,} ${Cyan}@docker${Off}!"
                 process_error="yes"
@@ -1930,7 +2519,7 @@ process_packages(){
         # Check if @download is on same volume as DownloadStation package
         if [[ -d "/${sourcevol}/@download" ]]; then
             # Check we have enough space
-            if ! check_space "/${sourcevol}/@download" "${targetvol}"; then
+            if ! check_space "/${sourcevol}/@download" "${targetvol}" extra; then
                 ding
                 echo -e "${Error}ERROR${Off} Not enough space on $targetvol to ${mode,,} ${Cyan}@download${Off}!"
                 process_error="yes"
@@ -2020,10 +2609,120 @@ check_last_process_time(){
     fi
 }
 
+docker_export(){ 
+    local docker_share
+    local export_dir
+    local container
+    local export_file
+    export_date="$(date +%Y%m%d_%H%M)"
+
+    # Get docker share location
+    if [[ $buildnumber -gt "64570" ]]; then
+        # DSM 7.2.1 and later
+        # synoshare --get-real-path is case insensitive (docker or Docker both work)
+        docker_share=$(/usr/syno/sbin/synoshare --get-real-path docker)
+    else
+        # DSM 7.2 and earlier
+        # synoshare --getmap is case insensitive (docker or Docker both work)
+        docker_share=$(/usr/syno/sbin/synoshare --getmap docker | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
+    fi
+
+    if [[ ! -d "$docker_share" ]]; then
+        echo "${Error}WARNING${Off} docker shared folder not found!"
+        return
+    else
+        export_dir="${docker_share}/app_mover_exports"
+    fi
+
+    if [[ ! -d "$export_dir" ]]; then
+        if ! mkdir "$export_dir"; then
+            echo "${Error}WARNING${Off} Failed to create docker export folder!"
+            return
+        else
+            chmod 755 "$export_dir"
+        fi
+    fi
+
+    echo "Exporting container settings to ${export_dir}"
+    # Get list of all containers (running and stopped)
+    for container in $(docker ps --all --format "{{ .Names }}"); do
+        if grep -q "$container" <<< "${ignored_containers_list[@]}" ; then
+            echo "Skipping ${container} on ignore list."
+            continue
+        else
+            export_file="${export_dir:?}/${container}_${export_date}.json"
+            #echo "Exporting $container json to ${export_dir}"
+            echo "Exporting $container json"
+            # synowebapi -s or --silent does not work
+            /usr/syno/bin/synowebapi --exec api=SYNO.Docker.Container.Profile method=export version=1 outfile="$export_file" name="$container" &>/dev/null
+
+            # Check export was successful
+            if [[ ! -f "$export_file" ]] || [[ $(stat -c %s "$export_file") -eq "0" ]]; then
+                # No file or 0 bytes
+                echo "${Error}WARNING${Off} Failed to export $container settings!"
+                return
+            else
+                chmod 660 "${export_dir:?}/${container}_${export_date}.json"
+            fi
+
+            # Delete settings exports older than $delete_older days
+            if [[ $delete_older =~ ^[2-9][0-9]?$ ]]; then
+                find "$export_dir" -name "${container,,}_*.json" -mtime +"$delete_older" -exec rm {} \;
+            fi
+        fi
+    done
+}
+
+
 # Loop through pkgs_sorted array and process package
 for pkg in "${pkgs_sorted[@]}"; do
     pkg_name="${package_names_rev["$pkg"]}"
     process_error=""
+
+    # Skip backup or restore for excluded apps
+    if [[ $all == "yes" ]] && [[ "${excludelist[*]}" =~ $pkg ]] &&\
+        [[ $mode != "move" ]]; then
+        echo -e "Excluding $pkg\n"
+        continue
+    fi
+
+    if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
+        if [[ $skipdocker == "yes" ]]; then
+            # Source and target are different files systems
+            echo -en "${Yellow}WARNING${Off} Refusing to ${mode,,} ${package_names_rev["$pkg"]}"
+            echo "from $sourcefs to $targetfs"
+        else
+            if [[ -w "/$sourcevol" ]]; then
+                # Start package if needed so we can prune images
+                # and export container configurations
+                if ! package_is_running "$pkg"; then
+                    package_start "$pkg" "$pkg_name"
+                fi
+
+                if [[ ${mode,,} != "restore" ]]; then
+                    # Export container settings to json files
+                    #echo "Exporting container settings"
+                    docker_export
+                fi
+
+                if [[ ${mode,,} == "restore" ]]; then
+                    # Remove dangling and unused images
+                    echo "Removing dangling and unused docker images"
+                    docker image prune --all --force >/dev/null
+                else
+                    # Remove dangling images
+                    echo "Removing dangling docker images"
+                    docker image prune --force >/dev/null
+                fi
+            else
+                # Skip read only source volume
+                echo "/$sourcevol is read only. Skipping:"
+                echo "  - Exporting container settings"
+                echo "  - Removing dangling and unused docker images"
+            fi
+        fi
+    fi
+
 
     if check_last_process_time "$pkg"; then
         if [[ ${mode,,} != "move" ]]; then
@@ -2044,7 +2743,7 @@ for pkg in "${pkgs_sorted[@]}"; do
             fi
         fi
 
-        # shellcheck disable=SC2143
+        # shellcheck disable=SC2143  # Use grep -q
         if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
             start_packages
             #echo ""
@@ -2160,6 +2859,8 @@ fi
 
 if [[ $all == "yes" ]]; then
     echo -e "Finished ${action,,} all packages\n"
+elif [[ $auto == "yes" ]]; then
+    echo -e "Finished ${action,,} ${pkgs_sorted[*]}\n"
 else
     echo -e "Finished ${action,,} $pkg_name\n"
 fi
