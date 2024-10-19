@@ -283,7 +283,7 @@ https://github.com/007revad/Synology_app_mover/assets/e308839a-1a3d-402b-9920-dc
 
 <br>
 
-<p align="center">Moving Active Backup for Bussiness</p>
+<p align="center">Moving Active Backup for Business</p>
 <p align="center"><img src="/images/app6.png"></p>
 
 <br>
@@ -291,5 +291,16 @@ https://github.com/007revad/Synology_app_mover/assets/e308839a-1a3d-402b-9920-dc
 <p align="center">Backing up Audio Station</p>
 <p align="center"><img src="/images/backup.png"></p>
 
+<br>
+
+<p align="center">Backing up with the --auto option</p>
+<p align="center"><img src="/images/auto_option.png"></p>
+
+<br>
+
+<p align="center">Output with --list option</p>
+<p align="center"><img src="/images/list_option.png"></p>
+
 ### Credits
 - wallacebrf for extensive beta testing of syno_app_mover v3.
+- ctrlaltdelete for the code to export Container Manager/Docker container's settings.
