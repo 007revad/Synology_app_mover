@@ -283,7 +283,7 @@ https://github.com/007revad/Synology_app_mover/assets/e308839a-1a3d-402b-9920-dc
 
 <br>
 
-<p align="center">Moving Active Backup for Bussiness</p>
+<p align="center">Moving Active Backup for Business</p>
 <p align="center"><img src="/images/app6.png"></p>
 
 <br>
