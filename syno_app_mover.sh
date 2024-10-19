@@ -47,7 +47,7 @@
 # DONE Bugfix for "rsync: mknod failed: No such file or directory (2)" when backing up `@docker`. Issue #117
 #------------------------------------------------------------------------------
 
-scriptver="v4.0.72"
+scriptver="v4.0.73"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -581,7 +581,7 @@ progstatus(){
     else
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} $2 failed!"
-        echo "$tracestring"
+        echo "$tracestring ($scriptver)"
         if [[ $exitonerror != "no" ]]; then
             exit 1  # Skip exit if exitonerror != no
         fi
@@ -1117,7 +1117,6 @@ show_move_share(){
 copy_dir_dsm6(){ 
     # Backup or restore DSM 6 /usr/syno/etc/packages/$pkg/
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}"
-
     # $1 is package name
     # $2 is destination volume
     local pack
@@ -1545,8 +1544,10 @@ move_extras(){
             ;;
         SynologyDrive)
             # Synology Drive database
-            exitonerror="no" && move_dir "@synologydrive" extras
-            # Synology Drive Team Folder
+            # Moving the database in Synology Drive Admin moves @synologydrive
+            #exitonerror="no" && move_dir "@synologydrive" extras
+
+            # Synology Drive ShareSync Folder
             exitonerror="no" && move_dir "@SynologyDriveShareSync" extras
             if [[ ${mode,,} != "backup" ]]; then
                 file=/var/packages/SynologyDrive/etc/sharesync/daemon.conf
@@ -1568,10 +1569,13 @@ move_extras(){
                     /usr/syno/bin/synosetkeyvalue "$file" volume "${2:?}"
                 fi
 
-                if ! readlink /var/packages/SynologyDrive/etc/repo | grep "${2:?}" >/dev/null; then
-                    rm /var/packages/SynologyDrive/etc/repo
-                    ln -s "${2:?}/@synologydrive/@sync" /var/packages/SynologyDrive/etc/repo
-                fi
+                # Moving the database in Synology Drive Admin changes 
+                # the repo symlink and the db-vol setting
+                # in /var/packages/SynologyDrive/etc/db-path.conf
+                #if ! readlink /var/packages/SynologyDrive/etc/repo | grep "${2:?}" >/dev/null; then
+                #    rm /var/packages/SynologyDrive/etc/repo
+                #    ln -s "${2:?}/@synologydrive/@sync" /var/packages/SynologyDrive/etc/repo
+                #fi
             fi
             #echo ""
             ;;
@@ -1805,10 +1809,11 @@ check_pkg_size(){
             fi
             ;;
         SynologyDrive)
-            if [[ -d "/$sourcevol/@synologydrive" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@synologydrive | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
+            # Moving the database in Synology Drive Admin moves @synologydrive
+            #if [[ -d "/$sourcevol/@synologydrive" ]]; then
+            #    size2=$(/usr/bin/du -s /"$sourcevol"/@synologydrive | awk '{print $1}')
+            #    size=$((size +"$size2"))
+            #fi
             if [[ -d "/$sourcevol/@SynologyDriveShareSync" ]]; then
                 size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyDriveShareSync | awk '{print $1}')
                 size=$((size +"$size2"))
