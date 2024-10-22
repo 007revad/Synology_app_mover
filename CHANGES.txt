@@ -21,7 +21,7 @@ v4.0.73
 - Changed to allow "moving" or backing up apps when volume is read only. Issue #122
   - If source volume is read only:
     - Copies apps to target volume instead of trying to move them, when move selected.
-    - Skips exporting container settings, as Docker or Container Manager cannot be start when volume is read only.
+    - Skips exporting container settings, as Docker or Container Manager cannot be started when volume is read only.
     - Skips removing docker dangling and unused images.
 - Bug fix for moving Synology Drive. Issue #126
 - Bug fix for packages with spaces in their name (DSM 6 Plex Media Server).
