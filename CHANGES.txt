@@ -1,3 +1,9 @@
+v4.1.74
+- Added logging (syno_app_mover_YY-mm-dd_H-M.log saved in same folder as syno_app_mover.sh).
+- Added USB Copy as a movable app to show how to move USB Copy's database (in move mode only).
+- Changed to not refuse to move Container Manager or Docker to different file system.
+  - Now warns that you'll need to migrate the containers, and some may fail to migrate.
+
 v4.0.73
 - Can now be scheduled in Task Scheduler to backup a package or multiple packages. Issue #105
   - Run the script with the -h or --help option to see how.
