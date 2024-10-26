@@ -747,6 +747,7 @@ backup_dir(){
             echo -e "There is already a backup of $1" |& tee -a "$logfile"
             echo -e "Do you want to overwrite it? [y/n]" |& tee -a "$logfile"
             read -r answer
+            echo "$answer" >> "$logfile"
             echo "" |& tee -a "$logfile"
             if [[ ${answer,,} != "y" ]]; then
                 return
@@ -1350,6 +1351,7 @@ move_extras(){
                 echo -e "Are you going to move the ${Cyan}chat${Off} shared folder to ${Cyan}${targetvol}${Off}? [y/n]"
                 echo -e "Are you going to move the chat shared folder to ${targetvol}? [y/n]" >> "$logfile"
                 read -r answer
+                echo "$answer" >> "$logfile"
                 echo "" |& tee -a "$logfile"
                 if [[ ${answer,,} == y ]]; then
                     # /var/packages/Chat/shares/chat --> /volume1/chat
@@ -2088,6 +2090,7 @@ if [[ $auto != "yes" ]]; then
         echo -e "Do you want to backup ${Cyan}All${Off} packages? [y/n]"
         echo -e "Do you want to backup All packages? [y/n]" >> "$logfile"
         read -r answer
+        echo "$answer" >> "$logfile"
         #echo "" |& tee -a "$logfile"
         if [[ ${answer,,} == "y" ]]; then
             all="yes"
@@ -2307,16 +2310,6 @@ if [[ ${package_names[*]} =~ "ContainerManager" ]] || [[ ${package_names[*]} =~ 
     target_fs "$targetvol"
     if [[ $targetfs != "$sourcefs" ]]; then
         # Warn about different filesystems
-        #if [[ ${#package_names[@]} -gt "1" ]]; then
-        #    skipdocker="yes"
-        #else
-        #    ding
-        #    echo -en "${Yellow}WARNING${Off} Do not ${mode,,} ${package_names[*]} "
-        #    echo -e "from ${Cyan}$sourcefs${Off} volume to ${Cyan}$targetfs${Off} volume!\n"
-        #    echo -en "WARNING Do not ${mode,,} ${package_names[*]} " >> "$logfile"
-        #    echo -e "from $sourcefs volume to $targetfs volume!\n" >> "$logfile"
-        #    exit 3
-        #fi
         warn_docker
         docker_migrate="yes"
     fi
@@ -2370,6 +2363,7 @@ if [[ $auto != "yes" ]]; then
         echo -e "Ready to $mode ${pkg_name} to ${targetvol}? [y/n]" >> "$logfile"
     fi
     read -r answer
+    echo "$answer" >> "$logfile"
     echo "" |& tee -a "$logfile"
     if [[ ${answer,,} != y ]]; then
         exit  # Answered no
@@ -2513,6 +2507,7 @@ backup_extras(){
             echo -e "Do you want to backup the"\
                 "$1 folder on $extrabakvol? [y/n]" >> "$logfile"
             read -r answer
+            echo "$answer" >> "$logfile"
             if [[ ${answer,,} == "y" ]]; then
                 # Check we have enough space
                 if ! check_space "/${sourcevol}/$1" "/${sourcevol}" extra; then
@@ -2521,6 +2516,7 @@ backup_extras(){
                     echo -e "ERROR Not enough space on $extrabakvol to backup $1!" >> "$logfile"
                     echo "Do you want to continue ${action,,} ${1}? [y/n]" |& tee -a "$logfile"
                     read -r answer
+                    echo "$answer" >> "$logfile"
                     if [[ ${answer,,} != "y" ]]; then
                         exit  # Answered no
                     fi
@@ -2667,6 +2663,7 @@ start_packages(){
                 echo -e "\nDo you want to start ${Cyan}$pkg_name${Off} now? [y/n]"
                 echo -e "\nDo you want to start $pkg_name now? [y/n]" >> "$logfile"
                 read -r answer
+                echo "$answer" >> "$logfile"
             fi
 
             if [[ ${answer,,} == "y" ]]; then
@@ -2797,40 +2794,33 @@ for pkg in "${pkgs_sorted[@]}"; do
     fi
 
     if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
-        #if [[ $skipdocker == "yes" ]]; then
-        #    # Source and target are different files systems
-        #    echo -en "${Yellow}WARNING${Off} Refusing to ${mode,,} ${package_names_rev["$pkg"]}"
-        #    echo -en "WARNING Refusing to ${mode,,} ${package_names_rev["$pkg"]}" >> "$logfile"
-        #    echo "from $sourcefs to $targetfs" |& tee -a "$logfile"
-        #else
-            if [[ -w "/$sourcevol" ]]; then
-                # Start package if needed so we can prune images
-                # and export container configurations
-                if ! package_is_running "$pkg"; then
-                    package_start "$pkg" "$pkg_name"
-                fi
-
-                if [[ ${mode,,} != "restore" ]]; then
-                    # Export container settings to json files
-                    docker_export
-                fi
-
-                if [[ ${mode,,} == "restore" ]]; then
-                    # Remove dangling and unused images
-                    echo "Removing dangling and unused docker images" |& tee -a "$logfile"
-                    docker image prune --all --force >/dev/null
-                else
-                    # Remove dangling images
-                    echo "Removing dangling docker images" |& tee -a "$logfile"
-                    docker image prune --force >/dev/null
-                fi
-            else
-                # Skip read only source volume
-                echo "/$sourcevol is read only. Skipping:" |& tee -a "$logfile"
-                echo "  - Exporting container settings" |& tee -a "$logfile"
-                echo "  - Removing dangling and unused docker images" |& tee -a "$logfile"
+        if [[ -w "/$sourcevol" ]]; then
+            # Start package if needed so we can prune images
+            # and export container configurations
+            if ! package_is_running "$pkg"; then
+                package_start "$pkg" "$pkg_name"
             fi
-        #fi
+
+            if [[ ${mode,,} != "restore" ]]; then
+                # Export container settings to json files
+                docker_export
+            fi
+
+            if [[ ${mode,,} == "restore" ]]; then
+                # Remove dangling and unused images
+                echo "Removing dangling and unused docker images" |& tee -a "$logfile"
+                docker image prune --all --force >/dev/null
+            else
+                # Remove dangling images
+                echo "Removing dangling docker images" |& tee -a "$logfile"
+                docker image prune --force >/dev/null
+            fi
+        else
+            # Skip read only source volume
+            echo "/$sourcevol is read only. Skipping:" |& tee -a "$logfile"
+            echo "  - Exporting container settings" |& tee -a "$logfile"
+            echo "  - Removing dangling and unused docker images" |& tee -a "$logfile"
+        fi
     fi
 
 
