@@ -22,11 +22,12 @@
 # https://www.synology-forum.de/threads/virtual-machine-manager-vms-sichern.91952/post-944113
 #
 #------------------------------------------------------------------------------
+# DONE Add `@database` as an app that can be moved.
 # DONE Added logging
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.1.74"
+scriptver="v4.2.75"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1058,8 +1059,8 @@ check_space(){
     # $3 is 'extra' or null
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
 
-    # Skip USBCopy
-    if [[ $pkg == USBCopy ]]; then
+    # Skip USBCopy and @database
+    if [[ $pkg == USBCopy ]] || [[ $pkg == "@database" ]]; then
         return 0
     fi
 
@@ -1719,135 +1720,139 @@ check_pkg_size(){
     # $1 is package name
     # $2 is package source volume
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
-    #size=$(/usr/bin/du -sL /var/packages/"$1"/target | awk '{print $1}')
-    size=$(/usr/bin/du -s /var/packages/"$1"/target/ | awk '{print $1}')
-    case "$1" in
-        ActiveBackup)
-            if [[ -d "/$sourcevol/@ActiveBackup" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        ActiveBackup-GSuite)
-            if [[ -d "/$sourcevol/@ActiveBackup-GSuite" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup-GSuite | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        ActiveBackup-Office365)
-            if [[ -d "/$sourcevol/@ActiveBackup-Office365" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup-Office365 | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        Calendar)
-            if [[ -d "/$sourcevol/@calendar" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@calendar | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        ContainerManager|Docker)
-            if [[ -d "/$sourcevol/@docker" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@docker | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        DownloadStation)
-            if [[ -d "/$sourcevol/@download" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@download | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        GlacierBackup)
-            if [[ -d "/$sourcevol/@GlacierBackup" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@GlacierBackup | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        HyperBackup)
-            if [[ -d "/$sourcevol/@img_bkp_cache" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@img_bkp_cache | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        MailPlus-Server)
-            if [[ -d "/$sourcevol/@maillog" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@maillog | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            if [[ -d "/$sourcevol/@MailPlus-Server" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@MailPlus-Server | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        MailServer)
-            if [[ -d "/$sourcevol/@maillog" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@maillog | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            if [[ -d "/$sourcevol/@MailScanner" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@MailScanner | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            if [[ -d "/$sourcevol/@clamav" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@clamav | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        PrestoServer)
-            if [[ -d "/$sourcevol/@presto" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@presto | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        SurveillanceStation)
-            if [[ -d "/$sourcevol/@ssbackup" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@ssbackup | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            if [[ -d "/$sourcevol/@surveillance" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@surveillance | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        SynologyApplicationService)
-            if [[ -d "/$sourcevol/@SynologyApplicationService" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyApplicationService | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        SynologyDrive)
-            # Moving the database in Synology Drive Admin moves @synologydrive
-            #if [[ -d "/$sourcevol/@synologydrive" ]]; then
-            #    size2=$(/usr/bin/du -s /"$sourcevol"/@synologydrive | awk '{print $1}')
-            #    size=$((size +"$size2"))
-            #fi
-            if [[ -d "/$sourcevol/@SynologyDriveShareSync" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyDriveShareSync | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        WebDAVServer)
-            if [[ -d "/$sourcevol/@webdav" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@webdav | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        Virtualization)
-            if [[ -d "/$sourcevol/@GuestImage" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@GuestImage | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            if [[ -d "/$sourcevol/@Repository" ]]; then
-                size2=$(/usr/bin/du -s /"$sourcevol"/@Repository | awk '{print $1}')
-                size=$((size +"$size2"))
-            fi
-            ;;
-        *)
-            total_size="$size"
-            return
-            ;;
-    esac
+    if [[ $pkg == "@database" ]]; then
+        size=$(/usr/bin/du -s /var/services/pgsql/ | awk '{print $1}')
+    else
+        #size=$(/usr/bin/du -sL /var/packages/"$1"/target | awk '{print $1}')
+        size=$(/usr/bin/du -s /var/packages/"$1"/target/ | awk '{print $1}')
+        case "$1" in
+            ActiveBackup)
+                if [[ -d "/$sourcevol/@ActiveBackup" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            ActiveBackup-GSuite)
+                if [[ -d "/$sourcevol/@ActiveBackup-GSuite" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup-GSuite | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            ActiveBackup-Office365)
+                if [[ -d "/$sourcevol/@ActiveBackup-Office365" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@ActiveBackup-Office365 | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            Calendar)
+                if [[ -d "/$sourcevol/@calendar" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@calendar | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            ContainerManager|Docker)
+                if [[ -d "/$sourcevol/@docker" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@docker | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            DownloadStation)
+                if [[ -d "/$sourcevol/@download" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@download | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            GlacierBackup)
+                if [[ -d "/$sourcevol/@GlacierBackup" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@GlacierBackup | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            HyperBackup)
+                if [[ -d "/$sourcevol/@img_bkp_cache" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@img_bkp_cache | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            MailPlus-Server)
+                if [[ -d "/$sourcevol/@maillog" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@maillog | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                if [[ -d "/$sourcevol/@MailPlus-Server" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@MailPlus-Server | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            MailServer)
+                if [[ -d "/$sourcevol/@maillog" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@maillog | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                if [[ -d "/$sourcevol/@MailScanner" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@MailScanner | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                if [[ -d "/$sourcevol/@clamav" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@clamav | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            PrestoServer)
+                if [[ -d "/$sourcevol/@presto" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@presto | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            SurveillanceStation)
+                if [[ -d "/$sourcevol/@ssbackup" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@ssbackup | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                if [[ -d "/$sourcevol/@surveillance" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@surveillance | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            SynologyApplicationService)
+                if [[ -d "/$sourcevol/@SynologyApplicationService" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyApplicationService | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            SynologyDrive)
+                # Moving the database in Synology Drive Admin moves @synologydrive
+                #if [[ -d "/$sourcevol/@synologydrive" ]]; then
+                #    size2=$(/usr/bin/du -s /"$sourcevol"/@synologydrive | awk '{print $1}')
+                #    size=$((size +"$size2"))
+                #fi
+                if [[ -d "/$sourcevol/@SynologyDriveShareSync" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyDriveShareSync | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            WebDAVServer)
+                if [[ -d "/$sourcevol/@webdav" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@webdav | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            Virtualization)
+                if [[ -d "/$sourcevol/@GuestImage" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@GuestImage | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                if [[ -d "/$sourcevol/@Repository" ]]; then
+                    size2=$(/usr/bin/du -s /"$sourcevol"/@Repository | awk '{print $1}')
+                    size=$((size +"$size2"))
+                fi
+                ;;
+            *)
+                total_size="$size"
+                return
+                ;;
+        esac
+    fi
     total_size="$size"
 }
 
@@ -2066,18 +2071,33 @@ if [[ ${mode,,} == "move" ]]; then
     package_status USBCopy >/dev/null
     code="$?"
     if [[ $code -lt "2" ]]; then
-        #echo "${code}: USB Copy is installed"  # debug
         package_names["USB Copy"]="USBCopy"
         package_names_rev["USBCopy"]="USB Copy"
 
         file="/var/packages/USBCopy/etc/setting.conf"
         package_volume=$(synogetkeyvalue "$file" repo_vol_path)
+        usbcopy_vol="$package_volume"
 
         if [[ ${mode,,} != "restore" ]]; then
             package_infos+=("${package_volume}|USB Copy")
         elif [[ ${mode,,} == "restore" ]]; then
             package_infos+=("USB Copy")
         fi
+    fi
+fi
+
+# Add @database if Move selected
+if [[ ${mode,,} == "move" ]]; then
+    package_names["@database"]="@database"
+    package_names_rev["@database"]="@database"
+
+    package_volume="/$(readlink "/var/services/pgsql" | cut -d"/" -f2)"
+    database_vol="$package_volume"
+
+    if [[ ${mode,,} != "restore" ]]; then
+        package_infos+=("${package_volume}|@database")
+    elif [[ ${mode,,} == "restore" ]]; then
+        package_infos+=("@database")
     fi
 fi
 
@@ -2152,8 +2172,15 @@ if [[ $auto != "yes" ]]; then
 
             echo -e "You selected ${Cyan}${pkg_name}${Off} in ${Cyan}${package_volume}${Off}\n"
             echo -e "You selected ${pkg_name} in ${package_volume}\n" >> "$logfile"
-            target=$(readlink "/var/packages/${pkg}/target")
-            linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
+
+            if [[ ${pkg_name} == "USB Copy" ]]; then
+                linktargetvol="$usbcopy_vol"
+            elif [[ ${pkg_name} == "@database" ]]; then
+                linktargetvol="$database_vol"
+            else
+                target=$(readlink "/var/packages/${pkg}/target")
+                linktargetvol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
+            fi
 
         elif [[ ${mode,,} == "restore" ]]; then
             # Select package to backup
@@ -2442,9 +2469,28 @@ unset pkgs_no_dep_sorted
 # with dependents, with dependencies then others
 for pkg in "${pkgs_sorted[@]}"; do
     if [[ -f "/var/packages/${pkg}/enabled" ]]; then
-        running_pkgs_sorted+=( "$pkg" )
+        running_pkgs_sorted+=("$pkg")
     fi
 done
+
+
+# Get list of running packages dependent on pgsql service
+if [[ ${pkgs_sorted[*]} =~ "@database" ]]; then
+    # Add running packages that use pgsql that need starting to array
+    if cd "/var/packages"; then
+        for package in *; do
+            if [[ -d "$package" ]]; then
+                depservice="$(synogetkeyvalue "/var/packages/${package}/INFO" start_dep_services)"
+                #long_name="$(synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+                if echo "$depservice" | grep -q 'pgsql'; then
+                    if package_is_running "$package"; then
+                        running_pkgs_dep_pgsql+=("$package")
+                    fi
+                fi
+            fi
+        done < <(find . -maxdepth 2 -type d)
+    fi
+fi
 
 
 #------------------------------------------------------------------------------
@@ -2652,39 +2698,41 @@ process_packages(){
 start_packages(){ 
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
 #    if [[ $skip_start != "yes" ]]; then
-        # Only start package if not already running
-        if ! package_is_running "$pkg"; then
+        if [[ $pkg != "@database" ]]; then
+            # Only start package if not already running
+            if ! package_is_running "$pkg"; then
 
-            if [[ ${mode,,} == "backup" ]]; then
-                answer="y"
-            elif [[ $all == "yes" ]]; then
-                answer="y"
-            else
-                echo -e "\nDo you want to start ${Cyan}$pkg_name${Off} now? [y/n]"
-                echo -e "\nDo you want to start $pkg_name now? [y/n]" >> "$logfile"
-                read -r answer
-                echo "$answer" >> "$logfile"
-            fi
+                if [[ ${mode,,} == "backup" ]]; then
+                    answer="y"
+                elif [[ $all == "yes" ]]; then
+                    answer="y"
+                else
+                    echo -e "\nDo you want to start ${Cyan}$pkg_name${Off} now? [y/n]"
+                    echo -e "\nDo you want to start $pkg_name now? [y/n]" >> "$logfile"
+                    read -r answer
+                    echo "$answer" >> "$logfile"
+                fi
 
-            if [[ ${answer,,} == "y" ]]; then
-                # Start package
-                package_start "$pkg" "$pkg_name"
+                if [[ ${answer,,} == "y" ]]; then
+                    # Start package
+                    package_start "$pkg" "$pkg_name"
 
-                # Check package started
-                if ! package_is_running "$pkg"; then
-                    ding
-                    echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to start ${pkg_name}!"
-                    echo -e "Line ${LINENO}: ERROR Failed to start ${pkg_name}!" >> "$logfile"
-#                    echo "${pkg_name} status $code" |& tee -a "$logfile"
-                    process_error="yes"
-                    if [[ $all != "yes" ]]; then
-                        exit 1  # Skip exit if mode is All
+                    # Check package started
+                    if ! package_is_running "$pkg"; then
+                        ding
+                        echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to start ${pkg_name}!"
+                        echo -e "Line ${LINENO}: ERROR Failed to start ${pkg_name}!" >> "$logfile"
+    #                    echo "${pkg_name} status $code" |& tee -a "$logfile"
+                        process_error="yes"
+                        if [[ $all != "yes" ]]; then
+                            exit 1  # Skip exit if mode is All
+                        fi
+                    else
+                        did_start_pkg="yes"
                     fi
                 else
-                    did_start_pkg="yes"
+                    no_start_pkg="yes"
                 fi
-            else
-                no_start_pkg="yes"
             fi
         fi
 #    fi
@@ -2774,6 +2822,76 @@ docker_export(){
     done
 }
 
+move_database(){ 
+    # Get volume where @database currently is
+    target=$(readlink "/var/services/pgsql")
+    #sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
+    sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
+
+    # Stop the pgsql service - Also stops dependant apps
+    systemctl stop pgsql-adapter.service &
+    pid=$!
+    string="Stopping pgsql service and dependent apps"
+    echo "Stopping pgsql service and dependent apps" >> "$logfile"
+    progbar "$pid" "$string"
+    wait "$pid"
+    progstatus "$?" "$string" "line ${LINENO}"
+
+    # Check pgsql service has stopped
+    # running = 0  stopped = 3
+    if systemctl status pgsql-adapter.service >/dev/null; then
+        ding
+        echo "ERROR Failed to stop pgsql service!" |& tee -a "$logfile"
+        return 1
+    #else
+    #    echo "Stopped pgsql service" |& tee -a "$logfile"
+    fi
+
+    # Create @database folder if needed
+    if [[ ! -d "${targetvol:?}/@database" ]]; then
+        mkdir -m755 "${targetvol:?}/@database"
+    fi
+
+    # Copy pgsql folder
+    cp -pr "/${sourcevol:?}/@database/pgsql" "${targetvol:?}/@database/pgsql" &
+    pid=$!
+    string="Copying pgsql database to $targetvol/@database"
+    echo "Copying pgsql database to $targetvol/@database" >> "$logfile"
+    progbar "$pid" "$string"
+    wait "$pid"
+    progstatus "$?" "$string" "line ${LINENO}"
+
+    # Copy other folders
+    if [[ -d "/${sourcevol:?}/@database/autoupdate" ]]; then
+        cp -pr "/${sourcevol:?}/@database/autoupdate" "${targetvol:?}/@database/autoupdate"
+    fi
+    if [[ -d "/${sourcevol:?}/@database/synolog" ]]; then
+        cp -pr "/${sourcevol:?}/@database/synolog" "${targetvol:?}/@database/synolog"
+    fi
+    if [[ -d "/${sourcevol:?}/@database/synologan" ]]; then
+        cp -pr "/${sourcevol:?}/@database/synologan" "${targetvol:?}/@database/synologan"
+    fi
+
+    # Edit pgsql symlink
+    rm /var/services/pgsql
+    ln -s "${targetvol:?}/@database/pgsql" /var/services/pgsql
+
+    # Start the pgsql service
+    echo "Starting pgsql service" |& tee -a "$logfile"
+    systemctl start pgsql-adapter.service
+
+    # Check pgsql service is ok
+    # okay = 0  stopped = 3
+    if ! systemctl status pgsql-adapter.service >/dev/null; then
+        ding
+        echo "ERROR Failed to start pgsql service!" |& tee -a "$logfile"
+        return 1
+    #else
+    #    echo "Started pgsql service" |& tee -a "$logfile"
+    fi
+    return 0
+}
+
 
 # Loop through pkgs_sorted array and process package
 for pkg in "${pkgs_sorted[@]}"; do
@@ -2790,6 +2908,12 @@ for pkg in "${pkgs_sorted[@]}"; do
     #if [[ $pkg == USBCopy ]] && [[ ${mode,,} == "move" ]]; then
     if [[ $pkg == USBCopy ]]; then
         # USBCopy only needs database location changed in USB Copy ui
+        continue
+    fi
+
+    #if [[ $pkg == "@database" ]] && [[ ${mode,,} == "move" ]]; then
+    if [[ $pkg == "@database" ]]; then
+        move_database
         continue
     fi
 
@@ -2943,7 +3067,7 @@ fi
 #------------------------------------------------------------------------------
 # Start package and dependent packages that aren't running
 
-# Loop through pkgs_sorted array
+# Loop through running_pkgs_sorted array
 if [[ $no_start_pkg != "yes" ]]; then
     did_start_pkg=""
     for pkg in "${running_pkgs_sorted[@]}"; do
@@ -2955,6 +3079,20 @@ if [[ $no_start_pkg != "yes" ]]; then
     fi
 fi
 
+# Start pqsql dependent pkgs that were running but aren't now
+# Loop through running_pkgs_dep_pgsql array
+if [[ $no_start_pkg != "yes" ]]; then
+    did_start_pkg=""
+    for pgsql_pkg in "${running_pkgs_dep_pgsql[@]}"; do
+        if ! package_is_running "$pgsql_pkg"; then
+            pgsql_pkg_name="$(synogetkeyvalue "/var/packages/${pgsql_pkg}/INFO" displayname)"
+            package_start "$pgsql_pkg" "$pgsql_pkg_name"
+        fi
+    done
+    if [[ $did_start_pkg == "yes" ]]; then
+        echo "" |& tee -a "$logfile"
+    fi
+fi
 
 if [[ $all == "yes" ]]; then
     echo -e "Finished ${action,,} all packages\n" |& tee -a "$logfile"
@@ -2980,7 +3118,6 @@ fi
 
 # Loop through package_names associative array
 for pkg_name in "${!package_names[@]}"; do
-    #echo "$pkg_name  :  ${package_names[$pkg_name]}"  # debug
     pkg="${package_names[$pkg_name]}"
     if [[ ${mode,,} != "move" ]]; then
         info="/var/packages/${pkg}/INFO"
