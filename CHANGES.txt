@@ -1,3 +1,7 @@
+v4.2.76
+- Changed timout for starting and stoping apps from 5 minutes to 30 minutes.
+- Changed to only use the timeout when there is more than 1 app to backup or restore.
+
 v4.2.75
 - Added `@database` as an app that can be moved.
   - Only needed if moving all apps to a different volume so you can delete the old volume.
