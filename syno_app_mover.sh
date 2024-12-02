@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.75"
+scriptver="v4.2.76"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -638,7 +638,14 @@ package_stop(){
     # $1 is package name
     # $2 is package display name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
-    timeout 5.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
+    if [[ ${#pkgs_sorted[@]} -gt "1" ]]; then
+        /usr/syno/bin/synopkg stop "$1" >/dev/null &
+    else
+        # Only timeout if there are other packages to process
+        #timeout 5.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
+        # Docker can take 12 minutes to stop 70 containers
+        timeout 30.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
+    fi
     pid=$!
     string="Stopping ${Cyan}${2}${Off}"
     echo "Stopping $2" >> "$logfile"
@@ -661,7 +668,14 @@ package_start(){
     # $1 is package name
     # $2 is package display name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
-    timeout 5.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
+    if [[ ${#pkgs_sorted[@]} -gt "1" ]]; then
+        /usr/syno/bin/synopkg start "$1" >/dev/null &
+    else
+        # Only timeout if there are other packages to process
+        #timeout 5.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
+        # Docker can take 15 minutes to start 70 containers
+        timeout 30.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
+    fi
     pid=$!
     string="Starting ${Cyan}${2}${Off}"
     echo "Starting $2" >> "$logfile"
@@ -1615,6 +1629,8 @@ web_packages(){
         # DSM 7.2 and earlier
         # synoshare --getmap is case insensitive
         web_pkg_path=$(/usr/syno/sbin/synoshare --getmap web_packages | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
+        # I could also have used:
+        # web_pkg_path=$(/usr/syno/sbin/synoshare --get web_packages | tr '[]' '\n' | sed -n "9p")
     fi
     if [[ -d "$web_pkg_path" ]]; then
         if [[ -n "${pkg:?}" ]] && [[ -d "$web_pkg_path/${pkg,,}" ]]; then
@@ -2772,6 +2788,8 @@ docker_export(){
         # DSM 7.2 and earlier
         # synoshare --getmap is case insensitive (docker or Docker both work)
         docker_share=$(/usr/syno/sbin/synoshare --getmap docker | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
+        # I could also have used:
+        # docker_share=$(/usr/syno/sbin/synoshare --get docker | tr '[]' '\n' | sed -n "9p")
     fi
 
     if [[ ! -d "$docker_share" ]]; then
