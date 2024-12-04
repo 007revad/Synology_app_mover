@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.75"
+scriptver="v4.2.77"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -638,7 +638,14 @@ package_stop(){
     # $1 is package name
     # $2 is package display name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
-    timeout 5.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
+    if [[ ${#pkgs_sorted[@]} -gt "1" ]]; then
+        /usr/syno/bin/synopkg stop "$1" >/dev/null &
+    else
+        # Only timeout if there are other packages to process
+        #timeout 5.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
+        # Docker can take 12 minutes to stop 70 containers
+        timeout 30.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
+    fi
     pid=$!
     string="Stopping ${Cyan}${2}${Off}"
     echo "Stopping $2" >> "$logfile"
@@ -661,7 +668,14 @@ package_start(){
     # $1 is package name
     # $2 is package display name
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
-    timeout 5.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
+    if [[ ${#pkgs_sorted[@]} -gt "1" ]]; then
+        /usr/syno/bin/synopkg start "$1" >/dev/null &
+    else
+        # Only timeout if there are other packages to process
+        #timeout 5.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
+        # Docker can take 15 minutes to start 70 containers
+        timeout 30.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
+    fi
     pid=$!
     string="Starting ${Cyan}${2}${Off}"
     echo "Starting $2" >> "$logfile"
@@ -1038,8 +1052,12 @@ vol_free_space(){
     free=""  # var is used later in script
     if [[ -d "$1" ]]; then
         # Get amount of free space on $1 volume
-        #free=$(df --output=avail "$1" | grep -A1 Avail | grep -v Avail)  # dfs / for USB drives. # Issue #63
-        free=$(df | grep "$1"$ | awk '{print $4}')                # dfs correctly for USB drives. # Issue #63
+        if [[ $1 =~ ^"/volumeUSB" ]]; then  # Issue #63 and #138
+            tmp_usb="/$(echo "$1" | cut -d"/" -f2)/usbshare"
+            free=$(df --output=avail "$tmp_usb" | grep -A1 Avail | grep -v Avail)
+        else
+            free=$(df --output=avail "$1" | grep -A1 Avail | grep -v Avail)
+        fi
     fi
 }
 
@@ -1615,6 +1633,8 @@ web_packages(){
         # DSM 7.2 and earlier
         # synoshare --getmap is case insensitive
         web_pkg_path=$(/usr/syno/sbin/synoshare --getmap web_packages | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
+        # I could also have used:
+        # web_pkg_path=$(/usr/syno/sbin/synoshare --get web_packages | tr '[]' '\n' | sed -n "9p")
     fi
     if [[ -d "$web_pkg_path" ]]; then
         if [[ -n "${pkg:?}" ]] && [[ -d "$web_pkg_path/${pkg,,}" ]]; then
@@ -2026,18 +2046,22 @@ if [[ ${mode,,} != "restore" ]]; then
             if [[ ${link##*/} == "target" ]] && echo "$target" | grep -q 'volume'; then
                 # Check symlink target exists
                 if [[ -a "/var/packages${link#.}" ]] ; then
-                    package="$(printf %s "$link" | cut -d'/' -f2 )"
-                    package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
-                    package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
-                    if [[ -z "$package_name" ]]; then
-                        package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
-                    fi
 
-                    # Skip packages that are dev tools with no data
-                    if ! skip_dev_tools "$package"; then
-                        package_infos+=("${package_volume}|${package_name}")
-                        package_names["${package_name}"]="${package}"
-                        package_names_rev["${package}"]="${package_name}"
+                    # Skip broken packages with no INFO file
+                    package="$(printf %s "$link" | cut -d'/' -f2 )"
+                    if [[ -f "/var/packages/${package}/INFO" ]]; then
+                        package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
+                        package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+                        if [[ -z "$package_name" ]]; then
+                            package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
+                        fi
+
+                        # Skip packages that are dev tools with no data
+                        if ! skip_dev_tools "$package"; then
+                            package_infos+=("${package_volume}|${package_name}")
+                            package_names["${package_name}"]="${package}"
+                            package_names_rev["${package}"]="${package_name}"
+                        fi
                     fi
                 fi
             fi
@@ -2772,6 +2796,8 @@ docker_export(){
         # DSM 7.2 and earlier
         # synoshare --getmap is case insensitive (docker or Docker both work)
         docker_share=$(/usr/syno/sbin/synoshare --getmap docker | grep volume | cut -d"[" -f2 | cut -d"]" -f1)
+        # I could also have used:
+        # docker_share=$(/usr/syno/sbin/synoshare --get docker | tr '[]' '\n' | sed -n "9p")
     fi
 
     if [[ ! -d "$docker_share" ]]; then
