@@ -1,3 +1,10 @@
+v4.2.77
+- Changed timout for starting and stoping apps from 5 minutes to 30 minutes. Issue #140
+  - Container Manager with lots of containers takes longer than 5 minutes to stop or start.
+- Changed to only use the timeout when there is more than 1 app to backup or restore. Issue #140
+- Bug fix for 'bad array subscript' when app is missing it's INFO file. Issue #138
+- Bug fix for checking free space on USB drives. Issue #138
+
 v4.2.76
 - Changed timout for starting and stoping apps from 5 minutes to 30 minutes. Issue #140
   - Container Manager with lots of containers takes longer than 5 minutes to stop or start.
