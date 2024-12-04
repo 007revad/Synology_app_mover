@@ -39,6 +39,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/AntiVirus-McAfee_64.png" width="16" height="16"> AntiVirus by McAfee | AntiVirus-McAfee | OK |
 | <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
 | <img src="/images/icons/apache_64.png" width="16" height="16"> Apache HTTP Server 2.4 | Apache2.4 | OK |
+| <img src="/images/icons/bb-qq_64.png" width="16" height="16"> AQC111 driver | aqc111 | OK - 3rd party package [link](https://github.com/bb-qq/aqc111) |
 | <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK |
 | <img src="/images/icons/AvrLogger_64.png" width="20" height="20"> AvrLogger | AvrLogger | OK - community package [link](https://luenepiet.de/public/Synology/AvrLogger%20(SPK)/) |
 | <img src="/images/icons/BitDefenderForMailPlus_64.png" width="16" height="16"> Bitdefender for MailPlus | BitDefenderForMailPlus | OK I think |
@@ -77,6 +78,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/PrestoServer_64.png" width="16" height="16"> Presto File Server | PrestoServer | OK |
 | <img src="/images/icons/ProxyServer_64.png" width="16" height="16"> Proxy Server | ProxyServer | OK |
 | <img src="/images/icons/Python_64.png" width="16" height="16"> Python 3.9 | Python3.9 | OK |
+| <img src="/images/icons/bb-qq_64.png" width="16" height="16"> RTL8152/RTL8153 driver | r8152 | OK - 3rd party package [link](https://github.com/bb-qq/r8152) |
 | <img src="/images/icons/RadiusServer_64.png" width="16" height="16"> RADIUS Server | RadiusServer | OK |
 | <img src="/images/icons/SynoSmisProvider_64.png" width="16" height="16"> SMI-S Provider | SynoSmisProvider | OK |
 | <img src="/images/icons/SnapshotReplication_64.png" width="16" height="16"> Snapshot Replication | SnapshotReplication | OK |
