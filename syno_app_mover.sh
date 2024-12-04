@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.76"
+scriptver="v4.2.77"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1052,8 +1052,12 @@ vol_free_space(){
     free=""  # var is used later in script
     if [[ -d "$1" ]]; then
         # Get amount of free space on $1 volume
-        #free=$(df --output=avail "$1" | grep -A1 Avail | grep -v Avail)  # dfs / for USB drives. # Issue #63
-        free=$(df | grep "$1"$ | awk '{print $4}')                # dfs correctly for USB drives. # Issue #63
+        if [[ $1 =~ ^"/volumeUSB" ]]; then  # Issue #63 and #138
+            tmp_usb="/$(echo "$1" | cut -d"/" -f2)/usbshare"
+            free=$(df --output=avail "$tmp_usb" | grep -A1 Avail | grep -v Avail)
+        else
+            free=$(df --output=avail "$1" | grep -A1 Avail | grep -v Avail)
+        fi
     fi
 }
 
@@ -2042,18 +2046,22 @@ if [[ ${mode,,} != "restore" ]]; then
             if [[ ${link##*/} == "target" ]] && echo "$target" | grep -q 'volume'; then
                 # Check symlink target exists
                 if [[ -a "/var/packages${link#.}" ]] ; then
-                    package="$(printf %s "$link" | cut -d'/' -f2 )"
-                    package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
-                    package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
-                    if [[ -z "$package_name" ]]; then
-                        package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
-                    fi
 
-                    # Skip packages that are dev tools with no data
-                    if ! skip_dev_tools "$package"; then
-                        package_infos+=("${package_volume}|${package_name}")
-                        package_names["${package_name}"]="${package}"
-                        package_names_rev["${package}"]="${package_name}"
+                    # Skip broken packages with no INFO file
+                    package="$(printf %s "$link" | cut -d'/' -f2 )"
+                    if [[ -f "/var/packages/${package}/INFO" ]]; then
+                        package_volume="$(printf %s "$target" | cut -d'/' -f1,2 )"
+                        package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
+                        if [[ -z "$package_name" ]]; then
+                            package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" package)"
+                        fi
+
+                        # Skip packages that are dev tools with no data
+                        if ! skip_dev_tools "$package"; then
+                            package_infos+=("${package_volume}|${package_name}")
+                            package_names["${package_name}"]="${package}"
+                            package_names_rev["${package}"]="${package_name}"
+                        fi
                     fi
                 fi
             fi
