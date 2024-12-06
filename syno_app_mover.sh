@@ -27,12 +27,12 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.77"
+scriptver="v4.2.78"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
 logpath="$(dirname "$(realpath "$0")")"
-logfile="$logpath/scriptname_$(date +%Y-%m-%d_%H-%M).log"
+logfile="$logpath/$scriptname_$(date +%Y-%m-%d_%H-%M).log"
 
 # Prevent Entware or user edited PATH causing issues
 # shellcheck disable=SC2155  # Declare and assign separately to avoid masking return values
@@ -142,9 +142,14 @@ list_names(){
             if [[ ! -a "$p/target" ]] ; then
                 echo -e "\e[41mBroken symlink\e[0m $p"
             else
-                long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" displayname)"
-                if [[ -z "$long_name" ]]; then
-                    long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" package)"
+                if [[ -f "/var/packages/${p}/INFO" ]]; then
+                    long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" displayname)"
+                    if [[ -z "$long_name" ]]; then
+                        long_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${p}/INFO" package)"
+                    fi
+                else
+                    # Package with no INFO file
+                    long_name="!!! MISSING INFO FILE !!!"
                 fi
                 # Pad with spaces to 29 chars
                 pad=$(printf -- ' %.0s' {1..29})
