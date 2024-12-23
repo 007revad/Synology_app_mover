@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.78"
+scriptver="v4.2.79"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -960,7 +960,7 @@ move_pkg(){
         destination="$2"
     else
         destination="$2"
-    fi    
+    fi
     if [[ $majorversion -gt 6 ]]; then
         applist=( "@appconf" "@appdata" "@apphome" "@appshare" "@appstore" "@apptemp" )
     else
@@ -2859,8 +2859,13 @@ move_database(){
     #sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
     sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
 
-    # Stop the pgsql service - Also stops dependant apps
-    systemctl stop pgsql-adapter.service &
+    if [[ $majorversion -gt 6 ]]; then
+        # Stop the pgsql service - Also stops dependant apps
+        systemctl stop pgsql-adapter.service &
+    else
+        # DSM 6
+        synoservicectl --stop pgsql-adapter &
+    fi
     pid=$!
     string="Stopping pgsql service and dependent apps"
     echo "Stopping pgsql service and dependent apps" >> "$logfile"
@@ -2869,13 +2874,24 @@ move_database(){
     progstatus "$?" "$string" "line ${LINENO}"
 
     # Check pgsql service has stopped
-    # running = 0  stopped = 3
-    if systemctl status pgsql-adapter.service >/dev/null; then
-        ding
-        echo "ERROR Failed to stop pgsql service!" |& tee -a "$logfile"
-        return 1
-    #else
-    #    echo "Stopped pgsql service" |& tee -a "$logfile"
+    if [[ $majorversion -gt 6 ]]; then
+        # DSM 7, running = 0  stopped = 3
+        if systemctl status pgsql-adapter.service >/dev/null; then
+            ding
+            echo "ERROR Failed to stop pgsql service!" |& tee -a "$logfile"
+            return 1
+        #else
+        #    echo "Stopped pgsql service" |& tee -a "$logfile"
+        fi
+    else
+        # DSM 6, running = 0  stopped = 1
+        if synoservicectl --status pgsql-adapter >/dev/null; then
+            ding
+            echo "ERROR Failed to stop pgsql service!" |& tee -a "$logfile"
+            return 1
+        #else
+        #    echo "Stopped pgsql service" |& tee -a "$logfile"
+        fi
     fi
 
     # Create @database folder if needed
@@ -2909,16 +2925,34 @@ move_database(){
 
     # Start the pgsql service
     echo "Starting pgsql service" |& tee -a "$logfile"
-    systemctl start pgsql-adapter.service
+    if [[ $majorversion -gt 6 ]]; then
+        # Stop the pgsql service - Also stops dependant apps
+        systemctl start pgsql-adapter.service
+    else
+        # DSM 6
+        synoservicectl --stop pgsql-adapter
+    fi
+
 
     # Check pgsql service is ok
-    # okay = 0  stopped = 3
-    if ! systemctl status pgsql-adapter.service >/dev/null; then
-        ding
-        echo "ERROR Failed to start pgsql service!" |& tee -a "$logfile"
-        return 1
-    #else
-    #    echo "Started pgsql service" |& tee -a "$logfile"
+    if [[ $majorversion -gt 6 ]]; then
+        # DSM 7, running = 0  stopped = 3
+        if systemctl status pgsql-adapter.service >/dev/null; then
+            ding
+            echo "ERROR Failed to start pgsql service!" |& tee -a "$logfile"
+            return 1
+        #else
+        #    echo "Started pgsql service" |& tee -a "$logfile"
+        fi
+    else
+        # DSM 6, running = 0  stopped = 1
+        if synoservicectl --status pgsql-adapter >/dev/null; then
+            ding
+            echo "ERROR Failed to start pgsql service!" |& tee -a "$logfile"
+            return 1
+        #else
+        #    echo "Started pgsql service" |& tee -a "$logfile"
+        fi
     fi
     return 0
 }
