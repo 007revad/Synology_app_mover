@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.79"
+scriptver="v4.2.80"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
