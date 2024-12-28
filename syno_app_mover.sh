@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.80"
+scriptver="v4.2.81"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -2937,7 +2937,7 @@ move_database(){
     # Check pgsql service is ok
     if [[ $majorversion -gt 6 ]]; then
         # DSM 7, running = 0  stopped = 3
-        if systemctl status pgsql-adapter.service >/dev/null; then
+        if ! systemctl status pgsql-adapter.service >/dev/null; then
             ding
             echo "ERROR Failed to start pgsql service!" |& tee -a "$logfile"
             return 1
@@ -2946,7 +2946,7 @@ move_database(){
         fi
     else
         # DSM 6, running = 0  stopped = 1
-        if synoservicectl --status pgsql-adapter >/dev/null; then
+        if ! synoservicectl --status pgsql-adapter >/dev/null; then
             ding
             echo "ERROR Failed to start pgsql service!" |& tee -a "$logfile"
             return 1
