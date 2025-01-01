@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.81"
+scriptver="v4.2.82"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -112,11 +112,14 @@ Options:
 
       --auto=APP        Automatically backup APP (for scheduling backups)
                           APP can be a single app or a comma separated list
+                          APP can also be 'all' to backup all apps (except 
+                          any you excluded in the syno_app_mover.conf)
                           Examples:
                           --auto=radarr
                           --auto=Calender,ContainerManager,radarr
+                          --auto=all
 
-                          APP needs to be the app's system name
+                          APP names need to be the app's system name
                           View the system names with the --list option
 
       --list            Display installed apps' system names
