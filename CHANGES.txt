@@ -1,3 +1,6 @@
+v4.2.82
+- Added information on the --auto=all option to --help and the readme.
+
 v4.2.81
 - Bug fix for checking if pgsql service started okay (introduced in v4.2.80). Issue #153
 
