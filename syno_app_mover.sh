@@ -27,12 +27,12 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.82"
+scriptver="v4.2.83"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
 logpath="$(dirname "$(realpath "$0")")"
-logfile="$logpath/$scriptname_$(date +%Y-%m-%d_%H-%M).log"
+logfile="$logpath/${scriptname}_$(date +%Y-%m-%d_%H-%M).log"
 
 # Prevent Entware or user edited PATH causing issues
 # shellcheck disable=SC2155  # Declare and assign separately to avoid masking return values
@@ -81,6 +81,13 @@ fi
 model=$(cat /proc/sys/kernel/syno_hw_version)
 #modelname="$model"
 
+# Check for dodgy characters after model number
+if [[ $model =~ 'pv10-j'$ ]]; then  # GitHub syno_hdd_db issue #10
+    model=${model%??????}+          # replace last 6 chars with +
+elif [[ $model =~ '-j'$ ]]; then    # GitHub syno_hdd_db issue #2
+    model=${model%??}               # remove last 2 chars
+fi
+
 # Show script version
 #echo -e "$script $scriptver\ngithub.com/$repo\n"
 echo "$script $scriptver"
@@ -123,7 +130,7 @@ Options:
                           View the system names with the --list option
 
       --list            Display installed apps' system names
-                          
+
 EOF
 }
 
@@ -847,7 +854,7 @@ move_pkg_do(){
             if [[ -w "/$sourcevol" ]]; then
                 mv -f "${source:?}" "${2:?}/${appdir:?}" |& tee -a "$logfile" &
             else
-                # Source volume if read only
+                # Source volume is read only
                 cp -prf "${source:?}" "${2:?}/${appdir:?}" |& tee -a "$logfile" &
             fi
             pid=$!
@@ -1295,14 +1302,14 @@ move_dir(){
                     if [[ -w "/$sourcevol" ]]; then
                         mv -f "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" |& tee -a "$logfile" &
                     else
-                        # Source volume if read only
+                        # Source volume is read only
                         cp -prf "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" |& tee -a "$logfile" &
                     fi
                 else
                     if [[ -w "/$sourcevol" ]]; then
                         mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" |& tee -a "$logfile" &
                     else
-                        # Source volume if read only
+                        # Source volume is read only
                         cp -prf "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" |& tee -a "$logfile" &
                     fi
                 fi
@@ -1340,8 +1347,15 @@ move_dir(){
         else
             copy_dir "$1" "$2"
         fi
+    elif [[ -d "/${bkpath:?}/${1:?}" ]]; then
+        # Restore from USB backup
+        copy_dir "$1" "$2"
     else
-        echo -e "No /${sourcevol}/$1 to ${mode,,}" |& tee -a "$logfile"
+        if [[ ${mode,,} != "restore" ]]; then
+            echo -e "No /${sourcevol}/$1 to ${mode,,}" |& tee -a "$logfile"
+        else
+            echo -e "No ${bkpath}/$1 to ${mode,,}" |& tee -a "$logfile"
+        fi
     fi
 }
 
@@ -3015,8 +3029,9 @@ for pkg in "${pkgs_sorted[@]}"; do
         fi
     fi
 
-
-    if check_last_process_time "$pkg"; then
+    if ! check_last_process_time "$pkg" && [[ $all == "yes" ]]; then
+        echo "Skipping $pkg_name as a ${mode,,} was done less than $skip_minutes minutes ago" |& tee -a "$logfile"
+    else
         if [[ ${mode,,} != "move" ]]; then
             prepare_backup_restore
         fi
@@ -3039,8 +3054,6 @@ for pkg in "${pkgs_sorted[@]}"; do
         if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
             start_packages
         fi
-    else
-        echo "Skipping $pkg_name as it was backed up less than $skip_minutes minutes ago" |& tee -a "$logfile"
     fi
     echo "" |& tee -a "$logfile"
 done
