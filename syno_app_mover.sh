@@ -854,7 +854,7 @@ move_pkg_do(){
             if [[ -w "/$sourcevol" ]]; then
                 mv -f "${source:?}" "${2:?}/${appdir:?}" |& tee -a "$logfile" &
             else
-                # Source volume if read only
+                # Source volume is read only
                 cp -prf "${source:?}" "${2:?}/${appdir:?}" |& tee -a "$logfile" &
             fi
             pid=$!
@@ -1302,14 +1302,14 @@ move_dir(){
                     if [[ -w "/$sourcevol" ]]; then
                         mv -f "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" |& tee -a "$logfile" &
                     else
-                        # Source volume if read only
+                        # Source volume is read only
                         cp -prf "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" |& tee -a "$logfile" &
                     fi
                 else
                     if [[ -w "/$sourcevol" ]]; then
                         mv -f "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" |& tee -a "$logfile" &
                     else
-                        # Source volume if read only
+                        # Source volume is read only
                         cp -prf "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}" |& tee -a "$logfile" &
                     fi
                 fi
@@ -1347,8 +1347,15 @@ move_dir(){
         else
             copy_dir "$1" "$2"
         fi
+    elif [[ -d "/${bkpath:?}/${1:?}" ]]; then
+        # Restore from USB backup
+        copy_dir "$1" "$2"
     else
-        echo -e "No /${sourcevol}/$1 to ${mode,,}" |& tee -a "$logfile"
+        if [[ ${mode,,} != "restore" ]]; then
+            echo -e "No /${sourcevol}/$1 to ${mode,,}" |& tee -a "$logfile"
+        else
+            echo -e "No ${bkpath}/$1 to ${mode,,}" |& tee -a "$logfile"
+        fi
     fi
 }
 
