@@ -2,6 +2,7 @@ v4.2.83
 - Changed to only skip backup or restore if a backup or restore was done in the last "skip_minutes" and "All" is selected.
 - Bug fix for logfile missing the scriptname.
 - Bug fix for some models returning extra characters after their model name.
+- Bug fix for wrong error message when restoring from USB drive and `@folder`is missing.
 
 v4.2.82
 - Added information on the --auto=all option to --help and the readme.
