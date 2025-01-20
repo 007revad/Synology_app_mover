@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.83"
+scriptver="v4.2.84"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1347,9 +1347,11 @@ move_dir(){
         else
             copy_dir "$1" "$2"
         fi
-    elif [[ -d "/${bkpath:?}/${1:?}" ]]; then
+    elif [[ ${mode,,} == "restore" ]]; then
         # Restore from USB backup
-        copy_dir "$1" "$2"
+        if [[ -d "/${bkpath:?}/${1:?}" ]]; then
+            copy_dir "$1" "$2"
+        fi
     else
         if [[ ${mode,,} != "restore" ]]; then
             echo -e "No /${sourcevol}/$1 to ${mode,,}" |& tee -a "$logfile"
@@ -2389,6 +2391,7 @@ if [[ ${package_names[*]} =~ "ContainerManager" ]] || [[ ${package_names[*]} =~ 
 fi
 
 # Check selected pkgs will fit on target volume
+# Should add a progress bar?
 if [[ "${#package_names[@]}" -gt "1" ]]; then
     echo -e "Checking size of selected apps" |& tee -a "$logfile"
 else
@@ -2591,9 +2594,9 @@ backup_extras(){
                 extrabakvol="$targetvol"
             fi
             echo -e "NOTE: A backup of ${Cyan}$1${Off} is required"\
-                "for recovery if the move fails."
+                "for recovery if the ${mode,,} fails."
             echo -e "NOTE: A backup of $1 is required"\
-                "for recovery if the move fails." >> "$logfile"
+                "for recovery if the ${mode,,} fails." >> "$logfile"
             echo -e "Do you want to ${Yellow}backup${Off} the"\
                 "${Cyan}$1${Off} folder on $extrabakvol? [y/n]"
             echo -e "Do you want to backup the"\
