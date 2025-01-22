@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.84"
+scriptver="v4.2.85"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1795,6 +1795,7 @@ check_pkg_size(){
                 fi
                 ;;
             ContainerManager|Docker)
+                prune_dangling  # Prune dangling docker images 
                 if [[ -d "/$sourcevol/@docker" ]]; then
                     size2=$(/usr/bin/du -s /"$sourcevol"/@docker | awk '{print $1}')
                     size=$((size +"$size2"))
@@ -2977,6 +2978,31 @@ move_database(){
     return 0
 }
 
+prune_dangling(){ 
+    if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
+        if [[ -w "/$sourcevol" ]]; then
+            # Start package if needed so we can prune images
+            if ! package_is_running "$pkg"; then
+                package_start "$pkg" "$pkg_name"
+            fi
+
+            if [[ ${mode,,} == "restore" ]]; then
+                # Remove dangling and unused images
+                echo "Removing dangling and unused docker images" |& tee -a "$logfile"
+                docker image prune --all --force >/dev/null
+            else
+                # Remove dangling images
+                echo "Removing dangling docker images" |& tee -a "$logfile"
+                docker image prune --force >/dev/null
+            fi
+        else
+            # Skip read only source volume
+            echo "/$sourcevol is read only. Skipping:" |& tee -a "$logfile"
+            echo "  - Removing dangling and unused docker images" |& tee -a "$logfile"
+        fi
+    fi
+}
+
 
 # Loop through pkgs_sorted array and process package
 for pkg in "${pkgs_sorted[@]}"; do
@@ -3015,20 +3041,20 @@ for pkg in "${pkgs_sorted[@]}"; do
                 docker_export
             fi
 
-            if [[ ${mode,,} == "restore" ]]; then
-                # Remove dangling and unused images
-                echo "Removing dangling and unused docker images" |& tee -a "$logfile"
-                docker image prune --all --force >/dev/null
-            else
-                # Remove dangling images
-                echo "Removing dangling docker images" |& tee -a "$logfile"
-                docker image prune --force >/dev/null
-            fi
+            #if [[ ${mode,,} == "restore" ]]; then
+            #    # Remove dangling and unused images
+            #    echo "Removing dangling and unused docker images" |& tee -a "$logfile"
+            #    docker image prune --all --force >/dev/null
+            #else
+            #    # Remove dangling images
+            #    echo "Removing dangling docker images" |& tee -a "$logfile"
+            #    docker image prune --force >/dev/null
+            #fi
         else
             # Skip read only source volume
             echo "/$sourcevol is read only. Skipping:" |& tee -a "$logfile"
             echo "  - Exporting container settings" |& tee -a "$logfile"
-            echo "  - Removing dangling and unused docker images" |& tee -a "$logfile"
+            #echo "  - Removing dangling and unused docker images" |& tee -a "$logfile"
         fi
     fi
 
