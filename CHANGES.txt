@@ -1,3 +1,6 @@
+v4.2.85
+- Now prunes dangling and unused docker images before checking the required space.
+
 v4.2.84
 - Bug fix for script stopping when trying to move extra `@folders` if they don't exist. Issue #164
 
