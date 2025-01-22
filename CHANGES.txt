@@ -1,6 +1,6 @@
 v4.2.86
 - Now prunes dangling and unused docker images before checking the required space.
-- Bug fix. #167
+- Bug fix for "prune_dangling: command not found”. #167
 
 v4.2.84
 - Bug fix for script stopping when trying to move extra `@folders` if they don't exist. Issue #164
