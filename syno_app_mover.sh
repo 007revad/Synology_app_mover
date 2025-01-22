@@ -1760,6 +1760,31 @@ skip_dev_tools(){
     fi
 }
 
+prune_dangling(){ 
+    if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
+        if [[ -w "/$sourcevol" ]]; then
+            # Start package if needed so we can prune images
+            if ! package_is_running "$pkg"; then
+                package_start "$pkg" "$pkg_name"
+            fi
+
+            if [[ ${mode,,} == "restore" ]]; then
+                # Remove dangling and unused images
+                echo "Removing dangling and unused docker images" |& tee -a "$logfile"
+                docker image prune --all --force >/dev/null
+            else
+                # Remove dangling images
+                echo "Removing dangling docker images" |& tee -a "$logfile"
+                docker image prune --force >/dev/null
+            fi
+        else
+            # Skip read only source volume
+            echo "/$sourcevol is read only. Skipping:" |& tee -a "$logfile"
+            echo "  - Removing dangling and unused docker images" |& tee -a "$logfile"
+        fi
+    fi
+}
+
 check_pkg_size(){ 
     # $1 is package name
     # $2 is package source volume
@@ -2978,30 +3003,7 @@ move_database(){
     return 0
 }
 
-prune_dangling(){ 
-    if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
-        if [[ -w "/$sourcevol" ]]; then
-            # Start package if needed so we can prune images
-            if ! package_is_running "$pkg"; then
-                package_start "$pkg" "$pkg_name"
-            fi
 
-            if [[ ${mode,,} == "restore" ]]; then
-                # Remove dangling and unused images
-                echo "Removing dangling and unused docker images" |& tee -a "$logfile"
-                docker image prune --all --force >/dev/null
-            else
-                # Remove dangling images
-                echo "Removing dangling docker images" |& tee -a "$logfile"
-                docker image prune --force >/dev/null
-            fi
-        else
-            # Skip read only source volume
-            echo "/$sourcevol is read only. Skipping:" |& tee -a "$logfile"
-            echo "  - Removing dangling and unused docker images" |& tee -a "$logfile"
-        fi
-    fi
-}
 
 
 # Loop through pkgs_sorted array and process package
