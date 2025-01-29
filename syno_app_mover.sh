@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.86"
+scriptver="v4.2.87"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1513,6 +1513,16 @@ move_extras(){
                 exitonerror="no" && move_dir "@img_bkp_cache" extras
             fi
             ;;
+
+        jellyfin)
+            if [[ ${mode,,} != "backup" ]]; then
+                file=/var/packages/jellyfin/var/config/system.xml  # Issue #171
+                if [[ -f "$file" ]]; then
+                    sed -i 's|'"/$sourcevol/@appdata"'|'"${2:?}/@appdata"'|g' "$file"
+                fi
+            fi
+            ;;
+
         MailPlus-Server)
             # Moving MailPlus-Server does not update
             # /var/packages/MailPlus-Server/etc/synopkg_conf/reg_volume
@@ -3002,8 +3012,6 @@ move_database(){
     fi
     return 0
 }
-
-
 
 
 # Loop through pkgs_sorted array and process package
