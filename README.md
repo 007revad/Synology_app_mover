@@ -167,7 +167,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 
 If you want to use use the [backup and restore options](/images/backup.png) you need edit the included **syno_app_mover.conf** file to set the location to backup to.
 
-The **syno_app_mover.conf** file must be in the same foller as the **syno_app_mover.sh file**.
+The **syno_app_mover.conf** file must be in the same folder as the **syno_app_mover.sh file**.
 
 **Other options in syno_app_mover.conf**
 ```YAML
