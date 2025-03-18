@@ -37,7 +37,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/ActiveBackup-Office365_64.png" width="16" height="16"> Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
 | <img src="/images/icons/CodecPack_64.png" width="16" height="16"> Advanced Media Extensions | CodecPack | OK |
 | <img src="/images/icons/AntiVirus-McAfee_64.png" width="16" height="16"> AntiVirus by McAfee | AntiVirus-McAfee | OK |
-| <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
+| <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK - [Use v4.2.88 or later](https://github.com/007revad/Synology_app_mover/releases) |
 | <img src="/images/icons/apache_64.png" width="16" height="16"> Apache HTTP Server 2.4 | Apache2.4 | OK |
 | <img src="/images/icons/bb-qq_64.png" width="16" height="16"> AQC111 driver | aqc111 | OK - 3rd party package [link](https://github.com/bb-qq/aqc111) |
 | <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK |
