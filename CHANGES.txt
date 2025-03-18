@@ -1,3 +1,6 @@
+v4.2.88
+- Bug fix for Antivirus Essential. Now also processes @quarantine and .quarantine. Issue #182
+
 v4.2.87
 - Bug fix for moving jellyfin. Issue #171
 
