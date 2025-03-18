@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.87"
+scriptver="v4.2.88"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1388,6 +1388,12 @@ move_extras(){
             ;;
         ActiveBackup-Office365)
             exitonerror="no" && move_dir "@ActiveBackup-Office365" extras
+            ;;
+        AntiVirus)
+            exitonerror="no" && move_dir "@quarantine" extras
+            if [[ -d "$sourcevol/.quarantine" ]]; then
+                exitonerror="no" && move_dir ".quarantine" extras
+            fi
             ;;
         Chat)
             if [[ ${mode,,} == "move" ]]; then

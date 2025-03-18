@@ -37,7 +37,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/ActiveBackup-Office365_64.png" width="16" height="16"> Active Backup for Microsoft 365 | ActiveBackup-Office365 | OK |
 | <img src="/images/icons/CodecPack_64.png" width="16" height="16"> Advanced Media Extensions | CodecPack | OK |
 | <img src="/images/icons/AntiVirus-McAfee_64.png" width="16" height="16"> AntiVirus by McAfee | AntiVirus-McAfee | OK |
-| <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK |
+| <img src="/images/icons/anti_virus_64.png" width="16" height="16"> AntiVirus Essential | AntiVirus | OK - [Use v4.2.88 or later](https://github.com/007revad/Synology_app_mover/releases) |
 | <img src="/images/icons/apache_64.png" width="16" height="16"> Apache HTTP Server 2.4 | Apache2.4 | OK |
 | <img src="/images/icons/bb-qq_64.png" width="16" height="16"> AQC111 driver | aqc111 | OK - 3rd party package [link](https://github.com/bb-qq/aqc111) |
 | <img src="/images/icons/AudioStation_64.png" width="16" height="16"> Audio Station | AudioStation | OK |
@@ -47,7 +47,8 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/CMS_64.png" width="16" height="16"> Central Management System | CMS | OK |
 | <img src="/images/icons/ChannelsDVR_64.png" width="16" height="16"> Channels DVR | ChannelsDVR | OK - 3rd party package [link](https://getchannels.com/dvr-server/#synology) |
 | <img src="/images/icons/CloudSync_64.png" width="16" height="16"> Cloud Sync | CloudSync | OK |
-| <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager | ContainerManager | OK |
+| <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager 24.0.2 | ContainerManager | ? |
+| <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager 20.10.23 | ContainerManager | OK |
 | <img src="/images/icons/DNSServer_64.png" width="16" height="16"> DNS Server | DNSServer | OK |
 | <img src="/images/icons/docker_64.png" width="20" height="20"> Docker | Docker | OK |
 | <img src="/images/icons/DocumentViewer_64.png" width="16" height="16"> Document Viewer | DocumentViewer | OK |
@@ -123,6 +124,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 |---------|--------|
 | <img src="/images/icons/ArchiwareP5_64.png" width="16" height="16"> Archiware P5 |  |
 | <img src="/images/icons/Sony_BraviaSignage_64.png" width="16" height="16"> BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
+| <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager 24.0.2 |  |
 | <img src="/images/icons/DdbBackup_64.png" width="18" height="18"> Data Deposit Box |  |
 | <img src="/images/icons/diagnosis_64.png" width="20" height="20"> Diagnosis Tool |  |
 | <img src="/images/icons/domotz_64.png" width="16" height="16"> Domotz Network Monitoring |  |
