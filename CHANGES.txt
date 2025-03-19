@@ -1,3 +1,6 @@
+v4.2.89
+- Bug fix for Container Manager. Skip syslog-ng.ctl 0 byte file. Issue #186
+
 v4.2.88
 - Bug fix for Antivirus Essential. Now also processes @quarantine (and .quarantine if it exists). Issue #182
 
