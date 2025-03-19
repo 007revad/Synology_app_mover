@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.88"
+scriptver="v4.2.89"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1227,9 +1227,10 @@ copy_dir(){
                 #cp -prf "/${sourcevol:?}/${1:?}$pack" "${bkpath:?}${extras}" |& tee -a "$logfile" &
                 if [[ $1 == "@docker" ]]; then
                     excludeargs=(
-                        "--exclude=subvolumes/*/tmp/"  # btfs        Issue #120
-                        "--exclude=subvolumes/*/run/"  # btfs        Issue #120
-                        "--exclude=aufs/diff/*/run/"   # aufs (ext4) Issue #117
+                        "--exclude=subvolumes/*/tmp/"           # btfs         Issue #120
+                        "--exclude=subvolumes/*/run/"           # btfs         Issue #120
+                        "--exclude=aufs/diff/*/run/"            # aufs (ext4)  Issue #117
+                        "--exclude=subvolumes/*/syslog-ng.ctl"  # 0 byte file  Issue #186
                     )
                     rsync -q -aHX --delete --compress-level=0 "${excludeargs[@]}" "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" |& tee -a "$logfile" &
                 else
