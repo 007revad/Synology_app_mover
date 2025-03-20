@@ -14,7 +14,7 @@ You just select the package and the destination volume and the script will stop 
 
 Handy for moving packages to an SSD volume, or to another volume so you can delete the original volume.
 
-**NEW** Now includes [Backup and Restore modes](/images/backup.png).
+**Now** includes [Backup and Restore modes](/images/backup.png).
 
   - Supports DSM 7. Not fully tested with DSM 6.
   - If backing up to a USB drive the partition's file system should be ext3, ext4 of btrfs.
