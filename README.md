@@ -94,7 +94,7 @@ The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.sy
 | <img src="/images/icons/Chat_64.png" width="16" height="16"> Synology Chat Server | Chat | OK |
 | <img src="/images/icons/Contacts_64.png" width="16" height="16"> Synology Contacts | Contacts | OK |
 | <img src="/images/icons/DirectoryServerForWindowsDomain_64.png" width="16" height="16"> Synology Directory Server | DirectoryServerForWindowsDomain | OK |
-| <img src="/images/icons/SynologyDrive_64.png" width="16" height="16"> Synology Drive Server | SynologyDrive | OK |
+| <img src="/images/icons/SynologyDrive_64.png" width="16" height="16"> Synology Drive Server | SynologyDrive | OK - see [Synology Drive and Btrfs Snapshots](https://github.com/007revad/Synology_app_mover#synology-drive-and-btrfs-snapshots) |
 | <img src="/images/icons/MailServer_64.png" width="16" height="16"> Synology Mail Server | MailServer | OK |
 | <img src="/images/icons/MailClient_64.png" width="16" height="16"> Synology MailPlus | MailPlus | OK |
 | <img src="/images/icons/MailPlus-Server_64.png" width="16" height="16"> Synology MailPlus Server | MailPlus-Server | OK I think |
@@ -267,6 +267,19 @@ If the script won't run check the following:
    ```YAML
    sudo chmod +x "/volume1/scripts/syno_app_mover.sh"
    ```
+
+### Synology Drive and Btrfs Snapshots
+
+It seems that Synology Drive handles versioning differently depending on the underlying file system.
+For **ext4 volumes**, the versioning database is stored in the internal folder (`/volume1/@synologydrive/@sync/repo`).
+However, on **Btrfs volumes**, versioning is managed using **Btrfs snapshots** (see the [Reddit thread here](https://www.reddit.com/r/synology/comments/82o4pv/comment/dvbskzh/)).
+
+This means that if you move Synology Drive's database from **ext4** to **Btrfs**, the `@sync/repo` folder will **not be moved** to the Btrfs volume.
+There is a risk of **losing file version history**, though it’s difficult to confirm without more testing.
+
+On the plus side, you will free up space that was previously used by the versioning data on the ext4 volume.
+
+For more details, check out this [GitHub discussion](https://github.com/007revad/Synology_app_mover/discussions/200).
 
 ### Video - moving Container Manager
 
