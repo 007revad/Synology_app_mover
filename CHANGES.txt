@@ -1,3 +1,6 @@
+v4.2.90
+- Bug fix for --auto-all not working. Issue #201
+
 v4.2.89
 - Bug fix for Container Manager. Skip syslog-ng.ctl 0 byte file. Issue #186
 
