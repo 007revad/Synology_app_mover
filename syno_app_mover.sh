@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.90"
+scriptver="v4.2.91"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -661,9 +661,9 @@ package_stop(){
         /usr/syno/bin/synopkg stop "$1" >/dev/null &
     else
         # Only timeout if there are other packages to process
-        #timeout 5.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
+        #timeout 5m /usr/syno/bin/synopkg stop "$1" >/dev/null &
         # Docker can take 12 minutes to stop 70 containers
-        timeout 30.0m /usr/syno/bin/synopkg stop "$1" >/dev/null &
+        timeout 30m /usr/syno/bin/synopkg stop "$1" >/dev/null &
     fi
     pid=$!
     string="Stopping ${Cyan}${2}${Off}"
@@ -691,9 +691,9 @@ package_start(){
         /usr/syno/bin/synopkg start "$1" >/dev/null &
     else
         # Only timeout if there are other packages to process
-        #timeout 5.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
+        #timeout 5m /usr/syno/bin/synopkg start "$1" >/dev/null &
         # Docker can take 15 minutes to start 70 containers
-        timeout 30.0m /usr/syno/bin/synopkg start "$1" >/dev/null &
+        timeout 30m /usr/syno/bin/synopkg start "$1" >/dev/null &
     fi
     pid=$!
     string="Starting ${Cyan}${2}${Off}"
