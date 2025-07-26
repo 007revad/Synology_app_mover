@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.89"
+scriptver="v4.2.90"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -43,7 +43,7 @@ ding(){
     printf \\a
 }
 
-# Save options used
+# Save options used for getopt
 args=("$@")
 
 
@@ -103,7 +103,14 @@ majorversion=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
 # Show DSM full version and model
 if [[ $buildphase == GM ]]; then buildphase=""; fi
 if [[ $smallfixnumber -gt "0" ]]; then smallfix="-$smallfixnumber"; fi
-echo -e "$model DSM $productversion-$buildnumber$smallfix $buildphase\n"
+echo "$model DSM $productversion-$buildnumber$smallfix $buildphase"
+
+# Show options used
+if [[ ${#args[@]} -gt "0" ]]; then
+    echo -e "Using options: ${args[*]}\n"
+else
+    echo ""
+fi
 
 
 usage(){ 
@@ -182,9 +189,6 @@ EOF
     exit 0
 }
 
-
-# Save options used for getopt
-args=("$@")
 
 autoupdate=""
 
@@ -277,7 +281,7 @@ else
 fi
 
 # Abort if autolist is empty
-if [[ $auto == "yes" ]] && [[ ! ${#autolist[@]} -gt "0" ]]; then
+if [[ $auto == "yes" ]] && [[ $all != "yes" ]] && [[ ! ${#autolist[@]} -gt "0" ]]; then
     ding
     echo -e "No apps to backup!\n"
     exit 2  # autolist empty
@@ -2079,7 +2083,7 @@ declare -A package_names_rev
 package_infos=( )
 if [[ ${mode,,} != "restore" ]]; then
 
-    if [[ $auto == "yes" ]]; then
+    if [[ $auto == "yes" ]] && [[ $all != "yes" ]]; then
         # Add auto packages to array
         for package in "${autolist[@]}"; do
             package_name="$(/usr/syno/bin/synogetkeyvalue "/var/packages/${package}/INFO" displayname)"
