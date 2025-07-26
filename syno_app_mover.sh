@@ -3358,7 +3358,8 @@ suggest_change_location(){
             echo "  1. Open Synology Drive Admin Console." |& tee -a "$logfile"
             echo "  2. Click Settings." |& tee -a "$logfile"
             echo "  3. Change Location to $targetvol" |& tee -a "$logfile"
-            echo -e "  4. Click Apply.\n" |& tee -a "$logfile"
+            echo "  4. Click Apply." |& tee -a "$logfile"
+            echo -e "If you're migrating from an ext4 volume to a Btrfs volume,\n please review this note: https://github.com/007revad/Synology_app_mover#synology-drive-and-btrfs-snapshots\n" |& tee -a "$logfile"
         fi
     fi
 
