@@ -172,7 +172,7 @@ If you want to use use the [backup and restore options](/images/backup.png) you 
 
 The **syno_app_mover.conf** file must be in the same folder as the **syno_app_mover.sh file**.
 
-**Other options in syno_app_mover.conf**
+### Settings in syno_app_mover.conf
 ```YAML
 # buffer is used when checking if target volume has enough space
 # Add 50 GB buffer so we don't fill the target volume
