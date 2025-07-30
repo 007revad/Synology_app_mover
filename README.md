@@ -270,14 +270,20 @@ If the script won't run check the following:
 
 ### Synology Drive and Btrfs Snapshots
 
-It seems that Synology Drive handles versioning differently depending on the underlying file system.
-For **ext4 volumes**, the versioning database is stored in the internal folder (`/volume1/@synologydrive/@sync/repo`).
-However, on **Btrfs volumes**, versioning is managed using **Btrfs snapshots** (see the [Reddit thread here](https://www.reddit.com/r/synology/comments/82o4pv/comment/dvbskzh/)).
+Synology Drive handles file versioning differently based on the underlying file system.
 
-This means that if you move Synology Drive's database from **ext4** to **Btrfs**, the `@sync/repo` folder will **not be moved** to the Btrfs volume.
-There is a risk of **losing file version history**, though it’s difficult to confirm without more testing.
+- For **ext4 volumes**, the versioning data is stored in the internal folder (`/volume1/@synologydrive/@sync/repo`).
+- For **Btrfs volumes**, versioning is managed through **Btrfs snapshots** (see the [Reddit thread here](https://www.reddit.com/r/synology/comments/82o4pv/comment/dvbskzh/)).
 
-On the plus side, you will free up space that was previously used by the versioning data on the ext4 volume.
+When moving Synology Drive’s database from an **ext4** volume to a **Btrfs** volume, the `@sync/repo` folder containing file versioning data **will not be moved** to the Btrfs volume.
+This is because **Btrfs snapshots** handle versioning on the Btrfs side, while ext4 relies on the `@synologydrive` folder for versioning.
+
+However, it seems that you won’t lose your file version history as long as you don’t delete the ext4 volume.
+The file versions appear to remain intact on the ext4 volume, and you should be able to access them as long as the volume is still available.
+
+But, removing the ext4 volume will result in the **irreversible loss of all file versions**, as the versioning data is stored exclusively in the `@synologydrive` folder on ext4 volumes.
+
+On the positive side, by moving the database to the Btrfs volume, you'll free up the space previously occupied by the versioning data on the ext4 volume.
 
 For more details, check out this [GitHub discussion](https://github.com/007revad/Synology_app_mover/discussions/200).
 
