@@ -1,3 +1,6 @@
+v4.2.92
+- Added warning about moving Synology Drive from ext4 volume to Btrfs. Thanks @pfiorentino
+
 v4.2.91
 - Changed `timeout 30.0m` to `timeout 30m`. https://github.com/007revad/Video_Station_for_DSM_722/issues/72
 
