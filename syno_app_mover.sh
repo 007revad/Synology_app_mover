@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.92"
+scriptver="v4.2.93"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1397,7 +1397,7 @@ move_extras(){
         AntiVirus)
             exitonerror="no" && move_dir "@quarantine" extras
             if [[ -d "$sourcevol/.quarantine" ]]; then
-                exitonerror="no" && move_dir ".quarantine" extras
+                mv -f "$sourcevol/.quarantine" "${2:?}/}" |& tee -a "$logfile" &
             fi
             ;;
         Chat)
