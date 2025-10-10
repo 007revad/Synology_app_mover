@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.93"
+scriptver="v4.2.94"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -2926,8 +2926,9 @@ move_database(){
     #sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
     sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
 
+    # Stop pgsql service
     if [[ $majorversion -gt 6 ]]; then
-        # Stop the pgsql service - Also stops dependant apps
+        # Stopping the pgsql service also stops dependant apps
         systemctl stop pgsql-adapter.service &
     else
         # DSM 6
@@ -2961,6 +2962,43 @@ move_database(){
         fi
     fi
 
+
+    # Stop synologand service
+    if [[ $majorversion -gt 6 ]]; then
+        systemctl stop synologand &
+    else
+        # DSM 6
+        synoservicectl --stop synologand &
+    fi
+    pid=$!
+    string="Stopping synologand service"
+    echo "Stopping synologand service" >> "$logfile"
+    progbar "$pid" "$string"
+    wait "$pid"
+    progstatus "$?" "$string" "line ${LINENO}"
+
+    # Check synologan service has stopped
+    if [[ $majorversion -gt 6 ]]; then
+        # DSM 7, running = 0  stopped = 3
+        if systemctl status synologand >/dev/null; then
+            ding
+            echo "ERROR Failed to stop synologand service!" |& tee -a "$logfile"
+            return 1
+        #else
+        #    echo "Stopped synologand service" |& tee -a "$logfile"
+        fi
+    else
+        # DSM 6, running = 0  stopped = 1
+        if synoservicectl --status synologand >/dev/null; then
+            ding
+            echo "ERROR Failed to stop synologand service!" |& tee -a "$logfile"
+            return 1
+        #else
+        #    echo "Stopped synologand service" |& tee -a "$logfile"
+        fi
+    fi
+
+
     # Create @database folder if needed
     if [[ ! -d "${targetvol:?}/@database" ]]; then
         mkdir -m755 "${targetvol:?}/@database"
@@ -2990,16 +3028,19 @@ move_database(){
     rm /var/services/pgsql
     ln -s "${targetvol:?}/@database/pgsql" /var/services/pgsql
 
+    # Edit synologan symlink
+    rm /var/lib/synologan/database/alert.sqlite
+    ln -s "${targetvol:?}/@database/synologan/alert.sqlite" /var/lib/synologan/database/alert.sqlite
+
+
     # Start the pgsql service
     echo "Starting pgsql service" |& tee -a "$logfile"
     if [[ $majorversion -gt 6 ]]; then
-        # Stop the pgsql service - Also stops dependant apps
         systemctl start pgsql-adapter.service
     else
         # DSM 6
-        synoservicectl --stop pgsql-adapter
+        synoservicectl --start pgsql-adapter
     fi
-
 
     # Check pgsql service is ok
     if [[ $majorversion -gt 6 ]]; then
@@ -3021,6 +3062,38 @@ move_database(){
         #    echo "Started pgsql service" |& tee -a "$logfile"
         fi
     fi
+
+
+    # Start the synologand service
+    echo "Starting synologand service" |& tee -a "$logfile"
+    if [[ $majorversion -gt 6 ]]; then
+        systemctl start synologand
+    else
+        # DSM 6
+        synoservicectl --start synologand
+    fi
+
+    # Check synologand service is ok
+    if [[ $majorversion -gt 6 ]]; then
+        # DSM 7, running = 0  stopped = 3
+        if ! systemctl status synologand >/dev/null; then
+            ding
+            echo "ERROR Failed to start synologand service!" |& tee -a "$logfile"
+            return 1
+        #else
+        #    echo "Started synologand service" |& tee -a "$logfile"
+        fi
+    else
+        # DSM 6, running = 0  stopped = 1
+        if ! synoservicectl --status synologand >/dev/null; then
+            ding
+            echo "ERROR Failed to start synologand service!" |& tee -a "$logfile"
+            return 1
+        #else
+        #    echo "Started synologand service" |& tee -a "$logfile"
+        fi
+    fi
+
     return 0
 }
 
@@ -3405,4 +3478,3 @@ if [[ ${mode,,} == "move" ]]; then
 fi
 
 exit
-
