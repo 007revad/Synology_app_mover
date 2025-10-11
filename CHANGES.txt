@@ -1,3 +1,7 @@
+v4.2.94
+- Bug fix for broken `synologan/alert.sqlite` symlink after moving `@database`. Issue #206
+- Bug fix for DSM 6 not starting pgsql service after moving `@database`.
+
 v4.2.93
 - Bug fix for not moving AntiVirus' quarantined files database. Issue #215
 
