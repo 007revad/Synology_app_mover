@@ -28,7 +28,7 @@ Handy for moving packages to an SSD volume, or to another volume so you can dele
 
 <img src="/images/icons/.png" width="16" height="16"> 
 
-The icons in this table are [Copyright © 2004-2024 Synology Inc.](https://kb.synology.com/en-br/DSM/help/DSM/Home/about?version=7) or Copyright the 3rd party package developer.
+The icons in this table are [Copyright © 2004-2025 Synology Inc.](https://kb.synology.com/en-br/DSM/help/DSM/Home/about?version=7) or Copyright the 3rd party package developer.
 
 | Package Center Name | System Name | Result |
 |---------------------|-------------|--------|
