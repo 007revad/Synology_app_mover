@@ -27,7 +27,7 @@
 # DONE Added USB Copy to show how to move USB Copy database (move mode only)
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.95"
+scriptver="v4.2.94"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -2395,18 +2395,9 @@ elif [[ ${mode,,} == "backup" ]]; then
     fi
 elif [[ ${mode,,} == "restore" ]]; then
     if [[ $all != "yes" ]]; then
-        if check_pkg_installed ${pkg:?}; then
-            targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
-            echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
-            echo -e "Destination volume is ${targetvol}\n" >> "$logfile"
-        else
-            ding
-            echo -e "${Error}${pkg}${Off} is not installed!"
-            echo -e "You need to install ${pkg} before restoring.\n"
-            echo -e "${Error}${pkg}${Off} is not installed!" >> "$logfile"
-            echo -e "You need to install ${pkg} before restoring.\n" >> "$logfile"
-            exit 1
-        fi
+        targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
+        echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
+        echo -e "Destination volume is ${targetvol}\n" >> "$logfile"
     fi
 fi
 
@@ -2695,18 +2686,7 @@ prepare_backup_restore(){
 
     # Set targetvol variable
     if [[ ${mode,,} == "restore" ]] && [[ $all == "yes" ]]; then
-        if check_pkg_installed ${pkg:?}; then
-            targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
-            is_installed="0"
-        else
-            ding
-            echo -e "${Error}${pkg}${Off} is not installed!"
-            echo -e "You need to install ${pkg} before restoring.\n"
-            echo -e "${Error}${pkg}${Off} is not installed!" >> "$logfile"
-            echo -e "You need to install ${pkg} before restoring.\n" >> "$logfile"
-            is_installed="1"
-            return
-        fi
+        targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
     fi
 
     # Check installed package version and backup version
@@ -3178,28 +3158,24 @@ for pkg in "${pkgs_sorted[@]}"; do
         if [[ ${mode,,} != "move" ]]; then
             prepare_backup_restore
         fi
-        if [[ $is_installed != "0" ]]; then
-            continue
-        else
-            stop_packages
+        stop_packages
 
-            if [[ ${1,,} == "--test" ]] || [[ ${1,,} == "test" ]]; then
-                echo "process_packages"
-            else
-                if [[ $stop_pkg_fail != "yes" ]]; then
-                    process_packages
-                    if [[ ${mode,,} != "move" ]] && [[ $process_error != "yes" ]]; then
-                        # Save last backup time
-                        echo -n "$(date +%s)" > "${backuppath}/syno_app_mover/$pkg/last${mode,,}"
-                        chmod 755 "${backuppath}/syno_app_mover/$pkg/last${mode,,}" |& tee -a "$logfile"
-                    fi
+        if [[ ${1,,} == "--test" ]] || [[ ${1,,} == "test" ]]; then
+            echo "process_packages"
+        else
+            if [[ $stop_pkg_fail != "yes" ]]; then
+                process_packages
+                if [[ ${mode,,} != "move" ]] && [[ $process_error != "yes" ]]; then
+                    # Save last backup time
+                    echo -n "$(date +%s)" > "${backuppath}/syno_app_mover/$pkg/last${mode,,}"
+                    chmod 755 "${backuppath}/syno_app_mover/$pkg/last${mode,,}" |& tee -a "$logfile"
                 fi
             fi
+        fi
 
-            # shellcheck disable=SC2143  # Use grep -q
-            if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
-                start_packages
-            fi
+        # shellcheck disable=SC2143  # Use grep -q
+        if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
+            start_packages
         fi
     fi
     echo "" |& tee -a "$logfile"
