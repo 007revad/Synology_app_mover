@@ -1,3 +1,6 @@
+v4.2.96
+- Replaces v4.2.95 as the latest version as v4.2.95 had a serious bug.
+
 v4.2.94
 - Bug fix for broken `synologan/alert.sqlite` symlink after moving `@database`. Issue #206
 - Bug fix for DSM 6 not starting pgsql service after moving `@database`.
