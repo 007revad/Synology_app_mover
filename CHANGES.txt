@@ -1,3 +1,15 @@
+v4.2.97
+- Added yes/no option to move docker shared folder if Container Manager v24 or later.
+- Added instructions on Duplicating containers if docker shared folder was moved.
+- Added progress bar for removing dangling docker images.
+- Added if failed to stop package to log.
+- Improved checking if package is installed.
+- Bug fix for Container Manager version 24.0.2-1606 and later:
+    Script was failing to update `@docker` symlink because Synology changed it
+    from: /var/packages/ContainerManager/var/docker --> /volumeN/@docker
+    to:   /var/packages/ContainerManager/var/docker/@docker --> /volumeN/@docker
+- Fixed colour codes sometimes appearing in log.
+
 v4.2.96
 - Replaces v4.2.95 as the latest version as v4.2.95 had a serious bug.
 
