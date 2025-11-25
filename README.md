@@ -47,7 +47,8 @@ The icons in this table are [Copyright © 2004-2025 Synology Inc.](https://kb.sy
 | <img src="/images/icons/CMS_64.png" width="16" height="16"> Central Management System | CMS | OK |
 | <img src="/images/icons/ChannelsDVR_64.png" width="16" height="16"> Channels DVR | ChannelsDVR | OK - 3rd party package [link](https://getchannels.com/dvr-server/#synology) |
 | <img src="/images/icons/CloudSync_64.png" width="16" height="16"> Cloud Sync | CloudSync | OK |
-| <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager 24.0.2 | ContainerManager | OK - [Some issues moving docker folder](github.com/007revad/Synology_app_mover/issues/216) |
+| <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager 24.0.2-1606 | ContainerManager | **No** - New script version coming soon |
+| <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager 24.0.2-1535 to 1543 | ContainerManager | OK - [Some issues moving docker folder](github.com/007revad/Synology_app_mover/issues/216) |
 | <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager 20.10.23 | ContainerManager | OK - Can have issues with broken containers |
 | <img src="/images/icons/DNSServer_64.png" width="16" height="16"> DNS Server | DNSServer | OK |
 | <img src="/images/icons/docker_64.png" width="20" height="20"> Docker | Docker | OK |
