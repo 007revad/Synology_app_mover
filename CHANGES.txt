@@ -4,10 +4,11 @@ v4.2.97
 - Added progress bar for removing dangling docker images.
 - Added if failed to stop package to log.
 - Improved checking if package is installed.
-- Bug fix for Container Manager version 24.0.2-1606 and later:
-    Script was failing to update `@docker` symlink because Synology changed it
-    from: /var/packages/ContainerManager/var/docker --> /volumeN/@docker
-    to:   /var/packages/ContainerManager/var/docker/@docker --> /volumeN/@docker
+- Now warns and skips processing the following packages if they are busy:
+    - ActiveBackup
+    - GlacierBackup
+    - HyperBackup
+    - HyperBackupVault
 - Fixed colour codes sometimes appearing in log.
 
 v4.2.96
