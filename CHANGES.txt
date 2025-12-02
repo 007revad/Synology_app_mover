@@ -4,7 +4,7 @@ v4.2.97
 - Added progress bar for removing dangling docker images.
 - Added if failed to stop package to log.
 - Improved checking if package is installed.
-- Now warns and skips processing the following packages if they are busy:
+- Now warns and skips processing the following packages if they are busy: Issue #234
     - ActiveBackup
     - GlacierBackup
     - HyperBackup
