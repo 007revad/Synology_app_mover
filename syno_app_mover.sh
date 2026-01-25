@@ -22,12 +22,8 @@
 # https://www.synology-forum.de/threads/virtual-machine-manager-vms-sichern.91952/post-944113
 #
 #------------------------------------------------------------------------------
-# DONE Add `@database` as an app that can be moved.
-# DONE Added logging
-# DONE Added USB Copy to show how to move USB Copy database (move mode only)
-#------------------------------------------------------------------------------
 
-scriptver="v4.2.96"
+scriptver="v4.2.97"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -585,7 +581,8 @@ progstatus(){
         echo -e "$2            "
     else
         ding
-        echo -e "Line ${LINENO}: ${Error}ERROR${Off} $2 failed!" |& tee -a "$logfile"
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} $2 failed!"
+        echo "Line ${LINENO}: ERROR $2 failed!" >> "$logfile"
         echo "$tracestring ($scriptver)" |& tee -a "$logfile"
         if [[ $exitonerror != "no" ]]; then
             exit 1  # Skip exit if exitonerror != no
@@ -601,11 +598,14 @@ package_status(){
 #    local code
     /usr/syno/bin/synopkg status "${1}" >/dev/null
     code="$?"
-    # DSM 7.2       0 = started, 17 = stopped, 255 = not_installed, 150 = broken
-    # DSM 6 to 7.1  0 = started,  3 = stopped,   4 = not_installed, 150 = broken
+    # DSM 7.2       0 = started, 55 = starting, 17 = stopped, 255 = not_installed, 150 = broken
+    # DSM 6 to 7.1  0 = started,  4 = starting,  3 = stopped,   4 = not_installed, 150 = broken
     if [[ $code == "0" ]]; then
         #echo "$1 is started"  # debug
         return 0
+    elif [[ $code == "55" ]]; then
+        #echo "$1 is starting"  # debug
+        return 55
     elif [[ $code == "17" ]] || [[ $code == "3" ]]; then
         #echo "$1 is stopped"  # debug
         return 1
@@ -1149,7 +1149,7 @@ show_move_share(){
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
     echo -e "\nIf you want to move your $2 shared folder to $targetvol" |& tee -a "$logfile"
     echo -e "  While ${Cyan}$1${Off} is ${Cyan}$3${Off}:"
-    echo -e "  While $1 is $3:" >> "$logfile"
+    echo "  While $1 is $3:" >> "$logfile"
     echo "  1. Go to 'Control Panel > Shared Folders'." |& tee -a "$logfile"
     echo "  2. Select your $2 shared folder and click Edit." |& tee -a "$logfile"
     echo "  3. Change Location to $targetvol" |& tee -a "$logfile"
@@ -1301,8 +1301,13 @@ move_dir(){
         if [[ ${mode,,} == "move" ]]; then
             if [[ ! -d "/${targetvol:?}/${1:?}" ]]; then
                 if [[ $1 == "@docker" ]] || [[ $1 == "@img_bkp_cache" ]]; then
-                    # Create @docker folder on target volume
+                    # Create @docker or @img_bkp_cache folder on target volume
                     create_dir "/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}"
+
+                    # Copy owner:group and permissions from source folder
+                    chown --reference="/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}"
+                    chmod --reference="/${sourcevol:?}/${1:?}" "${targetvol:?}/${1:?}"
+
                     # Move contents of @docker to @docker on target volume
                     if [[ -w "/$sourcevol" ]]; then
                         mv -f "/${sourcevol:?}/${1:?}"/* "${targetvol:?}/${1:?}" |& tee -a "$logfile" &
@@ -1730,8 +1735,8 @@ check_pkg_installed(){
         ding
         echo -e "${Error}ERROR${Off} ${Cyan}${2}${Off} is not installed!"
         echo -e "ERROR ${2} is not installed!" >> "$logfile"
-        echo -e "Install ${Cyan}${2}${Off} then try Restore again"
-        echo -e "Install ${2} then try Restore again" >> "$logfile"
+        echo -e "You need to install ${2} before restoring.\n"
+        echo -e "You need to install ${2} before restoring.\n" >> "$logfile"
         process_error="yes"
         if [[ $all != "yes" ]]; then
             exit 1  # Skip exit if mode is All
@@ -1791,12 +1796,22 @@ prune_dangling(){
 
             if [[ ${mode,,} == "restore" ]]; then
                 # Remove dangling and unused images
-                echo "Removing dangling and unused docker images" |& tee -a "$logfile"
-                docker image prune --all --force >/dev/null
+                docker image prune --all --force >/dev/null &
+                pid=$!
+                string="Removing dangling and unused docker images"
+                echo "Removing dangling and unused docker images" >> "$logfile"
+                progbar "$pid" "$string"
+                wait "$pid"
+                progstatus "$?" "$string" "line ${LINENO}"
             else
                 # Remove dangling images
-                echo "Removing dangling docker images" |& tee -a "$logfile"
-                docker image prune --force >/dev/null
+                docker image prune --force >/dev/null &
+                pid=$!
+                string="Removing dangling docker images"
+                echo "Removing dangling docker images" >> "$logfile"
+                progbar "$pid" "$string"
+                wait "$pid"
+                progstatus "$?" "$string" "line ${LINENO}"
             fi
         else
             # Skip read only source volume
@@ -1842,6 +1857,14 @@ check_pkg_size(){
                 ;;
             ContainerManager|Docker)
                 prune_dangling  # Prune dangling docker images 
+                if [[ $pkg == "ContainerManager" ]]; then
+                    # Check if ContainerManager 24.0.2-1606 or later
+                    pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+                    if [[ ${pkgversion:0:2} -gt "23" ]]; then
+                        # Unmount shared folders in /volumeN/@appdata/ContainerManager/all_shares
+                        /var/packages/ContainerManager/target/tool/mount_share_helper --umount-all
+                    fi
+                fi
                 if [[ -d "/$sourcevol/@docker" ]]; then
                     size2=$(/usr/bin/du -s /"$sourcevol"/@docker | awk '{print $1}')
                     size=$((size +"$size2"))
@@ -2395,9 +2418,18 @@ elif [[ ${mode,,} == "backup" ]]; then
     fi
 elif [[ ${mode,,} == "restore" ]]; then
     if [[ $all != "yes" ]]; then
-        targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
-        echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
-        echo -e "Destination volume is ${targetvol}\n" >> "$logfile"
+        if check_pkg_installed "${pkg:?}"; then
+            targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
+            echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
+            echo -e "Destination volume is ${targetvol}\n" >> "$logfile"
+        else
+            ding
+            echo -e "${Error}ERROR${Off} ${Cyan}${pkg}${Off} is not installed!"
+            echo -e "You need to install ${pkg} before restoring.\n"
+            echo -e "ERROR ${pkg} is not installed!" >> "$logfile"
+            echo -e "You need to install ${pkg} before restoring.\n" >> "$logfile"
+            exit 1
+        fi
     fi
 fi
 
@@ -2604,7 +2636,8 @@ stop_packages(){
         if package_is_running "$pkg"; then
             stop_pkg_fail="yes"
             ding
-            echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to stop ${pkg_name}!" |& tee -a "$logfile"
+            echo -e "Line ${LINENO}: ${Error}ERROR${Off} Failed to stop ${pkg_name}!"
+            echo "Line ${LINENO}: ERROR Failed to stop ${pkg_name}!" >> "$logfile"
 #            echo "${pkg_name} status $code" |& tee -a "$logfile"
             process_error="yes"
             if [[ $all != "yes" ]] || [[ $fix != "yes" ]]; then
@@ -2686,7 +2719,16 @@ prepare_backup_restore(){
 
     # Set targetvol variable
     if [[ ${mode,,} == "restore" ]] && [[ $all == "yes" ]]; then
-        targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
+        if check_pkg_installed "${pkg:?}"; then
+            targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
+        else
+            ding
+            echo -e "${Error}ERROR${Off} ${Cyan}${pkg}${Off} is not installed!"
+            echo -e "You need to install ${pkg} before restoring.\n"
+            echo "ERROR ${pkg} is not installed!" >> "$logfile"
+            echo -e "You need to install ${pkg} before restoring.\n" >> "$logfile"
+            return
+        fi
     fi
 
     # Check installed package version and backup version
@@ -3097,6 +3139,108 @@ move_database(){
     return 0
 }
 
+containermanager24_move_share(){ 
+    local docker_share
+    # Get docker share location
+    # DSM 7.2.1 and later has synoshare --get-real-path
+    # synoshare --get-real-path is case insensitive (docker or Docker both work)
+    docker_share=$(/usr/syno/sbin/synoshare --get-real-path docker)
+    if [[ $docker_share != "${targetvol}/docker" ]]; then
+        # Stop Container Manager.
+        # Run synoshare --setvol docker X,
+        # Start Container Manager.
+        # Instruct the user to Duplicate any containers that are using the docker shared folder.
+        echo -e "Do you want to ${Yellow}move${Off} the ${Cyan}docker shared folder${Off} to ${targetvol}? [y/n]"
+        echo "Do you want to move the docker shared folder to ${targetvol}? [y/n]" >> "$logfile"
+        read -r answer
+        echo "$answer" >> "$logfile"
+        echo "" |& tee -a "$logfile"
+        if [[ ${answer,,} == "y" ]]; then
+            synoshare --setvol docker "${targetvol#/volume}" >/dev/null &
+            pid=$!
+            string="Moving docker shared folder to ${Cyan}${targetvol}${Off}"
+            echo "Moving docker shared folder to ${targetvol}" >> "$logfile"
+            progbar "$pid" "$string"
+            wait "$pid"
+            progstatus "$?" "$string" "line ${LINENO}"
+
+            echo -e "\nYou will need to Duplicate any container that uses the docker shared folder." |& tee -a "$logfile"
+            echo "  1. Stop the container if it is running." |& tee -a "$logfile"
+            echo "  2. Select the container." |& tee -a "$logfile"
+            echo "  3. Click 'Action > Duplicate > OK'." |& tee -a "$logfile"
+            echo -e "  4. Repeat steps 1 to 3 for other containers.\n" |& tee -a "$logfile"
+        fi
+    fi
+}
+
+check_pgk_busy(){ 
+    # $1 is package name
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
+    local x
+    x="0"
+    case "$1" in
+        ActiveBackup|ActiveBackup-GSuite|ActiveBackup-Office365)
+            # Returns 0 when not in use by job
+            if /var/packages/ActiveBackup/target/bin/synoabk-jobctl is_any_job_running 2>&1; then
+                return "$?"
+            fi
+            ;;
+        GlacierBackup)
+            # Check if glacier is running job explore
+            if /var/packages/GlacierBackup/target/bin/synoglaciertool_v2 -j 2>&1; then
+                x=$((x +"$?"))
+            fi
+            # Check if glacier is running retrieve task
+            if /var/packages/GlacierBackup/target/bin/synoglaciertool_v2 -v 2>&1; then
+                x=$((x +"$?"))
+            fi
+            # Check if glacier backup is running
+            if /var/packages/GlacierBackup/target/bin/synoglaciertool_v2 -x 2>&1; then
+                x=$((x +"$?"))
+            fi
+            # Check if glacier backup is running
+            if /var/packages/GlacierBackup/target/bin/synoglaciertool_v2 -z 2>&1; then
+                x=$((x +"$?"))
+            fi
+            return "$x"
+            ;;
+        HyperBackup)
+            # Returns 0 when not in use by job
+            if /var/packages/HyperBackup/target/bin/hook/poweroff_backup 2>&1; then
+                x=$((x +"$?"))
+            fi
+            if /var/packages/HyperBackup/target/bin/hook/is_entire_dsm_backup_running 2>&1; then
+                x=$((x +"$?"))
+            fi
+            if /var/packages/HyperBackup/target/bin/hook/poweroff_restore 2>&1; then
+                x=$((x +"$?"))
+            fi
+            if /var/packages/HyperBackup/target/bin/hook/is_removing_version 2>&1; then
+                x=$((x +"$?"))
+            fi
+            if /var/packages/HyperBackup/target/bin/hook/poweroff_lunbackup 2>&1; then
+                x=$((x +"$?"))
+            fi
+            if /var/packages/HyperBackup/target/bin/hook/poweroff_lunrestore 2>&1; then
+                x=$((x +"$?"))
+            fi
+            return "$x"
+            ;;
+        HyperBackupVault)
+            # Returns 0 when not in use by job
+            if /var/packages/HyperBackupVault/target/bin/server_tool --backup 2>&1; then
+                x=$((x +"$?"))
+            fi
+            if /var/packages/HyperBackupVault/target/bin/server_tool --is-removing-version 2>&1; then
+                x=$((x +"$?"))
+            fi
+            return "$x"
+            ;;
+        *)
+            return
+            ;;
+    esac
+}
 
 # Loop through pkgs_sorted array and process package
 for pkg in "${pkgs_sorted[@]}"; do
@@ -3120,6 +3264,13 @@ for pkg in "${pkgs_sorted[@]}"; do
     if [[ $pkg == "@database" ]]; then
         move_database
         continue
+    fi
+
+    # Skip package if it is busy
+    if ! check_pgk_busy "$pkg"; then
+        echo -e "${Cyan}Skipping${Off} $pkg_name as it is currently busy.\n"
+        echo -e "Skipping $pkg_name as it is currently busy.\n" >> "$logfile"
+        continue        
     fi
 
     if [[ $pkg == "ContainerManager" ]] || [[ $pkg == "Docker" ]]; then
@@ -3175,7 +3326,16 @@ for pkg in "${pkgs_sorted[@]}"; do
 
         # shellcheck disable=SC2143  # Use grep -q
         if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
-            start_packages
+            if [[ $pkg == "ContainerManager" ]]; then
+                # If Container Manager v24 or later offer to move docker shared folder
+                pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+                if [[ ${pkgversion:0:2} -gt "23" ]]; then
+                    containermanager24_move_share
+                fi
+                start_packages
+            else
+                start_packages
+            fi
         fi
     fi
     echo "" |& tee -a "$logfile"
@@ -3212,8 +3372,11 @@ suggest_move_share(){
                 show_move_share "Cloud Sync" CloudSync stopped
                 ;;
             ContainerManager)
-                show_move_share "Container Manager" docker stopped
-                docker_volume_edit
+                pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+                if [[ ${pkgversion:0:2} -lt "24" ]]; then
+                    show_move_share "Container Manager" docker stopped
+                    docker_volume_edit
+                fi
                 ;;
             Docker)
                 show_move_share "Docker" docker stopped
@@ -3331,7 +3494,7 @@ for pkg_name in "${!package_names[@]}"; do
            mariadb_show="yes"
         fi
     fi
-done 
+done
 
 if [[ $mariadb_show == "yes" ]]; then
     if [[ ${mode,,} == "backup" ]]; then
@@ -3428,22 +3591,23 @@ suggest_change_location(){
         value="$(/usr/syno/bin/synogetkeyvalue "$file" db-vol)"
         if [[ $value != "$targetvol" ]]; then
             echo -e "If you want to move the Synology Drive database to $targetvol" |& tee -a "$logfile"
-            echo -e "If you're migrating the database from an ext4 volume to a Btrfs volume,\n please review this note: https://github.com/007revad/Synology_app_mover#synology-drive-and-btrfs-snapshots\n" |& tee -a "$logfile"
             echo "  1. Open Synology Drive Admin Console." |& tee -a "$logfile"
             echo "  2. Click Settings." |& tee -a "$logfile"
             echo "  3. Change Location to $targetvol" |& tee -a "$logfile"
             echo -e "  4. Click Apply.\n" |& tee -a "$logfile"
+            echo "If you're migrating the database from an ext4 volume to a Btrfs volume see:" |& tee -a "$logfile"
+            echo -e "github.com/007revad/Synology_app_mover#synology-drive-and-btrfs-snapshots\n" |& tee -a "$logfile"
         fi
     fi
 
     # Suggest moving database if package is USBCopy
     if [[ $pkg == USBCopy ]]; then
         # Show how to move USB Copy database
-        echo -e "To move the USB Copy database to $targetvol"
-        echo "  1. Open 'USB Copy'."
-        echo "  2. Click the gear icon to open settings."
-        echo "  3. Change Database location to $targetvol"
-        echo -e "  4. Click OK.\n"
+        echo -e "To move the USB Copy database to $targetvol" |& tee -a "$logfile"
+        echo "  1. Open 'USB Copy'." |& tee -a "$logfile"
+        echo "  2. Click the gear icon to open settings." |& tee -a "$logfile"
+        echo "  3. Change Database location to $targetvol" |& tee -a "$logfile"
+        echo -e "  4. Click OK.\n" |& tee -a "$logfile"
     fi
 
     # Suggest moving VMs if package is Virtualization
