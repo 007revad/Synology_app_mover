@@ -10,7 +10,7 @@ v4.2.97
     - GlacierBackup
     - HyperBackup
     - HyperBackupVault
-- Bug fix for not setting owner and permissions on @docker and @img_bkp_cache.
+- Bug fix for not setting owner and permissions on `@docker` and `@img_bkp_cache`.
 - Bug fix for not adding 'failed to stop package' to log.
 - Bug fix for colour codes sometimes appearing in log.
 - Bug fix for steps to move USB Copy database not being saved to log.
