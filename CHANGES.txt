@@ -1,3 +1,20 @@
+v4.2.97
+- Added yes/no option to move docker shared folder if Container Manager v24 or later.
+- Added instructions on Duplicating Container Manager v24 containers if docker shared folder was moved.
+- Added unmounting of shared folders for Container Manager v24 or later.
+- Added progress bar for removing dangling docker images.
+- Added info on migrating Synology Drive database from ext4 volume to btrfs volume.
+- Improved checking if package is installed.
+- Now warns and skips processing the following packages if they are busy: Issue #234
+    - ActiveBackup
+    - GlacierBackup
+    - HyperBackup
+    - HyperBackupVault
+- Bug fix for not setting owner and permissions on @docker and @img_bkp_cache.
+- Bug fix for not adding 'failed to stop package' to log.
+- Bug fix for colour codes sometimes appearing in log.
+- Bug fix for steps to move USB Copy database not being saved to log.
+
 v4.2.96
 - Replaces v4.2.95 as the latest version as v4.2.95 had a serious bug.
 
