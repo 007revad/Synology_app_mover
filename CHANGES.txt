@@ -1,3 +1,6 @@
+v4.2.98
+- Bug fix for package size not including extra folders. Issue #242
+
 v4.2.97
 - Added yes/no option to move docker shared folder if Container Manager v24 or later.
 - Added instructions on Duplicating Container Manager v24 containers if docker shared folder was moved.
