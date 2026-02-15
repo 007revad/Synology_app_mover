@@ -1938,7 +1938,7 @@ check_pkg_size(){
                 # Moving the database in Synology Drive Admin moves @synologydrive
                 #if [[ -d "/$sourcevol/@synologydrive" ]]; then
                 #    size2=$(/usr/bin/du -s /"$sourcevol"/@synologydrive | awk '{print $1}')
-                #    size=$((size +"$size2"))
+                #    size=$((size + size2))
                 #fi
                 if [[ -d "/$sourcevol/@SynologyDriveShareSync" ]]; then
                     size2=$(/usr/bin/du -s /"$sourcevol"/@SynologyDriveShareSync | awk '{print $1}')
