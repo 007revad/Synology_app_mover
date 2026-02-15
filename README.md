@@ -127,7 +127,6 @@ The icons in this table are [Copyright © 2004-2026 Synology Inc.](https://kb.sy
 |---------|--------|
 | <img src="/images/icons/ArchiwareP5_64.png" width="16" height="16"> Archiware P5 |  |
 | <img src="/images/icons/Sony_BraviaSignage_64.png" width="16" height="16"> BRAVIA Signage | Won't install in Container Manager. It checks if Docker is installed |
-| <img src="/images/icons/ContainerManager_64.png" width="16" height="16"> Container Manager 24.0.2 |  |
 | <img src="/images/icons/DdbBackup_64.png" width="18" height="18"> Data Deposit Box |  |
 | <img src="/images/icons/diagnosis_64.png" width="20" height="20"> Diagnosis Tool |  |
 | <img src="/images/icons/domotz_64.png" width="16" height="16"> Domotz Network Monitoring |  |
