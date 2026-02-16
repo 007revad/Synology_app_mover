@@ -1,5 +1,5 @@
 v4.2.99
-- Bug fix for `"socket" failed: File name too long` when backing Container Manager from an ext4 volume. Issue #218  Thanks `@cinpol'
+- Bug fix for `"socket" failed: File name too long` when backing Container Manager from an ext4 volume. Issue #218  Thanks @cinpol
 
 v4.2.98
 - Bug fix for package size not including extra folders. Issue #242
