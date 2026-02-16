@@ -23,7 +23,7 @@
 #
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.98"
+scriptver="v4.2.99"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1234,6 +1234,7 @@ copy_dir(){
                         "--exclude=subvolumes/*/tmp/"           # btfs         Issue #120
                         "--exclude=subvolumes/*/run/"           # btfs         Issue #120
                         "--exclude=aufs/diff/*/run/"            # aufs (ext4)  Issue #117
+                        "--exclude=aufs/diff/*/tmp/*-socket"    # socket files Issue #218
                         "--exclude=subvolumes/*/syslog-ng.ctl"  # 0 byte file  Issue #186
                     )
                     rsync -q -aHX --delete --compress-level=0 "${excludeargs[@]}" "/${sourcevol:?}/${1:?}$pack"/ "${bkpath:?}${extras}/${1:?}" |& tee -a "$logfile" &
