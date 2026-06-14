@@ -23,7 +23,7 @@
 #
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.99"
+scriptver="v4.2.100"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -74,15 +74,20 @@ if ! /usr/bin/uname -a | grep -i synology >/dev/null; then
 fi
 
 # Get NAS model
-model=$(cat /proc/sys/kernel/syno_hw_version)
-#modelname="$model"
+model="$(synogetkeyvalue /etc.defaults/synoinfo.conf upnpmodelname)"
 
-# Check for dodgy characters after model number
-if [[ $model =~ 'pv10-j'$ ]]; then  # GitHub syno_hdd_db issue #10
-    model=${model%??????}+          # replace last 6 chars with +
-elif [[ $model =~ '-j'$ ]]; then    # GitHub syno_hdd_db issue #2
-    model=${model%??}               # remove last 2 chars
+# Fallback for systems where upnpmodelname is unavailable
+if [[ -z "$model" && -f /proc/sys/kernel/syno_hw_version ]]; then
+    model=$(cat /proc/sys/kernel/syno_hw_version)
+
+    # Check for dodgy characters after model number
+    if [[ $model =~ 'pv10-j'$ ]]; then  # GitHub syno_hdd_db issue #10
+        model=${model%??????}+          # replace last 6 chars with +
+    elif [[ $model =~ '-j'$ ]]; then    # GitHub syno_hdd_db issue #2
+        model=${model%??}               # remove last 2 chars
+    fi
 fi
+#modelname="$model"
 
 # Show script version
 #echo -e "$script $scriptver\ngithub.com/$repo\n"
@@ -1607,6 +1612,10 @@ move_extras(){
                 fi
             fi
             ;;
+        synocli-file)
+            #exitonerror="no" && move_dir "@$1"
+            echo "include ${2}/@appstore/synocli-file/share/nano/*.nanorc" > "/var/packages/${1}/target/etc/nanorc"
+            ;;
         synocli*)
             #exitonerror="no" && move_dir "@$1"
             ;;
@@ -1860,7 +1869,8 @@ check_pkg_size(){
                 prune_dangling  # Prune dangling docker images 
                 if [[ $pkg == "ContainerManager" ]]; then
                     # Check if ContainerManager 24.0.2-1606 or later
-                    pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+                    #pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+                    pkgversion=$(synopkg version "$pkg")
                     if [[ ${pkgversion:0:2} -gt "23" ]]; then
                         # Unmount shared folders in /volumeN/@appdata/ContainerManager/all_shares
                         /var/packages/ContainerManager/target/tool/mount_share_helper --umount-all
@@ -2735,12 +2745,14 @@ prepare_backup_restore(){
     # Check installed package version and backup version
     # Get package version
     if [[ ${mode,,} != "move" ]]; then
-        pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+        #pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+        pkgversion=$(synopkg version "$pkg")
     fi
 
     # Get backup package version
     if [[ ${mode,,} == "restore" ]]; then
-        pkgbackupversion=$(/usr/syno/bin/synogetkeyvalue "$bkpath/INFO" version)
+        #pkgbackupversion=$(/usr/syno/bin/synogetkeyvalue "$bkpath/INFO" version)
+        pkgversion=$(synopkg version "$pkg")
         if [[ $pkgversion ]] && [[ $pkgbackupversion ]]; then
             check_pkg_versions_match "$pkgversion" "$pkgbackupversion"
         fi
@@ -2766,7 +2778,7 @@ prepare_backup_restore(){
     fi
 }
 
-process_packages(){
+process_packages(){ 
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
     target=$(readlink "/var/packages/${pkg}/target")
     #sourcevol="/$(printf %s "${target:?}" | cut -d'/' -f2 )"
@@ -3329,7 +3341,8 @@ for pkg in "${pkgs_sorted[@]}"; do
         if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
             if [[ $pkg == "ContainerManager" ]]; then
                 # If Container Manager v24 or later offer to move docker shared folder
-                pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+                #pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+                pkgversion=$(synopkg version "$pkg")
                 if [[ ${pkgversion:0:2} -gt "23" ]]; then
                     containermanager24_move_share
                 fi
@@ -3373,7 +3386,8 @@ suggest_move_share(){
                 show_move_share "Cloud Sync" CloudSync stopped
                 ;;
             ContainerManager)
-                pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+                #pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
+                pkgversion=$(synopkg version "$pkg")
                 if [[ ${pkgversion:0:2} -lt "24" ]]; then
                     show_move_share "Container Manager" docker stopped
                     docker_volume_edit
