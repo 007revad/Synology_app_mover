@@ -1,3 +1,6 @@
+v4.2.101
+- Bug fix for asking to move docker share when backing up Container Manager v24 and later. Issue #251
+
 v4.2.100
 - Bug fix for broken nano after moving SynoCli File Tools. Issue #250
 - Changed to a better method of getting Synology model.
