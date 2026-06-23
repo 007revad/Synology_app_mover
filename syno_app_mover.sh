@@ -23,7 +23,7 @@
 #
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.100"
+scriptver="v4.2.101"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -3343,8 +3343,10 @@ for pkg in "${pkgs_sorted[@]}"; do
                 # If Container Manager v24 or later offer to move docker shared folder
                 #pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
                 pkgversion=$(synopkg version "$pkg")
-                if [[ ${pkgversion:0:2} -gt "23" ]]; then
-                    containermanager24_move_share
+                if [[ ${mode,,} == "move" ]]; then
+                    if [[ ${pkgversion:0:2} -gt "23" ]]; then
+                        containermanager24_move_share
+                    fi
                 fi
                 start_packages
             else
