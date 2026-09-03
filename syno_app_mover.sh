@@ -23,7 +23,7 @@
 #
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.101"
+scriptver="v4.2.102"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -137,6 +137,22 @@ Options:
                           APP names need to be the app's system name
                           View the system names with the --list option
 
+      --restore=APP     Automatically restore APP (for scripted restores)
+                          APP can be a single app or a comma separated list
+                          APP can also be 'all' to restore every backed up
+                          app that is currently installed
+                          Examples:
+                          --restore=radarr
+                          --restore=Calender,ContainerManager,radarr
+                          --restore=all
+
+                          APP names need to be the app's system name
+                          View the system names with the --list option
+
+                          Restore always restores an app back to the volume
+                          it's currently installed on (there's no --dest
+                          option) and the app must already be installed
+
       --list            Display installed apps' system names
 
 EOF
@@ -195,7 +211,7 @@ autoupdate=""
 
 # Check for flags with getopt
 if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l \
-    auto:,list,help,version,autoupdate:,log,debug -- "${args[@]}")"; then
+    auto:,restore:,list,help,version,autoupdate:,log,debug -- "${args[@]}")"; then
     eval set -- "$options"
     while true; do
         case "${1,,}" in
@@ -253,6 +269,35 @@ if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l \
                 fi
                 shift
                 ;;
+            --restore)          # Specify pkgs for scheduled restore
+                auto="yes"
+                color=no        # Disable colour text in task scheduler emails
+                mode="Restore"
+                action="Restoring"
+                if [[ ${2,,} == "all" ]]; then
+                    all="yes"
+                elif [[ $2 ]]; then
+                    IFS=',' read -r -a restores <<< "$2"; unset IFS
+                    if [[ ${#restores[@]} -gt "0" ]]; then
+                        for i in "${restores[@]}"; do
+                            # Trim leading and trailing spaces
+                            j=$(echo -n "$i" | xargs)
+                            restorelist+=("$j")
+                        done
+                    else
+                        ding
+                        echo -e "Missing argument to restore!\n"
+                        usage
+                        exit 2  # Missing argument
+                    fi
+                else
+                    ding
+                    echo -e "Missing argument to restore!\n"
+                    usage
+                    exit 2  # Missing argument
+                fi
+                shift
+                ;;
             --autoupdate)       # Auto update script
                 autoupdate=yes
                 if [[ $2 =~ ^[0-9]+$ ]]; then
@@ -282,10 +327,19 @@ else
 fi
 
 # Abort if autolist is empty
-if [[ $auto == "yes" ]] && [[ $all != "yes" ]] && [[ ! ${#autolist[@]} -gt "0" ]]; then
+if [[ ${mode,,} == "backup" ]] && [[ $auto == "yes" ]] && [[ $all != "yes" ]] &&\
+    [[ ! ${#autolist[@]} -gt "0" ]]; then
     ding
     echo -e "No apps to backup!\n"
     exit 2  # autolist empty
+fi
+
+# Abort if restorelist is empty
+if [[ ${mode,,} == "restore" ]] && [[ $auto == "yes" ]] && [[ $all != "yes" ]] &&\
+    [[ ! ${#restorelist[@]} -gt "0" ]]; then
+    ding
+    echo -e "No apps to restore!\n"
+    exit 2  # restorelist empty
 fi
 
 # Show apps to auto backup
@@ -1099,6 +1153,7 @@ check_space(){
     # $1 is /path/folder
     # $2 is source volume or target volume
     # $3 is 'extra' or null
+    # $4 is 'pkg' when checking a single package's own volume during Restore All
     [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
 
     # Skip USBCopy and @database
@@ -1122,7 +1177,12 @@ check_space(){
 
     # Check we have enough space
     if [[ ! $free -gt $needed ]]; then
-        if [[ $all == "yes" ]] && [[ $3 != "extra" ]]; then
+        if [[ $4 == "pkg" ]]; then
+            echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,}"\
+                "${Cyan}${pkg_name}${Off} to $targetvol"
+            echo -e "WARNING Not enough space to ${mode,,}"\
+                "${pkg_name} to $targetvol" >> "$logfile"
+        elif [[ $all == "yes" ]] && [[ $3 != "extra" ]]; then
             echo -e "${Yellow}WARNING${Off} Not enough space to ${mode,,}"\
                 "${Cyan}All apps${Off} to $targetvol"
             echo -e "WARNING Not enough space to ${mode,,}"\
@@ -1757,6 +1817,34 @@ check_pkg_installed(){
     fi
 }
 
+filter_restore_installed(){ 
+    # Restore All only restores packages that are currently installed (a
+    # package must be installed for its target symlink to exist, which is
+    # how Restore determines the destination volume). Skip any backed up
+    # package in package_names that isn't installed. Used for both the
+    # interactive "restore All? [y/n]" prompt and --restore=all.
+    [ "$trace" == "yes" ] && echo "${FUNCNAME[0]} called from ${FUNCNAME[1]}" |& tee -a "$logfile"
+    for pkg_name in "${!package_names[@]}"; do
+        pkg="${package_names[$pkg_name]}"
+        if [[ $pkg == "USBCopy" ]] || [[ $pkg == "@database" ]]; then
+            continue
+        fi
+        if [[ ! -L "/var/packages/${pkg}/target" ]]; then
+            echo -e "Skipping ${Cyan}${pkg_name}${Off}: not installed" |& tee -a "$logfile"
+            unset "package_names[$pkg_name]"
+            unset "package_names_rev[$pkg]"
+        fi
+    done
+    unset pkg_name pkg
+
+    if [[ ${#package_names[@]} -eq 0 ]]; then
+        ding
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} None of the backed up packages are installed!"
+        echo -e "Line ${LINENO}: ERROR None of the backed up packages are installed!" >> "$logfile"
+        exit 1  # No installed packages to restore
+    fi
+}
+
 check_pkg_versions_match(){ 
     # $1 is installed package version
     # $2 is backed up package version
@@ -2179,20 +2267,52 @@ elif [[ ${mode,,} == "restore" ]]; then
     for package in *; do
         if [[ -d "$package" ]] && [[ $package != "@eaDir" ]]; then
             if [[ ${package:0:1} != "-" ]]; then
-                package_name="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
-                if [[ -z "$package_name" ]]; then
-                    package_name="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" package)"
-                fi
+                # If --restore=<app,app,...> was used, only add the apps
+                # that were asked for. --restore=all and interactive
+                # restore still want every backed up app added here.
+                if [[ $auto != "yes" ]] || [[ $all == "yes" ]] ||\
+                    [[ "${restorelist[*]}" =~ $package ]]; then
+                    package_name="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" displayname)"
+                    if [[ -z "$package_name" ]]; then
+                        package_name="$(/usr/syno/bin/synogetkeyvalue "${backuppath}/syno_app_mover/${package}/INFO" package)"
+                    fi
 
-                # Skip packages that are dev tools with no data
-                if ! skip_dev_tools "$package"; then
-                    package_infos+=("${package_name}")
-                    package_names["${package_name}"]="${package}"
-                    package_names_rev["${package}"]="${package_name}"
+                    # Skip packages that are dev tools with no data
+                    if ! skip_dev_tools "$package"; then
+                        package_infos+=("${package_name}")
+                        package_names["${package_name}"]="${package}"
+                        package_names_rev["${package}"]="${package_name}"
+                    fi
                 fi
             fi
         fi
     done < <(find . -maxdepth 2 -type d)
+
+    if [[ $auto == "yes" ]]; then
+        if [[ $all == "yes" ]]; then
+            # --restore=all: skip any backed up app that isn't installed
+            filter_restore_installed
+        else
+            # --restore=<app,app,...>: every requested app must have a
+            # backup and be currently installed, or abort - a batch
+            # restore should fail loudly on a typo or missing app rather
+            # than silently restoring less than what was asked for.
+            for r in "${restorelist[@]}"; do
+                if [[ -z "${package_names_rev[$r]}" ]]; then
+                    ding
+                    echo -e "Line ${LINENO}: ${Error}ERROR${Off} No backup found for ${Cyan}${r}${Off}!"
+                    echo -e "Line ${LINENO}: ERROR No backup found for ${r}!" >> "$logfile"
+                    exit 1  # Requested app has no backup
+                elif [[ ! -L "/var/packages/${r}/target" ]]; then
+                    ding
+                    echo -e "Line ${LINENO}: ${Error}ERROR${Off} ${Cyan}${r}${Off} is not installed!"
+                    echo -e "You need to install ${r} before restoring.\n"
+                    echo -e "Line ${LINENO}: ERROR ${r} is not installed!" >> "$logfile"
+                    exit 1  # Requested app not installed
+                fi
+            done
+        fi
+    fi
 fi
 
 # Add USB Copy if installed (so we can show how to move USB Copy's database)
@@ -2255,6 +2375,8 @@ if [[ $auto != "yes" ]]; then
             all="yes"
             echo -e "You selected ${Cyan}All${Off}\n"
             echo -e "You selected All\n" >> "$logfile"
+
+            filter_restore_installed
         fi
     fi
 
@@ -2428,7 +2550,11 @@ elif [[ ${mode,,} == "backup" ]]; then
         echo -e "Destination volume is ${targetvol}\n" >> "$logfile"
     fi
 elif [[ ${mode,,} == "restore" ]]; then
-    if [[ $all != "yes" ]]; then
+    # Restore All and --restore=<app,app,...> resolve each package's own
+    # destination volume later (per package, from its target symlink) -
+    # this single upfront assignment only applies to an interactively
+    # selected single package, where $pkg is a specific scalar value.
+    if [[ $all != "yes" ]] && [[ $auto != "yes" ]]; then
         if check_pkg_installed "${pkg:?}"; then
             targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
             echo -e "Destination volume is ${Cyan}${targetvol}${Off}\n"
@@ -2458,16 +2584,25 @@ warn_docker(){
 
 # Check source and target filesystem if Docker or Container Manager selected
 if [[ ${package_names[*]} =~ "ContainerManager" ]] || [[ ${package_names[*]} =~ "Docker" ]]; then
-    if [[ $mode == "restore" ]]; then
-        sourcevol=$(echo "$bkpath" | cut -d "/" -f2)
+    if [[ ${package_names[*]} =~ "ContainerManager" ]]; then
+        pkg="ContainerManager"
+        pkg_name="Container Manager"
+    elif [[ ${package_names[*]} =~ "Docker" ]]; then
+        pkg="Docker"
+        pkg_name="Docker"
+    fi
+    if [[ ${mode,,} == "restore" ]]; then
+        # The backup was taken from $backuppath's volume. Restore always
+        # writes back to wherever the package is currently installed (its
+        # target symlink) - these can be different filesystem types, e.g.
+        # backed up from an ext4 volume, restoring onto a btrfs volume.
+        # $bkpath isn't set yet at this point (only assigned later, per
+        # package, in prepare_backup_restore), so use $backupvol instead -
+        # it's set early from $backuppath and covers every package the
+        # same way, single restore or Restore All.
+        sourcevol="$backupvol"
+        targetvol="/$(readlink "/var/packages/${pkg}/target" | cut -d'/' -f2)"
     else
-        if [[ ${package_names[*]} =~ "ContainerManager" ]]; then
-            pkg="ContainerManager"
-            pkg_name="Container Manager"
-        elif [[ ${package_names[*]} =~ "Docker" ]]; then
-            pkg="Docker"
-            pkg_name="Docker"
-        fi
         target=$(readlink "/var/packages/${pkg}/target")
         sourcevol="$(printf %s "${target:?}" | cut -d'/' -f2 )"
     fi
@@ -2493,13 +2628,33 @@ for pkg in "${package_names[@]}"; do
 
     # Get pkg total size
     check_pkg_size "$pkg" "/$sourcevol"
-    all_pkg_size=$((all_pkg_size +total_size))
+
+    if [[ ${mode,,} == "restore" ]] && [[ $all == "yes" || $auto == "yes" ]]; then
+        # Restore All and --restore=<app,app,...>: each package is
+        # restored back to the volume it's currently installed on (its
+        # target symlink), not to one shared destination, so check this
+        # package's own size against its own volume instead of the
+        # combined total against a single targetvol.
+        pkg_name="${package_names_rev[$pkg]}"
+        targetvol="/$sourcevol"
+        all_pkg_size="$total_size"
+        if ! check_space "$pkg" "$targetvol" "$all_pkg_size" "pkg"; then
+            ding
+            exit 1  # Not enough space
+        fi
+    fi
+
+    grand_pkg_size=$((grand_pkg_size +total_size))
 done
+all_pkg_size="$grand_pkg_size"
 
 # Abort if not enough space on target volume
-if ! check_space "$pkg" "${targetvol:?}" "$all_pkg_size"; then
-    ding
-    exit 1  # Not enough space
+# (Restore All and --restore=<app,app,...> already checked space per package above)
+if [[ ${mode,,} != "restore" ]] || [[ $all != "yes" && $auto != "yes" ]]; then
+    if ! check_space "$pkg" "${targetvol:?}" "$all_pkg_size"; then
+        ding
+        exit 1  # Not enough space
+    fi
 fi
 
 # Show size of selected packages
@@ -2729,7 +2884,10 @@ prepare_backup_restore(){
     fi
 
     # Set targetvol variable
-    if [[ ${mode,,} == "restore" ]] && [[ $all == "yes" ]]; then
+    # (applies to Restore All and --restore=<app,app,...>, which both
+    # restore more than one possible package with no single upfront
+    # $pkg/$targetvol selection - see the "Select volume" section)
+    if [[ ${mode,,} == "restore" ]] && [[ $all == "yes" || $auto == "yes" ]]; then
         if check_pkg_installed "${pkg:?}"; then
             targetvol="/$(readlink "/var/packages/${pkg:?}/target" | cut -d"/" -f2)"
         else

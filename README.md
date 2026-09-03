@@ -251,6 +251,22 @@ There are optional flags you can use when running the script:
                           APP names need to be the app's system name
                           View the system names with the --list option
 
+      --restore=APP     Automatically restore APP (for scripted restores)
+                          APP can be a single app or a comma separated list
+                          APP can also be 'all' to restore every backed up
+                          app that is currently installed
+                          Examples:
+                          --restore=radarr
+                          --restore=Calender,ContainerManager,radarr
+                          --restore=all
+
+                          APP names need to be the app's system name
+                          View the system names with the --list option
+
+                          Restore always restores an app back to the volume
+                          it's currently installed on (there's no --dest
+                          option) and the app must already be installed
+
       --list            Display installed apps' system names
 ```
 
