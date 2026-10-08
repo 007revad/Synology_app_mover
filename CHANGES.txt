@@ -1,3 +1,8 @@
+v4.2.103
+- Changed to be 0.3 seconds faster per installed package when getting each package's version.
+  - Equals 15 seconds faster if there's 50 packages installed.
+- Bug fix a log message being sent to a text file named tee in the directory the script is run from.
+
 v4.2.102
 - Added --restore option. See https://github.com/007revad/Synology_app_mover#options-when-running-the-script-
 - Bug fixes for restore all. Issue #252

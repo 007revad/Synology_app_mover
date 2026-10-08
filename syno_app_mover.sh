@@ -23,7 +23,7 @@
 #
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.102"
+scriptver="v4.2.103"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -1957,8 +1957,8 @@ check_pkg_size(){
                 prune_dangling  # Prune dangling docker images 
                 if [[ $pkg == "ContainerManager" ]]; then
                     # Check if ContainerManager 24.0.2-1606 or later
-                    #pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
-                    pkgversion=$(synopkg version "$pkg")
+                    #pkgversion=$(synopkg version "$pkg")  # 0.3 seconds slower than synogetkeyvalue
+                    pkgversion=$(synogetkeyvalue "/var/packages/${pkg}/INFO" version)
                     if [[ ${pkgversion:0:2} -gt "23" ]]; then
                         # Unmount shared folders in /volumeN/@appdata/ContainerManager/all_shares
                         /var/packages/ContainerManager/target/tool/mount_share_helper --umount-all
@@ -2086,7 +2086,7 @@ target_fs(){
 echo "" |& tee -a "$logfile"
 if [[ $auto == "yes" ]]; then
     echo -e "Using auto ${Cyan}${mode}${Off} mode\n"
-    echo -e "Using auto $mode mode\n" >> tee -a "$logfile"
+    echo -e "Using auto $mode mode\n" |& tee -a "$logfile"
 else
     modes=( "Move" "Backup" "Restore" )
     x="1"
@@ -2903,14 +2903,14 @@ prepare_backup_restore(){
     # Check installed package version and backup version
     # Get package version
     if [[ ${mode,,} != "move" ]]; then
-        #pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
-        pkgversion=$(synopkg version "$pkg")
+        #pkgversion=$(synopkg version "$pkg")  # 0.3 seconds slower than synogetkeyvalue
+        pkgversion=$(synogetkeyvalue "/var/packages/$pkg/INFO" version)
     fi
 
     # Get backup package version
     if [[ ${mode,,} == "restore" ]]; then
-        #pkgbackupversion=$(/usr/syno/bin/synogetkeyvalue "$bkpath/INFO" version)
-        pkgversion=$(synopkg version "$pkg")
+        #pkgversion=$(synopkg version "$pkg")  # 0.3 seconds slower than synogetkeyvalue
+        pkgversion=$(synogetkeyvalue "/var/packages/$pkg/INFO" version)
         if [[ $pkgversion ]] && [[ $pkgbackupversion ]]; then
             check_pkg_versions_match "$pkgversion" "$pkgbackupversion"
         fi
@@ -3499,8 +3499,8 @@ for pkg in "${pkgs_sorted[@]}"; do
         if [[ $(echo "${running_pkgs_sorted[@]}" | grep -w "$pkg") ]]; then
             if [[ $pkg == "ContainerManager" ]]; then
                 # If Container Manager v24 or later offer to move docker shared folder
-                #pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
-                pkgversion=$(synopkg version "$pkg")
+                #pkgversion=$(synopkg version "$pkg")  # 0.3 seconds slower than synogetkeyvalue
+                pkgversion=$(synogetkeyvalue "/var/packages/$pkg/INFO" version)
                 if [[ ${mode,,} == "move" ]]; then
                     if [[ ${pkgversion:0:2} -gt "23" ]]; then
                         containermanager24_move_share
@@ -3546,8 +3546,8 @@ suggest_move_share(){
                 show_move_share "Cloud Sync" CloudSync stopped
                 ;;
             ContainerManager)
-                #pkgversion=$(/usr/syno/bin/synogetkeyvalue "/var/packages/$pkg/INFO" version)
-                pkgversion=$(synopkg version "$pkg")
+                #pkgversion=$(synopkg version "$pkg")  # 0.3 seconds slower than synogetkeyvalue
+                pkgversion=$(synogetkeyvalue "/var/packages/$pkg/INFO" version)
                 if [[ ${pkgversion:0:2} -lt "24" ]]; then
                     show_move_share "Container Manager" docker stopped
                     docker_volume_edit
