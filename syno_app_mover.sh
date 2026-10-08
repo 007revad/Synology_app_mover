@@ -23,7 +23,7 @@
 #
 #------------------------------------------------------------------------------
 
-scriptver="v4.2.103"
+scriptver="v4.2.104"
 script=Synology_app_mover
 repo="007revad/Synology_app_mover"
 scriptname=syno_app_mover
@@ -2086,7 +2086,7 @@ target_fs(){
 echo "" |& tee -a "$logfile"
 if [[ $auto == "yes" ]]; then
     echo -e "Using auto ${Cyan}${mode}${Off} mode\n"
-    echo -e "Using auto $mode mode\n" |& tee -a "$logfile"
+    echo -e "Using auto $mode mode\n" >> "$logfile"
 else
     modes=( "Move" "Backup" "Restore" )
     x="1"
