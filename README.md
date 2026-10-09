@@ -6,6 +6,14 @@
 [![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/007revad)
 <!-- [![committers.top badge](https://user-badge.committers.top/australia/007revad.svg)](https://user-badge.committers.top/australia/007revad) -->
 
+<br>
+
+### Now available as a Synology package
+
+See https://github.com/007revad/Syno_App_Mover 
+
+<br>
+
 ### Description
 
 Easily move Synology packages from one volume to another volume
@@ -14,7 +22,7 @@ You just select the package and the destination volume and the script will stop 
 
 Handy for moving packages to an SSD volume, or to another volume so you can delete the original volume.
 
-**Now** includes [Backup and Restore modes](/images/backup.png).
+Includes [Backup and Restore modes](/images/backup.png).
 
   - Supports DSM 7. Not fully tested with DSM 6.
   - If backing up to a USB drive the partition's file system should be ext3, ext4 of btrfs.
